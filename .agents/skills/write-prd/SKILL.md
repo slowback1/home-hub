@@ -7,19 +7,31 @@ description: Conducts a structured Q&A interview (via the refine-feature skill) 
 
 ## Quick start
 
-1. Check if a `refine-feature` session has already been completed in this conversation.
-   - If **not**: load the `refine-feature` skill and run the full interview first. Do not proceed to writing until the Q&A is complete.
+1. Check `.agents/stubs/README.md` for an existing stub that matches this feature.
+   - If a matching stub is found, tell the user and offer to use it as starting context for the interview.
+   - Note the stub slug so it can be cleaned up after the PRD is written.
+2. Check if a `refine-feature` session has already been completed in this conversation.
+   - If **not**: load the `refine-feature` skill and run the full interview first. Do not proceed to writing until the Q&A is complete. If a stub was found, use its content to pre-seed the interview (treat filled fields as already answered).
    - If **yes**: proceed directly to the next step.
-2. If the feature is user-facing, draft Gherkin E2E scenarios and have the user review them before writing the PRD file.
-3. Synthesize the Q&A into a PRD using [PRD_TEMPLATE.md](PRD_TEMPLATE.md).
-4. Determine the output path:
+3. If the feature is user-facing, draft Gherkin E2E scenarios and have the user review them before writing the PRD file.
+4. Synthesize the Q&A into a PRD using [PRD_TEMPLATE.md](PRD_TEMPLATE.md).
+5. Determine the output path:
    - Derive a kebab-case slug from the feature or plan name (e.g., `user-auth`).
    - The output path is always `.agents/prds/[prd-slug]/[prd-slug].md` (e.g., `.agents/prds/user-auth/user-auth.md`).
    - Create the directory if it does not exist.
-5. Write the file to the repo.
-6. Tell the user the file path and ask if any section needs revision.
+6. Write the PRD file to the repo.
+7. If a stub was used: delete `.agents/stubs/[slug].md` and remove its row from `.agents/stubs/README.md`. If the README table is now empty, leave the file in place with just the header rows intact.
+8. Tell the user the PRD file path and ask if any section needs revision.
 
 ## Workflow
+
+### Step 0 — Stub Check
+
+Before starting the interview, check whether `.agents/stubs/README.md` exists. If it does, scan it for a stub whose title or summary matches the feature being PRD'd.
+
+- If a match is found, tell the user: "I found a stub for this: `[slug]` — [title]. I'll use it as a starting point for the interview."
+- Record the stub slug. It will be deleted after the PRD is written.
+- If no match is found, proceed normally.
 
 ### Step 1 — Interview (if needed)
 
@@ -53,6 +65,14 @@ Map interview answers to the template sections. Follow these rules:
 - Write the file using the Write tool.
 - Output the relative file path to the user.
 - Ask: "Does this look right, or should I revise any section?"
+
+### Step 5 — Clean up the stub (if applicable)
+
+If a stub was identified in Step 0:
+
+1. Delete `.agents/stubs/[slug].md` using the file deletion tool.
+2. Remove the stub's row from `.agents/stubs/README.md`. If the table is now empty (no data rows remain), leave the file in place with the header and column row intact — do not delete the README.
+3. Confirm to the user: "Stub `[slug]` has been removed from `.agents/stubs/`."
 
 ## Scaling across a project
 
