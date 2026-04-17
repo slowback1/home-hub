@@ -4,7 +4,7 @@ Ideas captured for future refinement. Run the `write-prd` skill to promote a stu
 
 | Stub | Title | Summary | Created |
 |------|-------|---------|---------|
-| [ci-cd-deployment-pipeline](ci-cd-deployment-pipeline.md) | CI/CD & Deployment Pipeline | Automated build, test, and deployment pipeline for the home network | 2026-04-17 |
+| [e2e-tests-in-ci](e2e-tests-in-ci.md) | E2E Tests in CI | Run the Playwright BDD suite in CI to catch full-stack regressions before deploy | 2026-04-17 |
 | [database-infrastructure](database-infrastructure.md) | Database Infrastructure | Real database with migrations and query layer as a shared persistence foundation | 2026-04-17 |
 | [ollama-ai-client-infrastructure](ollama-ai-client-infrastructure.md) | Ollama / AI Client Infrastructure | Shared client layer for talking to local AI models via the home network Ollama instance | 2026-04-17 |
 | [ui-design-system](ui-design-system.md) | UI Design System | Consistent, well-organized component library for a cohesive visual language across all features | 2026-04-17 |
