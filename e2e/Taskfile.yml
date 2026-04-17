@@ -1,0 +1,25 @@
+version: '3'
+
+tasks:
+  setup:
+    desc: Install e2e dependencies and Playwright browsers
+    cmds:
+      - npm install
+      - npx playwright install chromium
+
+  generate:
+    desc: Generate Playwright spec files from Gherkin feature files
+    cmds:
+      - npm run generate
+
+  test:
+    desc: Run Playwright e2e tests
+    deps:
+      - generate
+    cmds:
+      - npx playwright test
+
+  format:
+    desc: Auto-format code with Prettier
+    cmds:
+      - npm run format

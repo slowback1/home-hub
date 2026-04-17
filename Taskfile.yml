@@ -9,6 +9,10 @@ includes:
     taskfile: ./frontend/Taskfile.yml
     dir: ./frontend
     internal: true
+  e2e:
+    taskfile: ./e2e/Taskfile.yml
+    dir: ./e2e
+    internal: true
 
 tasks:
   setup:
@@ -16,6 +20,7 @@ tasks:
     cmds:
       - task: backend:setup
       - task: frontend:setup
+      - task: e2e:setup
 
   build:
     desc: Build both backend and frontend
@@ -45,9 +50,21 @@ tasks:
     desc: Auto-format code
     cmds:
       - task: frontend:format
+      - task: e2e:format
 
   default:
     desc: Show help by default
     cmds:
       - task help
     silent: true
+
+  e2e:
+    desc: Run end-to-end tests
+    cmds:
+      - task: e2e:test
+
+  start:
+    desc: Start both backend and frontend in development mode
+    deps:
+      - task: backend:run-dev
+      - task: frontend:dev

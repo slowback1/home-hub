@@ -102,9 +102,9 @@ Once precommit passes:
 
 Run this step after all implementation tasks are `done`, but only if the PRD contained an `E2E Scenarios` section (i.e. task 01 was the "Write & verify E2E scenarios" task).
 
-1. Run `task e2e:test`.
+1. Run `task e2e`.
 2. **If all pass**: report success to the user. The feature is complete.
-3. **If any fail**: diagnose and fix (up to **3 attempts**), running `task e2e:test` after each fix.
+3. **If any fail**: diagnose and fix (up to **3 attempts**), running `task e2e` after each fix.
    - If green within 3 attempts: commit the fix using the same commit message format (use `Addresses {prd-slug}-e2e` as the footer line), then report success.
    - If still failing after 3 attempts: stop. Surface the full test failure output to the user and ask for guidance. Do not mark anything further as done.
 
