@@ -1,0 +1,68 @@
+version: '3'
+
+tasks:
+  setup:
+    desc: Install npm dependencies
+    cmds:
+      - npm install
+      - cp static/config/config.example.json static/config/config.json
+
+  build:
+    desc: Build the frontend for production
+    cmds:
+      - npm run build
+
+  dev:
+    desc: Start the development server
+    cmds:
+      - npm run dev
+
+  test:
+    desc: Run all unit tests
+    cmds:
+      - npm run test -- --watch=false
+
+  format:
+    desc: Auto-format code with Prettier
+    cmds:
+      - npm run format
+
+  lint:
+    desc: Check formatting with Prettier (no changes)
+    cmds:
+      - npm run lint
+
+  eslint:
+    desc: Run ESLint and fail on any warnings or errors
+    cmds:
+      - npm run eslint:check
+
+  eslint-fix:
+    desc: Run ESLint and auto-fix issues where possible
+    cmds:
+      - npm run eslint:fix
+
+  check:
+    desc: Run Svelte type checking
+    cmds:
+      - npm run check
+
+  precommit:
+    desc: Run pre-commit checks (format, eslint, tests)
+    cmds:
+      - task: format
+      - task: eslint
+      - task: test
+      - task: check
+
+  help:
+    desc: Show available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  default:
+    desc: Show help by default
+    cmds:
+      - task help
+    silent: true

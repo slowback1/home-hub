@@ -1,0 +1,165 @@
+version: '3'
+
+vars:
+  SOLUTION_FILE: HomeHubBackend.sln
+  API_PROJECT: WebAPI
+  API_APPSETTINGS_DEV: WebAPI/appsettings.Development.json
+  CONSOLE_APPSETTINGS_DEV: ConsoleUtilities/appsettings.Development.json
+
+tasks:
+  setup:
+    desc: Initial project setup - restore packages and create development appsettings
+    cmds:
+      - dotnet restore {{.SOLUTION_FILE}}
+      - task: create-dev-appsettings
+      - task: create-dev-appsettings-console
+  
+  create-dev-appsettings:
+    desc: Create appsettings.Development.json if it doesn't exist
+    cmds:
+      - |
+        if [ ! -f "{{.API_APPSETTINGS_DEV}}" ]; then
+          echo "Creating {{.API_APPSETTINGS_DEV}}..."
+          cat > {{.API_APPSETTINGS_DEV}} << 'EOF'
+        {
+          "Logging": {
+            "LogLevel": {
+              "Default": "Information",
+              "Microsoft.AspNetCore": "Warning"
+            }
+          },
+          "AllowedHosts": "*",
+          "CrudFactory": {
+            "Implementation": "InMemory"
+          },
+          "FileData": {
+            "Directory": "data"
+          }
+        }
+        EOF
+          echo "Created {{.API_APPSETTINGS_DEV}}"
+        else
+          echo "{{.API_APPSETTINGS_DEV}} already exists"
+        fi
+    status:
+      - test -f {{.API_APPSETTINGS_DEV}}
+
+  create-dev-appsettings-console:
+    desc: Create ConsoleUtilities/appsettings.Development.json if it doesn't exist
+    cmds:
+      - |
+        if [ ! -f "{{.CONSOLE_APPSETTINGS_DEV}}" ]; then
+          echo "Creating {{.CONSOLE_APPSETTINGS_DEV}}..."
+          cat > {{.CONSOLE_APPSETTINGS_DEV}} << 'EOF'
+        {
+          "Logging": {
+            "LogLevel": {
+              "Default": "Information",
+              "Microsoft.AspNetCore": "Warning"
+            }
+          },
+          "AllowedHosts": "*",
+          "CrudFactory": {
+            "Implementation": "InMemory"
+          },
+          "FileData": {
+            "Directory": "data"
+          }
+        }
+        EOF
+          echo "Created {{.CONSOLE_APPSETTINGS_DEV}}"
+        else
+          echo "{{.CONSOLE_APPSETTINGS_DEV}} already exists"
+        fi
+    status:
+      - test -f {{.CONSOLE_APPSETTINGS_DEV}}
+
+  build:
+    desc: Build the entire solution
+    cmds:
+      - dotnet build {{.SOLUTION_FILE}}
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - dotnet clean {{.SOLUTION_FILE}}
+
+  test:
+    desc: Run all unit tests
+    cmds:
+      - dotnet test {{.SOLUTION_FILE}}
+
+  run:
+    desc: Run the WebAPI project
+    dir: "{{.API_PROJECT}}"
+    cmds:
+      - dotnet run
+
+  run-dev:
+    desc: Run the WebAPI project with Development environment
+    dir: "{{.API_PROJECT}}"
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+    cmds:
+      - dotnet run
+
+  restore:
+    desc: Restore NuGet packages
+    cmds:
+      - dotnet restore {{.SOLUTION_FILE}}
+
+  watch:
+    desc: Run the WebAPI project with file watching (auto-restart on changes)
+    dir: "{{.API_PROJECT}}"
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+    cmds:
+      - dotnet watch run
+
+  help:
+    desc: Show available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  default:
+    desc: Show help by default
+    cmds:
+      - task help
+    silent: true
+
+  reset-dev:
+    desc: Reset the development environment (delete dev appsettings, clean, and setup)
+    cmds:
+      - |
+        if [ -f "{{.API_APPSETTINGS_DEV}}" ]; then
+          echo "Deleting {{.API_APPSETTINGS_DEV}}..."
+          rm {{.API_APPSETTINGS_DEV}}
+        fi
+        if [ -f "{{.CONSOLE_APPSETTINGS_DEV}}" ]; then
+          echo "Deleting {{.CONSOLE_APPSETTINGS_DEV}}..."
+          rm {{.CONSOLE_APPSETTINGS_DEV}}
+        fi
+      - task: clean
+      - task: setup
+
+  lint:
+    desc: Run code analysis and linting using ReSharper CLI
+    cmds:
+      - dotnet tool restore
+      - dotnet jb inspectcode {{.SOLUTION_FILE}} -o=inspection-results.json -e=WARNING
+      - sh ./scripts/check-lint-results.sh
+  
+  lint-fix:
+    desc: Automatically fix linting issues where possible using ReSharper CLI
+    cmds:
+      - dotnet tool restore
+      - dotnet jb cleanupcode {{.SOLUTION_FILE}}
+      - echo "Linting fixes applied where possible."
+  
+  precommit:
+    desc: Run tasks before committing code
+    cmds:
+      - task: build
+      - task: test
+      - task: lint

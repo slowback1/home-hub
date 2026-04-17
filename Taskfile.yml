@@ -1,0 +1,53 @@
+version: '3'
+
+includes:
+  backend:
+    taskfile: ./backend/Taskfile.yml
+    dir: ./backend
+    internal: true
+  frontend:
+    taskfile: ./frontend/Taskfile.yml
+    dir: ./frontend
+    internal: true
+
+tasks:
+  setup:
+    desc: Set up both backend and frontend
+    cmds:
+      - task: backend:setup
+      - task: frontend:setup
+
+  build:
+    desc: Build both backend and frontend
+    cmds:
+      - task: backend:build
+      - task: frontend:build
+
+  test:
+    desc: Run all tests for both backend and frontend
+    cmds:
+      - task: backend:test
+      - task: frontend:test
+
+  precommit:
+    desc: Run pre-commit checks for both backend and frontend
+    cmds:
+      - task: backend:precommit
+      - task: frontend:precommit
+
+  help:
+    desc: Show available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  format:
+    desc: Auto-format code
+    cmds:
+      - task: frontend:format
+
+  default:
+    desc: Show help by default
+    cmds:
+      - task help
+    silent: true

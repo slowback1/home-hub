@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    restart: unless-stopped
+    ports:
+      # OTLP gRPC ingest
+      - "4317:4317"
+      # OTLP HTTP ingest
+      - "4318:4318"
+      # Jaeger UI / query
+      - "16686:16686"
+
+  webapi:
+    build:
+      context: ..
+      dockerfile: WebAPI/Dockerfile
+    container_name: webapi
+    depends_on:
+      - jaeger
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      OpenTelemetry__ServiceName: DotNetStarterKit.WebAPI
+      OpenTelemetry__Otlp__Endpoint: http://jaeger:4317
+    ports:
+      - "8080:8080"

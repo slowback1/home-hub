@@ -1,0 +1,9 @@
+{
+	"baseUrl": "value",
+	"featureFlags": [
+		{
+			"name": "DEMO_FEATURE_FLAG",
+			"isEnabled": false
+		}
+	]
+}
