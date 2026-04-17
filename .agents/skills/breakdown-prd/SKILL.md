@@ -1,6 +1,6 @@
 ---
 name: breakdown-prd
-description: Breaks a PRD into subtasks each covering a cohesive slice of functionality (typically multiple related files). Each task becomes a markdown file stored alongside the PRD. Use when the user wants to break down a PRD into tasks, generate a task list from a PRD, or plan implementation work.
+description: Breaks a PRD into fine-grained commit-sized tasks, each representing one logical unit of change (one model, one endpoint, one component, etc.) with tests always included in the same task. Each task becomes a markdown file stored alongside the PRD. Use when the user wants to break down a PRD into tasks, generate a task list from a PRD, or plan implementation work.
 ---
 
 # Breakdown PRD
@@ -69,16 +69,13 @@ All other tasks are numbered 02, 03, … and implement the feature itself. The f
 If the PRD does not have an `E2E Scenarios` section (or it is empty), skip this rule and number tasks from 01 as normal.
 
 **Granularity**
-- Each task should represent a cohesive feature slice — a group of closely related changes that always land together.
-- Target ~150–500 lines of diff per task.
-- Target 2–6 tasks per PRD. If you find yourself generating more than 6–7, look for tasks that should be merged.
-- Examples of good task groupings:
-  - All backend scaffolding for a feature (model + endpoint + tests)
-  - All frontend work for a feature (API client + component + route + tests)
-  - An infrastructure or wiring change (config + middleware + shared constants)
-- Tests are always part of the task they relate to — never split into a separate task.
-- Avoid bundling truly unrelated concerns (e.g. two independent features) into one task.
-- Avoid splitting a single cohesive concern across multiple tasks (e.g. separating a UI component from its route wrapper, or a middleware change from the config key it depends on).
+- Each task should represent **one logical unit of change** — one concept, one concern, one thing that naturally wants to be a single commit.
+- Good examples of a right-sized task: one model, one migration, one endpoint, one component, one utility function, one configuration change, one route wiring.
+- **Tests and implementation always land in the same task.** This is the primary rule. Never create a separate "add tests for X" task — tests for X belong in the task that implements X.
+- There is no target task count per PRD. A substantial PRD producing 10–15 tasks is fine. Do not merge tasks to hit an artificial ceiling.
+- A task is **too large** if you can describe two independently useful things it does — split it.
+- A task is **too small** if it has no standalone value on its own (e.g. creating an empty placeholder file with no logic) — merge it into the task that gives it meaning.
+- Avoid bundling truly unrelated concerns into one task (e.g. two independent features or two unrelated config changes).
 
 **Ordering**
 - Order tasks by dependency: foundational work first, dependent work later.
