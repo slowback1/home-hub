@@ -13,7 +13,8 @@ public static class CrudFactoryConfigurator
 	public enum CrudFactoryType
 	{
 		InMemory,
-		FileData
+		FileData,
+		EntityFramework
 	}
 
 	/// <summary>
@@ -27,16 +28,22 @@ public static class CrudFactoryConfigurator
 		CrudFactoryType? factoryType = null)
 	{
 		var crudFactoryImpl =
-			factoryType?.ToString() ?? configuration["CrudFactory:Implementation"] ?? "EntityFramework";
+			factoryType?.ToString() ?? configuration["CrudFactory:Implementation"] ?? "InMemory";
 
 		switch (crudFactoryImpl.ToLower())
 		{
 			case "filedata":
 				var dataDirectory = configuration["FileData:Directory"] ?? "data";
-				services.AddSingleton<ICrudFactory>(_ => new FileCrudFactory(dataDirectory));
+				services.AddScoped<ICrudFactory>(_ => new FileCrudFactory(dataDirectory));
+				break;
+			case "entityframework":
+				// EF Core registration is handled in Program.cs alongside AppDbContext.
+				// This case is a hook for future wiring; InMemory is used as a safe fallback
+				// until the EntityFramework project is registered.
+				services.AddScoped<ICrudFactory, InMemoryCrudFactory>();
 				break;
 			default:
-				services.AddSingleton<ICrudFactory, InMemoryCrudFactory>();
+				services.AddScoped<ICrudFactory, InMemoryCrudFactory>();
 				break;
 		}
 	}

@@ -67,6 +67,34 @@ public class CrudFactoryConfiguratorTests
         Assert.That(factory, Is.InstanceOf<InMemoryCrudFactory>());
     }
 
+    [Test]
+    public void ConfigureCrudFactory_WithEntityFramework_RegistersFactory()
+    {
+        var services = new ServiceCollection();
+        var configuration = CreateConfiguration("EntityFramework");
+
+        CrudFactoryConfigurator.ConfigureCrudFactory(services, configuration);
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        // EntityFramework case registers a factory (EfCrudFactory once wired; InMemory as placeholder until task 04)
+        Assert.That(() => serviceProvider.GetRequiredService<ICrudFactory>(), Throws.Nothing);
+    }
+
+    [Test]
+    public void ConfigureCrudFactory_WithDefault_RegistersInMemoryCrudFactory()
+    {
+        var services = new ServiceCollection();
+        var configuration = CreateConfiguration(null);
+
+        CrudFactoryConfigurator.ConfigureCrudFactory(services, configuration);
+
+        var serviceProvider = services.BuildServiceProvider();
+        var factory = serviceProvider.GetRequiredService<ICrudFactory>();
+
+        Assert.That(factory, Is.InstanceOf<InMemoryCrudFactory>());
+    }
+
     private IConfiguration CreateConfiguration(string? implementation, string? dataDirectory = null)
     {
         var configDict = new Dictionary<string, string?>();
