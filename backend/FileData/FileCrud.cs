@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Common.Interfaces;
@@ -77,22 +78,22 @@ public abstract class FileCrud<T> : ICrud<T> where T : class, IIdentifyable
 		}
 	}
 
-	public Task<T?> GetByQueryAsync(Func<T, bool> query)
+	public Task<T?> GetByQueryAsync(Expression<Func<T, bool>> query)
 	{
 		lock (_lock)
 		{
 			var items = LoadItemsFromFile();
-			var item = items.FirstOrDefault(query);
+			var item = items.FirstOrDefault(query.Compile());
 			return Task.FromResult(item);
 		}
 	}
 
-	public Task<IEnumerable<T>> QueryAsync(Func<T, bool> query)
+	public Task<IEnumerable<T>> QueryAsync(Expression<Func<T, bool>> query)
 	{
 		lock (_lock)
 		{
 			var items = LoadItemsFromFile();
-			var results = items.Where(query).ToList();
+			var results = items.Where(query.Compile()).ToList();
 			return Task.FromResult(results.AsEnumerable());
 		}
 	}
