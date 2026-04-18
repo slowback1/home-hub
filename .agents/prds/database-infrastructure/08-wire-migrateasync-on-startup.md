@@ -2,7 +2,7 @@
 
 ## Status
 
-`in-progress` <!-- pending | in-progress | done -->
+`done` <!-- pending | in-progress | done -->
 
 ## Description
 
