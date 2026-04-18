@@ -33,6 +33,15 @@ if (crudImpl == "entityframework")
 
 var app = builder.Build();
 
+if (crudImpl == "entityframework")
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<EntityFramework.AppDbContext>();
+        db.Database.Migrate();
+    }
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
