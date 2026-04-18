@@ -26,23 +26,6 @@ services:
     volumes:
       - homehub-postgres-data:/var/lib/postgresql/data
 
-  webapi:
-    build:
-      context: ..
-      dockerfile: WebAPI/Dockerfile
-    container_name: webapi
-    depends_on:
-      - jaeger
-      - postgres
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
-      OpenTelemetry__ServiceName: DotNetStarterKit.WebAPI
-      OpenTelemetry__Otlp__Endpoint: http://jaeger:4317
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=homehub;Username=homehub;Password=homehub"
-    ports:
-      - "8080:8080"
-
 volumes:
   homehub-postgres-data:
     driver: local
