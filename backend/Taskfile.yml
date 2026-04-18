@@ -163,3 +163,10 @@ tasks:
       - task: build
       - task: test
       - task: lint
+
+  new-migration:
+    desc: "Add a new EF Core migration to EntityFramework project. Usage: task new-migration NAME=MigrationName"
+    requires:
+      vars: [NAME]
+    cmds:
+      - dotnet ef migrations add {{.NAME}} --project EntityFramework --startup-project WebAPI
