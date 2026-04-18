@@ -38,9 +38,7 @@ public static class CrudFactoryConfigurator
 				break;
 			case "entityframework":
 				// EF Core registration is handled in Program.cs alongside AppDbContext.
-				// This case is a hook for future wiring; InMemory is used as a safe fallback
-				// until the EntityFramework project is registered.
-				services.AddScoped<ICrudFactory, InMemoryCrudFactory>();
+				services.AddScoped<ICrudFactory, EntityFramework.EfCrudFactory>();
 				break;
 			default:
 				services.AddScoped<ICrudFactory, InMemoryCrudFactory>();
