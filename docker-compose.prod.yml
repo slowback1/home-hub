@@ -1,0 +1,18 @@
+# docker-compose.prod.yml
+#
+# Used by the home server's nightly auto-pull to run the latest published images.
+# Replace REPLACE_WITH_DOCKERHUB_USERNAME below with the actual DockerHub username
+# (the same value set in the DOCKERHUB_USERNAME GitHub Actions variable).
+
+services:
+  backend:
+    image: REPLACE_WITH_DOCKERHUB_USERNAME/homehub-backend:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+
+  frontend:
+    image: REPLACE_WITH_DOCKERHUB_USERNAME/homehub-frontend:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
