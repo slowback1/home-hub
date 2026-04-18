@@ -4,6 +4,7 @@ using InMemory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WebAPI.Configuration;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebAPI.Integration.Tests.Configuration;
 
@@ -73,12 +74,14 @@ public class CrudFactoryConfiguratorTests
         var services = new ServiceCollection();
         var configuration = CreateConfiguration("EntityFramework");
 
-        CrudFactoryConfigurator.ConfigureCrudFactory(services, configuration);
+         // Register AppDbContext for EF scenario - UseInMemoryDatabase for test isolation.
+         services.AddDbContext<EntityFramework.AppDbContext>(options => options.UseInMemoryDatabase("CrudFactoryConfiguratorTests"));
 
-        var serviceProvider = services.BuildServiceProvider();
+         CrudFactoryConfigurator.ConfigureCrudFactory(services, configuration);
 
-        // EntityFramework case registers a factory (EfCrudFactory once wired; InMemory as placeholder until task 04)
-        Assert.That(() => serviceProvider.GetRequiredService<ICrudFactory>(), Throws.Nothing);
+         var serviceProvider = services.BuildServiceProvider();
+
+         Assert.That(() => serviceProvider.GetRequiredService<ICrudFactory>(), Throws.Nothing);
     }
 
     [Test]

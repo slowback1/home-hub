@@ -27,7 +27,7 @@ public class EfCrud<T> : ICrud<T> where T : class, IIdentifyable
     }
 
     public Task<T?> GetByIdAsync(string id)
-        => _dbSet.FirstOrDefaultAsync(x => x.Id == id)!;
+        => _dbSet.FirstOrDefaultAsync(x => x.Id == id);
 
     public async Task<T?> UpdateAsync(string id, T item)
     {
@@ -49,7 +49,7 @@ public class EfCrud<T> : ICrud<T> where T : class, IIdentifyable
     }
 
     public Task<T?> GetByQueryAsync(Expression<Func<T, bool>> query)
-        => _dbSet.FirstOrDefaultAsync(query)!;
+        => _dbSet.FirstOrDefaultAsync(query);
 
     public async Task<IEnumerable<T>> QueryAsync(Expression<Func<T, bool>> query)
         => await _dbSet.Where(query).ToListAsync();
