@@ -1,81 +1,112 @@
+/* ============================================================
+   Design Tokens — HomeHub
+   Single dark theme. All tokens live on :root.
+   To add a second theme, override any token on a theme class.
+   ============================================================ */
+
+:root {
+	/* --------------------------------------------------------
+	   Color — Brand
+	   Primary: #003554 (deep navy), hsl(203, 100%, 16%)
+	   -------------------------------------------------------- */
+	--color-brand: #003554;
+	--color-brand-light: #005588;
+	--color-brand-lighter: #1a7ab5;
+
+	/* --------------------------------------------------------
+	   Color — Surfaces (navy-tinted dark)
+	   -------------------------------------------------------- */
+	--color-surface-deep: #000f1a; /* page background */
+	--color-surface-base: #001829; /* default surface */
+	--color-surface-raised: #002035; /* cards, panels */
+	--color-surface-overlay: #002d4a; /* dropdowns, modals */
+
+	/* --------------------------------------------------------
+	   Color — Text
+	   -------------------------------------------------------- */
+	--color-text-primary: #e2f0fa;
+	--color-text-secondary: #7aaec8;
+	--color-text-disabled: #3d6e8a;
+
+	/* --------------------------------------------------------
+	   Color — Borders
+	   -------------------------------------------------------- */
+	--color-border-subtle: #0a3d5c;
+	--color-border-default: #1a5c80;
+
+	/* --------------------------------------------------------
+	   Color — Semantic
+	   -------------------------------------------------------- */
+	--color-error: #e05252;
+	--color-error-surface: rgba(180, 30, 30, 0.2);
+	--color-error-text: #f4a0a0;
+
+	--color-warning: #d4890a;
+	--color-warning-surface: rgba(180, 130, 10, 0.2);
+	--color-warning-text: #f0c060;
+
+	--color-success: #4caf70;
+	--color-success-surface: rgba(30, 140, 70, 0.2);
+	--color-success-text: #90d4a8;
+
+	--color-info: #4a9fd4;
+	--color-info-surface: rgba(30, 100, 160, 0.2);
+	--color-info-text: #90ccee;
+
+	/* --------------------------------------------------------
+	   Spacing — 4px base scale
+	   -------------------------------------------------------- */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-6: 24px;
+	--space-8: 32px;
+	--space-12: 48px;
+	--space-16: 64px;
+
+	/* Legacy aliases — keep layout working until task 05 */
+	--gutters-y: var(--space-3);
+	--gutters-x: var(--space-6);
+
+	/* --------------------------------------------------------
+	   Border Radius
+	   -------------------------------------------------------- */
+	--radius-sm: 8px; /* buttons, inputs, chips */
+	--radius-md: 12px; /* cards, panels, modals  */
+	--radius-full: 9999px;
+
+	/* --------------------------------------------------------
+	   Typography
+	   -------------------------------------------------------- */
+	--font-family-primary: 'Nunito', sans-serif;
+
+	--font-size-xs: 12px;
+	--font-size-sm: 14px;
+	--font-size-md: 16px;
+	--font-size-lg: 20px;
+	--font-size-xl: 24px;
+	--font-size-2xl: 32px;
+	--font-size-3xl: 40px;
+
+	--font-weight-normal: 400;
+	--font-weight-medium: 500;
+	--font-weight-semibold: 600;
+	--font-weight-bold: 700;
+
+	--line-height-tight: 1.25;
+	--line-height-normal: 1.5;
+	--line-height-relaxed: 1.75;
+}
+
+/* --------------------------------------------------------
+   Base Styles
+   -------------------------------------------------------- */
 body,
 main {
-	/* Fonts */
-	--font-family-primary: 'Helvetica', sans-serif;
-
-	--font-size-small: 16px;
-	--font-size-medium: 24px;
-	--font-size-large: 32px;
-
-	/* Top Level Styles */
-
-	background-color: var(--color-background);
-	color: var(--color-font);
+	background-color: var(--color-surface-deep);
+	color: var(--color-text-primary);
 	font-family: var(--font-family-primary);
-
-	/* Gutters */
-
-	--gutters-y: 12px;
-	--gutters-x: 24px;
-	--header-height: 64px;
-}
-
-.light-theme {
-	--color-primary-background: #1248c7;
-	--color-primary-font: #fff;
-	--color-primary-border: #3a43b2;
-
-	--color-secondary-background: rgba(68, 82, 122, 0.38);
-	--color-secondary-font: #c9c9c9;
-	--color-secondary-border: #50b730;
-
-	--color-background: #e1e1e1;
-	--color-font: #101010;
-
-	--color-info-light-background: rgba(16, 112, 150, 0.68);
-	--color-info-light-font: #dedee0;
-
-	--color-error-light-background: rgba(231, 26, 26, 0.82);
-	--color-error-light-font: #fae1e1;
-
-	--color-success-light-background: rgb(29, 117, 17);
-	--color-success-light-font: #aeec9e;
-
-	--color-warning-light-background: #a65a16;
-	--color-warning-light-font: #dec48c;
-
-	/* Base Colors */
-	--color-base-blue: #5f8ada;
-	--color-base-green: #6ada7b;
-	--color-base-red: #b12525;
-}
-
-.dark-theme {
-	--color-primary-background: #051a4f;
-	--color-primary-font: #fff;
-	--color-primary-border: #3a43b2;
-
-	--color-secondary-background: rgba(1, 12, 42, 0.38);
-	--color-secondary-font: #8a8585;
-	--color-secondary-border: #162742;
-
-	--color-background: #111;
-	--color-font: #efefef;
-
-	--color-info-light-background: rgba(16, 112, 150, 0.68);
-	--color-info-light-font: #dedee0;
-
-	--color-error-light-background: rgba(145, 18, 18, 0.51);
-	--color-error-light-font: #d77474;
-
-	--color-success-light-background: rgb(29, 117, 17);
-	--color-success-light-font: #aeec9e;
-
-	--color-warning-light-background: #a65a16;
-	--color-warning-light-font: #dec48c;
-
-	/* Base Colors */
-	--color-base-blue: #15429f;
-	--color-base-green: #137121;
-	--color-base-red: #b12525;
+	font-size: var(--font-size-md);
+	line-height: var(--line-height-normal);
 }

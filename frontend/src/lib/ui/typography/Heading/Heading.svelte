@@ -25,31 +25,40 @@
 </svelte:element>
 
 <style>
+	.heading {
+		font-family: var(--font-family-primary);
+		color: var(--color-text-primary);
+		font-weight: var(--font-weight-semibold);
+		line-height: var(--line-height-tight);
+		margin: 0;
+	}
+
 	.heading__1 {
-		font-size: 48px;
+		font-size: var(--font-size-3xl);
 	}
 
 	.heading__2 {
-		font-size: 40px;
+		font-size: var(--font-size-2xl);
 	}
 
 	.heading__3 {
-		font-size: 32px;
+		font-size: var(--font-size-xl);
 	}
 
 	.heading__4 {
-		font-size: 24px;
+		font-size: var(--font-size-lg);
 	}
 
 	.heading__5 {
-		font-size: 20px;
+		font-size: var(--font-size-md);
 	}
 
 	.heading__6 {
-		font-size: 16px;
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
 	}
 
 	.heading__bold {
-		font-weight: bold;
+		font-weight: var(--font-weight-bold);
 	}
 </style>

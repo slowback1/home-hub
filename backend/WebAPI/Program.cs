@@ -1,6 +1,7 @@
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using WebAPI.Configuration;
+using Microsoft.EntityFrameworkCore; // Required for UseNpgsql
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,25 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 CrudFactoryConfigurator.ConfigureCrudFactory(builder.Services, builder.Configuration);
 
+// Register AppDbContext only if EntityFramework is selected
+var crudImpl = builder.Configuration["CrudFactory:Implementation"]?.ToLower() ?? "inmemory";
+if (crudImpl == "entityframework")
+{
+    var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
+    builder.Services.AddDbContext<EntityFramework.AppDbContext>(options =>
+        options.UseNpgsql(connStr));
+}
+
 var app = builder.Build();
+
+if (crudImpl == "entityframework")
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<EntityFramework.AppDbContext>();
+        db.Database.Migrate();
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {

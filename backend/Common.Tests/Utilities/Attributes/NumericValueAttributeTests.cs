@@ -23,7 +23,7 @@ public class NumericValueAttributeTests
 
 		var result = attribute.CheckForValidationError(value);
 
-		Assert.IsNull(result);
+		Assert.That(result, Is.Null);
 	}
 
 	[Test]
@@ -57,7 +57,7 @@ public class NumericValueAttributeTests
 
 		var result = attribute.CheckForValidationError(value);
 
-		Assert.IsNull(result);
+		Assert.That(result, Is.Null);
 	}
 
 	[Test]
@@ -68,7 +68,7 @@ public class NumericValueAttributeTests
 
 		var result = attribute.CheckForValidationError(value);
 
-		Assert.IsNull(result);
+		Assert.That(result, Is.Null);
 	}
 
 	[Test]
@@ -88,7 +88,7 @@ public class NumericValueAttributeTests
 
 		var result = attribute.CheckForValidationError(value);
 
-		Assert.IsNull(result);
+		Assert.That(result, Is.Null);
 	}
 
 	[Test]
@@ -99,7 +99,7 @@ public class NumericValueAttributeTests
 
 		var result = attribute.CheckForValidationError(value);
 
-		Assert.IsNull(result);
+		Assert.That(result, Is.Null);
 	}
 
 	[Test]
@@ -110,7 +110,7 @@ public class NumericValueAttributeTests
 
 		var result = attribute.CheckForValidationError(value);
 
-		Assert.IsNull(result);
+		Assert.That(result, Is.Null);
 	}
 
 	[Test]

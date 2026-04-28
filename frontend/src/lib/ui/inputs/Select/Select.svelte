@@ -36,58 +36,33 @@
 </div>
 
 <style>
-	.select__base {
-		--select-group-flex-direction: column;
-		--select-group-gap: 0.5rem;
-		--select-group-align-items: flex-start;
-		--select-group-justify-content: flex-start;
-
-		--select-label-font-size: 1rem;
-		--select-label-font-weight: 500;
-		--select-label-font-color: var(--color-font);
-
-		--select-input-padding: 0.5rem;
-		--select-input-border-width: 1px;
-		--select-input-border-color: var(--color-font);
-		--select-input-background-color: var(--color-background);
-		--select-input-font-color: var(--color-font);
-		--select-input-border-radius: 0.25rem;
-		--select-input-font-size: 1rem;
-		--select-input-dropdown-margin-right: 0.5rem;
-		--select-input-dropdown-focus-outline-color-base: var(--color-base-blue);
-		/*To customize the select arrow, base 64 encode an svg and place it here, below is an example*/
-		/*--select-input-arrow-icon: url(data:image/svg+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0Ljk1IDEwIj48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZmZjt9LmNscy0ye2ZpbGw6IzQ0NDt9PC9zdHlsZT48L2RlZnM+PHRpdGxlPmFycm93czwvdGl0bGU+PHJlY3QgY2xhc3M9ImNscy0xIiB3aWR0aD0iNC45NSIgaGVpZ2h0PSIxMCIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMiIgcG9pbnRzPSIxLjQxIDQuNjcgMi40OCAzLjE4IDMuNTQgNC42NyAxLjQxIDQuNjciLz48cG9seWdvbiBjbGFzcz0iY2xzLTIiIHBvaW50cz0iMy41NCA1LjMzIDIuNDggNi44MiAxLjQxIDUuMzMgMy41NCA1LjMzIi8+PC9zdmc+);*/
-	}
-
 	.select__group {
 		display: flex;
-		flex-direction: var(--select-group-flex-direction);
-		gap: var(--select-group-gap);
-		align-items: var(--select-group-align-items);
-		justify-content: var(--select-group-justify-content);
+		flex-direction: column;
+		gap: var(--space-1);
+		align-items: flex-start;
+	}
+
+	.select__label {
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		color: var(--color-text-secondary);
 	}
 
 	.select__input {
-		padding: var(--select-input-padding);
-		border-width: var(--select-input-border-width);
-		border-color: var(--select-input-border-color);
-		border-radius: var(--select-input-border-radius);
-		background-color: var(--select-input-background-color);
-		color: var(--select-input-font-color);
-		font-size: var(--select-input-font-size);
-		background-image: var(--select-input-arrow-icon, inherit);
-		background-repeat: no-repeat;
-		background-position: right center;
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm);
+		background-color: var(--color-surface-raised);
+		color: var(--color-text-primary);
+		font-family: var(--font-family-primary);
+		font-size: var(--font-size-md);
+		transition: border-color 0.15s ease;
 	}
 
 	.select__input:focus,
 	.select__input:active {
-		outline-color: var(--select-input-dropdown-focus-outline-color-base);
-	}
-
-	.select__label {
-		font-size: var(--select-label-font-size);
-		font-weight: var(--select-label-font-weight);
-		color: var(--select-label-font-color);
+		outline: none;
+		border-color: var(--color-brand-lighter);
 	}
 </style>

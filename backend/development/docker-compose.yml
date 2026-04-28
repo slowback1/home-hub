@@ -13,17 +13,19 @@ services:
       # Jaeger UI / query
       - "16686:16686"
 
-  webapi:
-    build:
-      context: ..
-      dockerfile: WebAPI/Dockerfile
-    container_name: webapi
-    depends_on:
-      - jaeger
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: unless-stopped
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
-      OpenTelemetry__ServiceName: DotNetStarterKit.WebAPI
-      OpenTelemetry__Otlp__Endpoint: http://jaeger:4317
+      POSTGRES_DB: homehub
+      POSTGRES_USER: homehub
+      POSTGRES_PASSWORD: homehub
     ports:
-      - "8080:8080"
+      - "5432:5432"
+    volumes:
+      - homehub-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  homehub-postgres-data:
+    driver: local

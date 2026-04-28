@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Common.Interfaces;
 
@@ -57,21 +58,21 @@ public abstract class InMemoryCrud<T> : ICrud<T> where T : class, IIdentifyable
         return Task.FromResult(true);
     }
 
-    public virtual Task<T?> GetByQueryAsync(Func<T, bool> query)
+    public virtual Task<T?> GetByQueryAsync(Expression<Func<T, bool>> query)
     {
         var type = typeof(T);
         if (!ItemsByType.TryGetValue(type, out var items))
             return Task.FromResult<T?>(null);
-        var item = items.FirstOrDefault(query);
+        var item = items.FirstOrDefault(query.Compile());
         return Task.FromResult<T?>(item);
     }
 
-    public virtual Task<IEnumerable<T>> QueryAsync(Func<T, bool> query)
+    public virtual Task<IEnumerable<T>> QueryAsync(Expression<Func<T, bool>> query)
     {
         var type = typeof(T);
         if (!ItemsByType.TryGetValue(type, out var items))
             return Task.FromResult(Enumerable.Empty<T>());
-        var results = items.Where(query).ToList();
+        var results = items.Where(query.Compile()).ToList();
         return Task.FromResult(results.AsEnumerable());
     }
 

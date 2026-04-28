@@ -20,42 +20,44 @@
 
 <style>
 	.checkbox {
-		--checkbox-size: 20px;
-		--checkbox-border-color: var(--color-font);
-		--checkbox-fill: var(--color-success-light-background);
-		--checkbox-focus-outline-color: color-mix(
-			in lab,
-			var(--color-font) 40%,
-			var(--color-background)
-		);
+		--checkbox-size: 18px;
+		--checkbox-border-color: var(--color-border-default);
+		--checkbox-fill: var(--color-success);
+		--checkbox-focus-outline-color: var(--color-brand-lighter);
 	}
 
 	.checkbox__label {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
 		user-select: none;
 		cursor: pointer;
+		font-size: var(--font-size-md);
+		color: var(--color-text-primary);
 	}
 
 	.checkbox__label:before {
 		content: '';
 		display: inline-block;
-		vertical-align: middle;
+		flex-shrink: 0;
 		width: var(--checkbox-size);
 		height: var(--checkbox-size);
 		border: 2px solid var(--checkbox-border-color);
-		margin-right: calc(var(--checkbox-size) / 2);
+		border-radius: var(--space-1);
+		background-color: var(--color-surface-raised);
+		transition:
+			background-color 0.15s ease,
+			border-color 0.15s ease;
 	}
 
 	.checkbox__input:checked + .checkbox__label:before {
 		background-color: var(--checkbox-fill);
-		border-color: color-mix(in lab, var(--checkbox-fill) 20%, var(--checkbox-border-color));
+		border-color: var(--checkbox-fill);
 	}
 
-	.checkbox__input:focus + .checkbox__label {
-		outline: 2px dashed var(--checkbox-focus-outline-color);
-		outline-offset: 12px;
-	}
-
-	.checkbox__input:focus:not(:focus-visible) {
-		outline: none;
+	.checkbox__input:focus-visible + .checkbox__label {
+		outline: 2px solid var(--checkbox-focus-outline-color);
+		outline-offset: var(--space-1);
+		border-radius: var(--space-1);
 	}
 </style>

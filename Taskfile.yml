@@ -68,3 +68,8 @@ tasks:
     deps:
       - task: backend:run-dev
       - task: frontend:dev
+
+  start-services:
+    desc: Start required services (e.g., Jaeger, PostgreSQL)
+    cmds:
+      - docker compose -f ./backend/development/docker-compose.yml up --remove-orphans -d

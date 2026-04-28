@@ -32,88 +32,58 @@
 </div>
 
 <style>
-	.chip__base {
-		--chip-padding-x: 8px;
-		--chip-padding-y: 4px;
-		--chip-border-radius: 12px;
-		--chip-font-size: 14px;
-		--chip-background-color: #000;
-		--chip-color: #fff;
-		--chip-border-color: #000;
-		--chip-border-width: 2px;
+	.chip {
+		--chip-background-color: var(--color-surface-overlay);
+		--chip-color: var(--color-text-primary);
+		--chip-border-color: var(--color-border-default);
+
+		display: inline-block;
+		padding: var(--space-1) var(--space-3);
+		border-radius: var(--radius-full);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		background-color: var(--chip-background-color);
+		color: var(--chip-color);
+		border: 1px solid var(--chip-border-color);
 	}
 
 	.chip__primary {
-		--chip-background-color: color-mix(
-			in lab,
-			var(--color-primary-background),
-			var(--color-primary-font) 10%
-		);
-		--chip-color: var(--color-primary-font);
-		--chip-border-color: var(--color-primary-border);
+		--chip-background-color: var(--color-brand);
+		--chip-color: #fff;
+		--chip-border-color: var(--color-brand-light);
 	}
 
 	.chip__secondary {
-		--chip-background-color: color-mix(
-			in lab,
-			var(--color-secondary-background),
-			var(--color-secondary-font) 10%
-		);
-		--chip-color: var(--color-secondary-font);
-		--chip-border-color: var(--color-secondary-border);
+		--chip-background-color: var(--color-surface-raised);
+		--chip-color: var(--color-text-secondary);
+		--chip-border-color: var(--color-border-subtle);
 	}
 
 	.chip__outline {
 		--chip-background-color: transparent;
-		--chip-color: var(--color-font);
-		--chip-border-color: var(--color-font);
+		--chip-color: var(--color-text-primary);
+		--chip-border-color: var(--color-border-default);
 	}
 
 	.chip__success {
-		--chip-background-color: color-mix(
-			in lab,
-			var(--color-success-light-background),
-			var(--color-success-light-font) 10%
-		);
-		--chip-color: var(--color-success-light-font);
-		--chip-border-color: var(--color-success-light-font);
+		--chip-background-color: var(--color-success-surface);
+		--chip-color: var(--color-success-text);
+		--chip-border-color: var(--color-success);
 	}
 
 	.chip__error {
-		--chip-background-color: color-mix(
-			in lab,
-			var(--color-error-light-background),
-			var(--color-error-light-font) 10%
-		);
-		--chip-color: var(--color-error-light-font);
-		--chip-border-color: var(--color-error-light-font);
+		--chip-background-color: var(--color-error-surface);
+		--chip-color: var(--color-error-text);
+		--chip-border-color: var(--color-error);
 	}
 
 	.chip__small {
-		--chip-padding-x: 2px;
-		--chip-padding-y: 4px;
-		--chip-font-size: 12px;
-	}
-
-	.chip__medium {
-		--chip-padding-x: 8px;
-		--chip-padding-y: 4px;
-		--chip-font-size: 14px;
+		font-size: var(--font-size-xs);
+		padding: 2px var(--space-2);
 	}
 
 	.chip__large {
-		--chip-padding-x: 12px;
-		--chip-padding-y: 6px;
-		--chip-font-size: 16px;
-	}
-
-	.chip {
-		display: inline-block;
-		padding: var(--chip-padding-y) var(--chip-padding-x);
-		border-radius: var(--chip-border-radius);
-		font-size: var(--chip-font-size);
-		background-color: var(--chip-background-color);
-		color: var(--chip-color);
-		border: var(--chip-border-width) solid var(--chip-border-color);
+		font-size: var(--font-size-md);
+		padding: var(--space-1) var(--space-4);
 	}
 </style>

@@ -25,58 +25,56 @@
 </div>
 
 <style>
-	.alert-base {
-		--border-width: 2px;
-		--alert-padding-y: 1rem;
-		--alert-padding-x: 1.25rem;
-		--alert-font-weight: 400;
-		--alert-background-color: var(--color-background);
-		--alert-font-color: var(--color-font);
-		--alert-border-color: var(--alert-font-color);
+	.alert {
+		--alert-background-color: var(--color-surface-raised);
+		--alert-font-color: var(--color-text-primary);
+		--alert-border-color: var(--color-border-subtle);
+
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
+		border: 1px solid var(--alert-border-color);
+		border-left-width: 4px;
+		border-radius: var(--radius-md);
+		padding: var(--space-3) var(--space-4);
+		background-color: var(--alert-background-color);
+		color: var(--alert-font-color);
 	}
 
 	.alert__info {
-		--alert-background-color: var(--color-info-light-background);
-		--alert-font-color: var(--color-info-light-font);
+		--alert-background-color: var(--color-info-surface);
+		--alert-font-color: var(--color-info-text);
+		--alert-border-color: var(--color-info);
 	}
 
 	.alert__warning {
-		--alert-background-color: var(--color-warning-light-background);
-		--alert-font-color: var(--color-warning-light-font);
+		--alert-background-color: var(--color-warning-surface);
+		--alert-font-color: var(--color-warning-text);
+		--alert-border-color: var(--color-warning);
 	}
 
 	.alert__error {
-		--alert-background-color: var(--color-error-light-background);
-		--alert-font-color: var(--color-error-light-font);
-	}
-
-	.alert {
-		border: var(--border-width) solid var(--alert-border-color);
-		border-radius: 0.25rem;
-		padding: var(--alert-padding-y) var(--alert-padding-x);
-		font-weight: var(--alert-font-weight);
-		background-color: var(--alert-background-color);
-		color: var(--alert-font-color);
-		position: relative;
+		--alert-background-color: var(--color-error-surface);
+		--alert-font-color: var(--color-error-text);
+		--alert-border-color: var(--color-error);
 	}
 
 	.alert__close-button {
+		flex-shrink: 0;
 		background-color: transparent;
 		border: none;
 		color: var(--alert-font-color);
 		cursor: pointer;
-		font-size: 1rem;
-		margin-left: 0.5rem;
-		padding: calc(var(--alert-padding-y) - 4px);
-		position: absolute;
-		right: 2rem;
-		/* To offset the border width */
-		top: 2px;
+		font-size: var(--font-size-md);
+		padding: var(--space-1);
+		border-radius: var(--radius-sm);
+		opacity: 0.7;
+		transition: opacity 0.15s ease;
 	}
 
 	.alert__close-button:hover,
 	.alert__close-button:focus {
-		background-color: var(--alert-font-color);
-		color: var(--alert-background-color);
+		opacity: 1;
 	}
 </style>
