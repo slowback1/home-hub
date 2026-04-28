@@ -7,6 +7,7 @@
 	import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 	import ConfigFeatureFlagProvider from '$lib/services/FeatureFlag/ConfigFeatureFlagProvider';
 	import LocalStorageProvider from '$lib/bus/providers/localStorageProvider';
+	import Sidebar from '$lib/ui/navigation/Sidebar.svelte';
 
 	onMount(() => {
 		MessageBus.initialize(new LocalStorageProvider());
@@ -21,6 +22,7 @@
 </svelte:head>
 
 <div class="app-shell">
+	<Sidebar />
 	<ToastWrapper />
 	<main id="content" class="main-content">
 		<slot />
@@ -32,14 +34,15 @@
 	@import '../style/globals.css';
 
 	.app-shell {
-		min-height: 100vh;
 		display: flex;
+		min-height: 100vh;
 	}
 
 	.main-content {
 		flex: 1;
-		padding: var(--gutters-y) var(--gutters-x);
+		padding: var(--space-6);
 		display: flex;
 		flex-direction: column;
+		overflow: auto;
 	}
 </style>
