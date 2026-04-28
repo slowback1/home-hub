@@ -99,74 +99,84 @@
 
 <style>
 	.combo-box {
-		--label-spacing: 12px;
-		--input-group-background: #efefef;
-		--input-group-color: #321211;
-		--input-group-padding-x: 4px;
-		--input-group-padding-y: 8px;
-		--focus-outline-color: #5dea5d;
-		--focus-outline-size: 2px;
-		--options-list-background: #efefef;
-		--options-list-background-focus: #817a7a;
-		--options-list-color: #030303;
-		--options-list-spacing-y: 8px;
-		--options-list-spacing-x: 4px;
-		--options-list-separator-color: #85d7e3;
-		--options-list-separator-size: 4px;
-
 		position: relative;
 		max-width: fit-content;
 	}
 
+	.combo-box__label {
+		display: block;
+		margin-bottom: var(--space-1);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		color: var(--color-text-secondary);
+	}
+
 	.combo-box__input-group {
 		display: flex;
-		margin-top: var(--label-spacing);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm);
+		background-color: var(--color-surface-raised);
+		overflow: hidden;
+		transition: border-color 0.15s ease;
+	}
+
+	.combo-box__input-group:has(:focus-visible, :focus) {
+		outline: none;
+		border-color: var(--color-brand-lighter);
 	}
 
 	.combo-box__input-group > * {
-		padding: var(--input-group-padding-y) var(--input-group-padding-x);
+		padding: var(--space-2) var(--space-3);
 		margin: 0;
 	}
 
 	.combo-box__input {
-		border-radius: 0;
 		border: 0;
-		background-color: var(--input-group-background);
-		color: var(--input-group-color);
+		background-color: transparent;
+		color: var(--color-text-primary);
+		font-family: var(--font-family-primary);
+		font-size: var(--font-size-md);
+		flex: 1;
 	}
 
 	.combo-box__input:focus {
 		outline: none;
 	}
 
-	.combo-box__input-group:has(:focus-visible, :focus) {
-		outline: var(--focus-outline-size) solid var(--focus-outline-color);
+	.combo-box__toggle {
+		border: 0;
+		background-color: transparent;
+		color: var(--color-text-secondary);
+		cursor: pointer;
+		padding: var(--space-2);
 	}
 
-	.combo-box__toggle {
-		border-radius: 0;
-		border: 0;
-		background-color: var(--input-group-background);
-		color: var(--input-group-color);
-		fill: var(--input-group-color);
+	.combo-box__toggle:hover {
+		color: var(--color-text-primary);
 	}
 
 	.combo-box__option-list {
 		position: absolute;
 		right: 0;
-		top: calc(100% + var(--options-list-separator-size) - var(--focus-outline-size));
-		background-color: var(--options-list-background);
-		color: var(--options-list-color);
+		top: calc(100% + var(--space-1));
+		background-color: var(--color-surface-overlay);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm);
 		width: 100%;
-		border-top: var(--options-list-separator-size) solid var(--options-list-separator-color);
+		color: var(--color-text-primary);
+		z-index: 10;
+		list-style: none;
+		padding: var(--space-1) 0;
 	}
 
 	.combo-box__option {
-		padding: var(--options-list-spacing-y) var(--options-list-spacing-x);
+		padding: var(--space-2) var(--space-3);
 		cursor: pointer;
+		font-size: var(--font-size-md);
 	}
 
 	.combo-box__option-focused {
-		background-color: var(--options-list-background-focus);
+		background-color: var(--color-surface-raised);
+		color: var(--color-brand-lighter);
 	}
 </style>
