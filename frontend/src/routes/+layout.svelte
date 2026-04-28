@@ -46,7 +46,7 @@
 	@import '../style/globals.css';
 
 	.main-content {
-		min-height: calc(100vh - var(--gutters-y) * 2 - var(--header-height));
+		min-height: calc(100vh - var(--gutters-y) * 2);
 		padding: var(--gutters-y) var(--gutters-x);
 		scroll-behavior: auto;
 		display: flex;
