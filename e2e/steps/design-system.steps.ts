@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import { Given, When, Then } from '../fixtures';
 
 Given('I am on the home page', async ({ designSystemPage }) => {
@@ -9,11 +10,14 @@ Given('I navigate to the home page', async ({ designSystemPage }) => {
 });
 
 Given('the Sidebar is expanded', async ({ designSystemPage }) => {
-	throw new Error('not implemented');
+	const expanded = await designSystemPage.isSidebarExpanded();
+	expect(expanded).toBe(true);
 });
 
 Given('I have collapsed the Sidebar', async ({ designSystemPage }) => {
-	throw new Error('not implemented');
+	await designSystemPage.collapseSidebar();
+	const collapsed = await designSystemPage.isSidebarCollapsed();
+	expect(collapsed).toBe(true);
 });
 
 When('I click the {string} nav item in the Sidebar', async ({ designSystemPage }, label: string) => {
@@ -29,29 +33,35 @@ When('I reload the page', async ({ designSystemPage }) => {
 });
 
 Then('I should be on the task tracker page', async ({ designSystemPage }) => {
-	throw new Error('not implemented');
+	await designSystemPage.assertOnPath('/tasks');
 });
 
 Then('the {string} nav item should be marked as active', async ({ designSystemPage }, label: string) => {
-	throw new Error('not implemented');
+	const active = await designSystemPage.isNavItemActive(label);
+	expect(active).toBe(true);
 });
 
 Then('the Sidebar should collapse to icon-only mode', async ({ designSystemPage }) => {
-	throw new Error('not implemented');
+	const collapsed = await designSystemPage.isSidebarCollapsed();
+	expect(collapsed).toBe(true);
 });
 
 Then('nav item labels should not be visible', async ({ designSystemPage }) => {
-	throw new Error('not implemented');
+	const visible = await designSystemPage.areNavLabelsVisible();
+	expect(visible).toBe(false);
 });
 
 Then('the Sidebar should still be in icon-only mode', async ({ designSystemPage }) => {
-	throw new Error('not implemented');
+	const collapsed = await designSystemPage.isSidebarCollapsed();
+	expect(collapsed).toBe(true);
 });
 
 Then('the app should have the dark theme applied', async ({ designSystemPage }) => {
-	throw new Error('not implemented');
+	const hasDark = await designSystemPage.hasDarkTheme();
+	expect(hasDark).toBe(true);
 });
 
 Then('no light theme class should be present on the document', async ({ designSystemPage }) => {
-	throw new Error('not implemented');
+	const hasLight = await designSystemPage.hasLightTheme();
+	expect(hasLight).toBe(false);
 });

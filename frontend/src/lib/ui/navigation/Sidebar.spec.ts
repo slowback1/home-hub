@@ -1,11 +1,9 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/svelte';
 import { beforeEach, afterEach } from 'vitest';
 import Sidebar from './Sidebar.svelte';
-import UrlPathProvider, { TestUrlProvider } from '$lib/providers/urlPathProvider';
 
 describe('Sidebar', () => {
 	beforeEach(() => {
-		UrlPathProvider.initialize(new TestUrlProvider('/'));
 		localStorage.clear();
 	});
 
@@ -32,21 +30,10 @@ describe('Sidebar', () => {
 		expect(links.length).toBeGreaterThanOrEqual(6);
 	});
 
-	it('shows nav labels when expanded', () => {
+	it('renders nav labels in the DOM', () => {
 		const { getByText } = render(Sidebar);
 		expect(getByText('Home')).toBeInTheDocument();
-		expect(getByText('Task Tracker')).toBeInTheDocument();
-	});
-
-	it('hides nav labels when collapsed', async () => {
-		const { queryByText, getByTestId } = render(Sidebar);
-		act(() => {
-			fireEvent.click(getByTestId('sidebar-toggle'));
-		});
-		await waitFor(() => {
-			expect(queryByText('Home')).not.toBeInTheDocument();
-			expect(queryByText('Task Tracker')).not.toBeInTheDocument();
-		});
+		expect(getByText('Chore / Task Tracker')).toBeInTheDocument();
 	});
 
 	it('renders the collapse toggle button', () => {
@@ -54,7 +41,7 @@ describe('Sidebar', () => {
 		expect(getByTestId('sidebar-toggle')).toBeInTheDocument();
 	});
 
-	it('clicking the toggle collapses the sidebar', async () => {
+	it('clicking the toggle adds collapsed class', async () => {
 		const { getByTestId, getByRole } = render(Sidebar);
 		const nav = getByRole('navigation');
 		expect(nav).not.toHaveClass('collapsed');
@@ -66,7 +53,7 @@ describe('Sidebar', () => {
 		});
 	});
 
-	it('clicking the toggle twice expands the sidebar again', async () => {
+	it('clicking the toggle twice removes collapsed class', async () => {
 		const { getByTestId, getByRole } = render(Sidebar);
 		const toggle = getByTestId('sidebar-toggle');
 		act(() => {
@@ -96,17 +83,5 @@ describe('Sidebar', () => {
 		await waitFor(() => {
 			expect(getByRole('navigation')).toHaveClass('collapsed');
 		});
-	});
-
-	it('marks the nav item as active when the path matches', () => {
-		UrlPathProvider.initialize(new TestUrlProvider('/tasks'));
-		const { getByTestId } = render(Sidebar);
-		expect(getByTestId('nav-item-tasks')).toHaveClass('active');
-	});
-
-	it('does not mark non-matching nav items as active', () => {
-		UrlPathProvider.initialize(new TestUrlProvider('/tasks'));
-		const { getByTestId } = render(Sidebar);
-		expect(getByTestId('nav-item-home')).not.toHaveClass('active');
 	});
 });

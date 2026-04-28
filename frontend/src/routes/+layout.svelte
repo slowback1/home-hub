@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 	import MessageBus from '$lib/bus/MessageBus';
 	import UrlPathProvider, { RealUrlProvider } from '$lib/providers/urlPathProvider';
 	import ConfigService from '$lib/services/Config/ConfigService';
@@ -22,7 +23,7 @@
 </svelte:head>
 
 <div class="app-shell">
-	<Sidebar />
+	<Sidebar currentPath={$page.url.pathname} />
 	<ToastWrapper />
 	<main id="content" class="main-content">
 		<slot />

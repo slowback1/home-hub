@@ -9,7 +9,8 @@
 		ChevronLeft,
 		ChevronRight
 	} from 'lucide-svelte';
-	import UrlPathProvider from '$lib/providers/urlPathProvider';
+
+	export let currentPath: string = '/';
 
 	const STORAGE_KEY = 'sidebar_collapsed';
 	const LOGO_ICON_SIZE = 24;
@@ -17,60 +18,61 @@
 
 	const navItems = [
 		{ testId: 'nav-item-home', href: '/', label: 'Home', icon: House },
-		{ testId: 'nav-item-tasks', href: '/tasks', label: 'Task Tracker', icon: CheckSquare },
+		{ testId: 'nav-item-tasks', href: '/tasks', label: 'Chore / Task Tracker', icon: CheckSquare },
 		{ testId: 'nav-item-activity', href: '/activity', label: 'Activity Picker', icon: Shuffle },
 		{ testId: 'nav-item-retro', href: '/retro', label: 'RetroAchievements', icon: Gamepad2 },
 		{ testId: 'nav-item-weather', href: '/weather', label: 'Weather', icon: Cloud }
 	];
 
-	let collapsed = $state(false);
-
-	onMount(() => {
-		collapsed = localStorage.getItem(STORAGE_KEY) === 'true';
-	});
+	let navEl: HTMLElement;
 
 	function toggleCollapse() {
-		collapsed = !collapsed;
-		localStorage.setItem(STORAGE_KEY, String(collapsed));
+		if (!navEl) return;
+		navEl.classList.toggle('collapsed');
+		localStorage.setItem(STORAGE_KEY, String(navEl.classList.contains('collapsed')));
 	}
 
-	function isActive(href: string): boolean {
-		if (href === '/') {
-			return UrlPathProvider.matchesPath('/');
+	onMount(() => {
+		if (localStorage.getItem(STORAGE_KEY) === 'true') {
+			navEl.classList.add('collapsed');
 		}
-		return UrlPathProvider.matchesPath(href);
+		const btn = navEl.querySelector<HTMLElement>('[data-testid="sidebar-toggle"]');
+		btn?.addEventListener('click', toggleCollapse);
+		navEl.setAttribute('data-mounted', 'true');
+		return () => btn?.removeEventListener('click', toggleCollapse);
+	});
+
+	function isActive(href: string, path: string): boolean {
+		if (href === '/') return path === '/';
+		return path.startsWith(href);
 	}
 </script>
 
-<nav class="sidebar" class:collapsed>
+<nav class="sidebar" bind:this={navEl}>
 	<a href="/" class="sidebar-logo" data-testid="sidebar-logo">
-		{#if collapsed}
-			<House size={LOGO_ICON_SIZE} />
-		{:else}
-			<span>HomeHub</span>
-		{/if}
+		<span class="logo-icon"><House size={LOGO_ICON_SIZE} /></span>
+		<span class="logo-text">HomeHub</span>
 	</a>
 
 	<ul class="sidebar-nav">
 		{#each navItems as item (item.href)}
 			{@const Icon = item.icon}
-			<li class="nav-item" class:active={isActive(item.href)} data-testid={item.testId}>
+			<li
+				class="nav-item"
+				class:active={isActive(item.href, currentPath)}
+				data-testid={item.testId}
+			>
 				<a href={item.href} class="nav-link" title={item.label}>
 					<Icon size={NAV_ICON_SIZE} />
-					{#if !collapsed}
-						<span class="nav-label">{item.label}</span>
-					{/if}
+					<span class="nav-label">{item.label}</span>
 				</a>
 			</li>
 		{/each}
 	</ul>
 
-	<button class="collapse-toggle" data-testid="sidebar-toggle" onclick={toggleCollapse}>
-		{#if collapsed}
-			<ChevronRight size={NAV_ICON_SIZE} />
-		{:else}
-			<ChevronLeft size={NAV_ICON_SIZE} />
-		{/if}
+	<button class="collapse-toggle" data-testid="sidebar-toggle">
+		<span class="icon-expand"><ChevronRight size={NAV_ICON_SIZE} /></span>
+		<span class="icon-collapse"><ChevronLeft size={NAV_ICON_SIZE} /></span>
 	</button>
 </nav>
 
@@ -84,16 +86,19 @@
 		border-right: 1px solid var(--color-border-subtle);
 		transition: width 0.2s ease;
 		flex-shrink: 0;
+		overflow: hidden;
 	}
 
-	.sidebar.collapsed {
+	.sidebar:global(.collapsed) {
 		width: 60px;
 	}
 
+	/* Logo */
 	.sidebar-logo {
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		gap: var(--space-2);
 		padding: var(--space-4) var(--space-3);
 		color: var(--color-text-primary);
 		font-size: var(--font-size-lg);
@@ -107,6 +112,24 @@
 		color: var(--color-brand-lighter);
 	}
 
+	.logo-icon {
+		display: none;
+		flex-shrink: 0;
+	}
+
+	.sidebar:global(.collapsed) .logo-icon {
+		display: flex;
+	}
+
+	.logo-text {
+		white-space: nowrap;
+	}
+
+	.sidebar:global(.collapsed) .logo-text {
+		display: none;
+	}
+
+	/* Nav */
 	.sidebar-nav {
 		list-style: none;
 		margin: 0;
@@ -122,7 +145,6 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-3);
-		width: 100%;
 		padding: var(--space-3) var(--space-4);
 		color: var(--color-text-secondary);
 		text-decoration: none;
@@ -151,6 +173,11 @@
 		overflow: hidden;
 	}
 
+	.sidebar:global(.collapsed) .nav-label {
+		display: none;
+	}
+
+	/* Toggle */
 	.collapse-toggle {
 		display: flex;
 		align-items: center;
@@ -167,5 +194,21 @@
 
 	.collapse-toggle:hover {
 		color: var(--color-text-primary);
+	}
+
+	.icon-expand {
+		display: none;
+	}
+
+	.sidebar:global(.collapsed) .icon-expand {
+		display: flex;
+	}
+
+	.icon-collapse {
+		display: flex;
+	}
+
+	.sidebar:global(.collapsed) .icon-collapse {
+		display: none;
 	}
 </style>
