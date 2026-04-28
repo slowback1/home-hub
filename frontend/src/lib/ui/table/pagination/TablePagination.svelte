@@ -65,33 +65,12 @@
 </div>
 
 <style>
-	.table-pagination__base {
-		/* spacing and shaping */
-		--gap-between-buttons: 0.5rem;
-		--button-padding: 0.5rem;
-		--button-border-radius: 0.25rem;
-
-		/* default colors */
-		--background-color: transparent;
-		--border-color: var(--color-font);
-		--color: var(--color-font);
-		--disabled-opacity: 0.5;
-
-		/* active colors */
-		--active-background-color: color-mix(
-			in lab,
-			var(--color-primary-background),
-			var(--color-font) 10%
-		);
-		--active-color: var(--color-primary-font);
-	}
-
 	.table-pagination-wrapper {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
-		gap: 12px;
+		gap: var(--space-4);
 	}
 
 	.table-pagination {
@@ -99,20 +78,36 @@
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
-		gap: var(--gap-between-buttons);
+		gap: var(--space-1);
 	}
 
 	.table-pagination__page-number {
-		background-color: var(--background-color);
-		border: 1px solid var(--border-color);
-		color: var(--color);
-		padding: var(--button-padding);
-		border-radius: var(--button-border-radius);
+		background-color: transparent;
+		border: 1px solid var(--color-border-default);
+		color: var(--color-text-secondary);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-family-primary);
+		font-size: var(--font-size-sm);
 		cursor: pointer;
+		transition:
+			background-color 0.15s ease,
+			color 0.15s ease;
+	}
+
+	.table-pagination__page-number:hover:not(:disabled) {
+		background-color: var(--color-surface-raised);
+		color: var(--color-text-primary);
+	}
+
+	.table-pagination__page-number:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 
 	.table-pagination__page-number--active {
-		background-color: var(--active-background-color);
-		color: var(--active-color);
+		background-color: var(--color-brand);
+		border-color: var(--color-brand-light);
+		color: #fff;
 	}
 </style>

@@ -23,31 +23,44 @@
 
 <style>
 	.toast-item {
+		--toast-background: var(--color-surface-overlay);
+		--toast-color: var(--color-text-primary);
+		--toast-border: var(--color-border-default);
+
 		width: clamp(200px, 25vw, 500px);
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		justify-content: space-between;
-		padding: 8px 4px;
+		gap: var(--space-3);
+		padding: var(--space-3) var(--space-4);
+		border-radius: var(--radius-md);
+		border: 1px solid var(--toast-border);
+		background-color: var(--toast-background);
+		color: var(--toast-color);
 	}
 
 	.toast-item__error {
-		background-color: var(--color-error-light-background);
-		color: var(--color-error-light-font);
+		--toast-background: var(--color-error-surface);
+		--toast-color: var(--color-error-text);
+		--toast-border: var(--color-error);
 	}
 
 	.toast-item__warning {
-		background-color: var(--color-warning-light-background);
-		color: var(--color-warning-light-font);
+		--toast-background: var(--color-warning-surface);
+		--toast-color: var(--color-warning-text);
+		--toast-border: var(--color-warning);
 	}
 
 	.toast-item__success {
-		background-color: var(--color-success-light-background);
-		color: var(--color-success-light-font);
+		--toast-background: var(--color-success-surface);
+		--toast-color: var(--color-success-text);
+		--toast-border: var(--color-success);
 	}
 
 	.toast-item__info {
-		background-color: var(--color-info-light-background);
-		color: var(--color-info-light-font);
+		--toast-background: var(--color-info-surface);
+		--toast-color: var(--color-info-text);
+		--toast-border: var(--color-info);
 	}
 </style>

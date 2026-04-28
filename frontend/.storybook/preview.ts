@@ -1,7 +1,6 @@
 import { type Preview } from '@storybook/svelte';
 import '../src/style/globals.css';
 import '../src/style/reset.css';
-import { withThemeByClassName } from '@storybook/addon-themes';
 
 const preview: Preview = {
 	parameters: {
@@ -11,18 +10,22 @@ const preview: Preview = {
 				color: /(background|color)$/i,
 				date: /Date$/i
 			}
+		},
+		options: {
+			storySort: {
+				order: [
+					'Design Tokens',
+					'Buttons',
+					'Inputs',
+					'Containers',
+					'Feedback',
+					'Navigation',
+					'Data',
+					'Typography'
+				]
+			}
 		}
-	},
-	decorators: [
-		withThemeByClassName({
-			themes: {
-				light: 'light-theme',
-				dark: 'dark-theme'
-			},
-			defaultTheme: 'dark',
-			parentSelector: 'html'
-		})
-	]
+	}
 };
 
 export default preview;

@@ -31,20 +31,23 @@
 	.slider {
 		display: flex;
 		align-items: center;
+		gap: var(--space-3);
+	}
 
-		--slider-background-color: #565656;
-		--slider-accent-color: #32ab32;
-		--slider-button-color: #bdbdbd;
+	.slider__label {
+		font-size: var(--font-size-md);
+		color: var(--color-text-primary);
 	}
 
 	.slider__button {
 		width: 3em;
 		height: 1.6em;
 		position: relative;
-		margin: 0 0 0 0.5em;
-		background: var(--slider-background-color);
+		background: var(--color-border-default);
 		border: none;
-		border-radius: 12px;
+		border-radius: var(--radius-full);
+		cursor: pointer;
+		transition: background-color 0.2s ease;
 	}
 
 	.slider__button::before {
@@ -52,23 +55,24 @@
 		position: absolute;
 		width: 1.3em;
 		height: 1.3em;
-		background: var(--slider-button-color);
+		background: var(--color-text-secondary);
 		top: 0.13em;
-		right: 1.5em;
-		transition: transform 0.3s;
-		border-radius: 12px;
+		left: 0.13em;
+		transition: transform 0.2s ease;
+		border-radius: var(--radius-full);
 	}
 
 	.slider__button[aria-checked='true'] {
-		background-color: var(--slider-accent-color);
+		background-color: var(--color-success);
 	}
 
 	.slider__button[aria-checked='true']::before {
+		background: #fff;
 		transform: translateX(1.3em);
-		transition: transform 0.3s;
 	}
 
-	.slider__button:focus {
-		box-shadow: 0 0px 0px 1px var(--slider-accent-color);
+	.slider__button:focus-visible {
+		outline: 2px solid var(--color-brand-lighter);
+		outline-offset: 2px;
 	}
 </style>

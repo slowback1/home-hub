@@ -30,16 +30,18 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		border: 1px solid var(--color-font);
-		padding: 1rem;
-		border-radius: 12px;
+		gap: var(--space-3);
+		border: 1px solid var(--color-border-subtle);
+		padding: var(--space-4);
+		border-radius: var(--radius-md);
+		background-color: var(--color-surface-raised);
 	}
 
 	.table-filter__fields {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		gap: 12px;
+		gap: var(--space-3);
 		flex-wrap: wrap;
 	}
 

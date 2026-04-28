@@ -62,10 +62,12 @@
 
 	.tooltip {
 		position: absolute;
-		background-color: color-mix(in lab, var(--color-background) 80%, var(--color-font));
-		color: color-mix(in lab, var(--color-background) 20%, var(--color-font));
-		padding: 5px;
-		border-radius: 5px;
+		background-color: var(--color-surface-overlay);
+		color: var(--color-text-primary);
+		border: 1px solid var(--color-border-subtle);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-sm);
+		font-size: var(--font-size-sm);
 		z-index: 10;
 		top: 150%;
 		left: 0;

@@ -23,7 +23,7 @@ public abstract class TestCrud<T> : ICrud<T> where T : class, IIdentifyable
     public Task<T?> GetByIdAsync(string id)
     {
         var item = _items.FirstOrDefault(i => i.Id == id);
-        return Task.FromResult<T?>(item);
+        return Task.FromResult(item);
     }
 
     public Task<T?> UpdateAsync(string id, T item)
@@ -50,7 +50,7 @@ public abstract class TestCrud<T> : ICrud<T> where T : class, IIdentifyable
     public Task<T?> GetByQueryAsync(Expression<Func<T, bool>> query)
     {
         var item = _items.FirstOrDefault(query.Compile());
-        return Task.FromResult<T?>(item);
+        return Task.FromResult(item);
     }
 
     public Task<IEnumerable<T>> QueryAsync(Expression<Func<T, bool>> query)

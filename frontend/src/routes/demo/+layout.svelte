@@ -1,19 +1,36 @@
-﻿<div class="subnav">
-	<a href="/demo/form">Form</a>
-	<a href="/demo/list">List</a>
-	<a href="/demo/content">Content</a>
+<script lang="ts">
+	import Tabs from '$lib/ui/navigation/Tabs.svelte';
+	import { page } from '$app/stores';
+	import { derived } from 'svelte/store';
+
+	const demoTabs = [
+		{ id: '/demo/form', label: 'Form' },
+		{ id: '/demo/list', label: 'List' },
+		{ id: '/demo/content', label: 'Content' }
+	];
+
+	const activeTab = derived(page, ($page) => $page.url.pathname);
+</script>
+
+<div class="demo-layout">
+	<Tabs
+		tabs={demoTabs}
+		activeTab={$activeTab}
+		onTabChange={(id) => history.pushState({}, '', id)}
+	/>
+	<div class="demo-content">
+		<slot />
+	</div>
 </div>
 
-<slot />
-
 <style>
-	.subnav {
+	.demo-layout {
 		display: flex;
-		justify-content: center;
-		margin-bottom: 1rem;
+		flex-direction: column;
+		gap: var(--space-6);
 	}
 
-	.subnav a {
-		margin: 0 1rem;
+	.demo-content {
+		padding-top: var(--space-4);
 	}
 </style>

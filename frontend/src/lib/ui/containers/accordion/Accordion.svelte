@@ -13,6 +13,6 @@
 	.accordion {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: var(--space-2);
 	}
 </style>
