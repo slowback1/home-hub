@@ -1,19 +1,16 @@
 <script lang="ts">
 	import { FeatureFlags } from '$lib/services/FeatureFlag/FeatureFlags';
 	import FeatureToggle from '$lib/utils/FeatureToggle.svelte';
+	import Heading from '$lib/ui/typography/Heading/Heading.svelte';
 </script>
 
 <svelte:head>
-	<title>Svelte Starter Kit</title>
+	<title>HomeHub</title>
 </svelte:head>
 
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
-
-<p>
-	Visit <a href="demo/content">The demo pages</a> to see some of the functionalities of the starter kit!
-</p>
+<Heading level={1}>HomeHub</Heading>
+<p>Select a section from the sidebar to get started.</p>
 
 <FeatureToggle featureFlag={FeatureFlags.DEMO_FEATURE_FLAG}>
-	<p slot="enabled">Looks like you know about feature flags!</p>
+	<p slot="enabled">Feature flags are active.</p>
 </FeatureToggle>
