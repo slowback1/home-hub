@@ -10,3 +10,7 @@ Ideas captured for future refinement. Run the `write-prd` skill to promote a stu
 | [retro-achievements-random-game](retro-achievements-random-game.md) | RetroAchievements Random Game | Picks a random game from a given console via the RetroAchievements API | 2026-04-17 |
 | [random-task-picker](random-task-picker.md) | Random Task Picker | Hourly background job randomly selects a daily activity from a user-defined list | 2026-04-17 |
 | [weather-widget](weather-widget.md) | Weather Widget | Displays current weather for a config-defined location via a third-party weather API | 2026-04-17 |
+| [system-config-infrastructure](system-config-infrastructure.md) | System Config Infrastructure | DB-backed key/value store for runtime app config, replacing config files for non-critical settings | 2026-04-28 |
+| [system-config-ui](system-config-ui.md) | System Config Admin UI | Admin page for viewing and editing database-backed system config values at runtime | 2026-04-28 |
+| [feature-flags-ui](feature-flags-ui.md) | Feature Flags Admin UI | Admin UI for toggling existing feature flags at runtime without code or DB changes | 2026-04-28 |
+| [spit-counter](spit-counter.md) | Spit Counter | Baseball-themed click counter page ported from a standalone side project | 2026-04-28 |
