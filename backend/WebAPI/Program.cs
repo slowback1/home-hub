@@ -1,3 +1,4 @@
+using Common.Interfaces;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using WebAPI.Configuration;
@@ -22,13 +23,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 CrudFactoryConfigurator.ConfigureCrudFactory(builder.Services, builder.Configuration);
 
-// Register AppDbContext only if EntityFramework is selected
+// Register AppDbContext and EF-backed services only if EntityFramework is selected
 var crudImpl = builder.Configuration["CrudFactory:Implementation"]?.ToLower() ?? "inmemory";
 if (crudImpl == "entityframework")
 {
     var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.Services.AddDbContext<EntityFramework.AppDbContext>(options =>
         options.UseNpgsql(connStr));
+    builder.Services.AddScoped<ISystemConfigProvider, EntityFramework.EfSystemConfigProvider>();
 }
 
 var app = builder.Build();
