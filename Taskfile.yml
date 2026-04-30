@@ -73,3 +73,19 @@ tasks:
     desc: Start required services (e.g., Jaeger, PostgreSQL)
     cmds:
       - docker compose -f ./backend/development/docker-compose.yml up --remove-orphans -d
+
+  claude:
+    desc: Run Claude Code in YOLO mode inside an isolated dev container
+    cmds:
+      - docker build -t homehub-claude-dev docker/claude-dev/
+      - |
+        docker run -it --rm \
+          --network host \
+          --group-add $(stat -c '%g' /var/run/docker.sock) \
+          -v "{{.ROOT_DIR}}:/workspace" \
+          -v "$HOME/.claude:/home/claude/.claude" \
+          -v "$HOME/.claude.json:/home/claude/.claude.json" \
+          -v "/var/run/docker.sock:/var/run/docker.sock" \
+          -w /workspace \
+          homehub-claude-dev \
+          claude --dangerously-skip-permissions
