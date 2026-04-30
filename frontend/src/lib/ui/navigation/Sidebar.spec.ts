@@ -84,4 +84,17 @@ describe('Sidebar', () => {
 			expect(getByRole('navigation')).toHaveClass('collapsed');
 		});
 	});
+
+	it('renders the Admin nav item linking to /admin/system-config', () => {
+		const { getByTestId } = render(Sidebar);
+		const item = getByTestId('nav-item-admin');
+		expect(item).toBeInTheDocument();
+		expect(item.querySelector('a')).toHaveAttribute('href', '/admin/system-config');
+	});
+
+	it('marks Admin nav item active when current path starts with /admin/system-config', () => {
+		const { getByTestId } = render(Sidebar, { props: { currentPath: '/admin/system-config' } });
+		const item = getByTestId('nav-item-admin');
+		expect(item).toHaveClass('active');
+	});
 });

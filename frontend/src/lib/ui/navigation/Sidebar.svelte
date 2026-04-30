@@ -6,6 +6,7 @@
 		Shuffle,
 		Gamepad2,
 		Cloud,
+		Settings,
 		ChevronLeft,
 		ChevronRight
 	} from 'lucide-svelte';
@@ -21,7 +22,8 @@
 		{ testId: 'nav-item-tasks', href: '/tasks', label: 'Chore / Task Tracker', icon: CheckSquare },
 		{ testId: 'nav-item-activity', href: '/activity', label: 'Activity Picker', icon: Shuffle },
 		{ testId: 'nav-item-retro', href: '/retro', label: 'RetroAchievements', icon: Gamepad2 },
-		{ testId: 'nav-item-weather', href: '/weather', label: 'Weather', icon: Cloud }
+		{ testId: 'nav-item-weather', href: '/weather', label: 'Weather', icon: Cloud },
+		{ testId: 'nav-item-admin', href: '/admin/system-config', label: 'Admin', icon: Settings }
 	];
 
 	let navEl: HTMLElement;
