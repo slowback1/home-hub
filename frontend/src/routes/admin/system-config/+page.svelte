@@ -2,15 +2,22 @@
 	import { onMount } from 'svelte';
 	import Spinner from '$lib/ui/feedback/Spinner.svelte';
 	import Heading from '$lib/ui/typography/Heading/Heading.svelte';
+	import Button from '$lib/ui/buttons/Button/Button.svelte';
+	import TextBox from '$lib/ui/inputs/TextBox/TextBox.svelte';
 	import SystemConfigApi, { type SystemConfig } from '$lib/api/SystemConfigApi';
+	import ToastService, { ToastVariant } from '$lib/ui/containers/toast/ToastService';
+
+	const api = new SystemConfigApi();
+	const toastService = new ToastService();
 
 	let loading = true;
 	let error: string | null = null;
 	let grouped = new Map<string, SystemConfig[]>();
+	let editingId: string | null = null;
+	let editValue = '';
 
 	onMount(async () => {
 		try {
-			const api = new SystemConfigApi();
 			const entries = await api.getAll();
 			grouped = groupByNamespace(entries);
 		} catch {
@@ -27,6 +34,36 @@
 			map.set(entry.namespace, items);
 			return map;
 		}, new Map<string, SystemConfig[]>());
+	}
+
+	function startEdit(entry: SystemConfig) {
+		editingId = entry.id;
+		editValue = entry.value;
+	}
+
+	async function saveEdit(entry: SystemConfig) {
+		try {
+			const updated = await api.update(entry.namespace, entry.key, editValue);
+			const items = grouped.get(entry.namespace);
+			if (items) {
+				const idx = items.findIndex((e) => e.id === entry.id);
+				if (idx >= 0) items[idx] = updated;
+				grouped = new Map(grouped);
+			}
+			editingId = null;
+			toastService.AddToast({ message: 'Config saved.', variant: ToastVariant.success });
+		} catch {
+			toastService.AddToast({ message: 'Failed to save config.', variant: ToastVariant.error });
+		}
+	}
+
+	function cancelEdit() {
+		editingId = null;
+		editValue = '';
+	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape') cancelEdit();
 	}
 </script>
 
@@ -48,7 +85,36 @@
 					{#each entries as entry (entry.id)}
 						<tr data-testid="config-row-{entry.key}">
 							<td class="cell-key">{entry.key}</td>
-							<td class="cell-value">{entry.value}</td>
+							<td class="cell-value">
+								{#if editingId === entry.id}
+									<div class="edit-row" role="presentation" on:keydown={handleKeydown}>
+										<TextBox label="" id="edit-{entry.key}" bind:value={editValue} />
+										<Button
+											testId="btn-save"
+											variant="primary"
+											size="small"
+											onClick={() => saveEdit(entry)}>Save</Button
+										>
+										<Button
+											testId="btn-cancel"
+											variant="secondary"
+											size="small"
+											onClick={cancelEdit}>Cancel</Button
+										>
+									</div>
+								{:else}
+									<span
+										class="value-display"
+										data-testid="value-{entry.key}"
+										role="button"
+										tabindex="0"
+										on:click={() => startEdit(entry)}
+										on:keydown={(e) => {
+											if (e.key === 'Enter') startEdit(entry);
+										}}>{entry.value}</span
+									>
+								{/if}
+							</td>
 						</tr>
 					{/each}
 				</tbody>
@@ -89,6 +155,25 @@
 	.cell-value {
 		padding: var(--space-3) var(--space-4);
 		color: var(--color-text-primary);
+	}
+
+	.value-display {
+		cursor: pointer;
+	}
+
+	.value-display:hover {
+		color: var(--color-brand-lighter);
+		text-decoration: underline;
+	}
+
+	.edit-row {
+		display: flex;
+		align-items: flex-end;
+		gap: var(--space-2);
+	}
+
+	.edit-row :global(.text-box__label) {
+		display: none;
 	}
 
 	.error {
