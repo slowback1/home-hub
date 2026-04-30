@@ -26,7 +26,8 @@ export default defineConfig({
 			cwd: '..',
 			url: 'http://localhost:5272/HealthCheck',
 			reuseExistingServer: !process.env.CI,
-			timeout: 120000
+			timeout: 120000,
+			env: { ASPNETCORE_ENVIRONMENT: 'E2E' }
 		},
 		{
 			command: 'npm run dev',

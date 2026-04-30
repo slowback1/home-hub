@@ -1,4 +1,6 @@
 using Common.Interfaces;
+using Common.Models;
+using Logic.SystemConfig;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using WebAPI.Configuration;
@@ -31,6 +33,16 @@ if (crudImpl == "entityframework")
     builder.Services.AddDbContext<EntityFramework.AppDbContext>(options =>
         options.UseNpgsql(connStr));
     builder.Services.AddScoped<ISystemConfigProvider, EntityFramework.EfSystemConfigProvider>();
+}
+
+if (builder.Environment.IsEnvironment("E2E"))
+{
+    var e2eEntries = new List<SystemConfig>
+    {
+        new() { Id = "weather::zip_code", Namespace = "weather", Key = "zip_code", Value = "10001", Type = "", IsSecret = false },
+        new() { Id = "weather::api_key",  Namespace = "weather", Key = "api_key",  Value = "test-api-key-1", Type = "", IsSecret = true }
+    };
+    builder.Services.AddSingleton<ISystemConfigProvider>(new DictionarySystemConfigProvider(e2eEntries));
 }
 
 var app = builder.Build();
