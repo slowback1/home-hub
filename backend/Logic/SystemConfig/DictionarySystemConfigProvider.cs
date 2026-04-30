@@ -23,8 +23,7 @@ public class DictionarySystemConfigProvider(IEnumerable<SC> entries) : ISystemCo
 
     public Task<IEnumerable<SC>> GetAllAsync()
     {
-        var results = _entries.Select(e => e.IsSecret ? Mask(e) : e);
-        return Task.FromResult(results);
+        return Task.FromResult<IEnumerable<SC>>(_entries);
     }
 
     public Task<SC> UpdateAsync(string @namespace, string key, string value)

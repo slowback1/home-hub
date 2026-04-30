@@ -38,7 +38,7 @@ public class SystemConfigControllerTests
     }
 
     [Test]
-    public async Task GetAll_ReturnsAllEntries_WithSecretsMasked()
+    public async Task GetAll_ReturnsAllEntries_WithActualValues()
     {
         var client = CreateClient(
             MakeEntry("general", "site_name", "HomeHub"),
@@ -50,7 +50,7 @@ public class SystemConfigControllerTests
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         Assert.That(entries!.Count, Is.EqualTo(2));
         Assert.That(entries.First(e => e.Key == "site_name").Value, Is.EqualTo("HomeHub"));
-        Assert.That(entries.First(e => e.Key == "api_key").Value, Is.EqualTo("***"));
+        Assert.That(entries.First(e => e.Key == "api_key").Value, Is.EqualTo("secret-value"));
     }
 
     [Test]

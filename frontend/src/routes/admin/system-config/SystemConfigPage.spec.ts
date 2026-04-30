@@ -164,6 +164,56 @@ describe('Admin System Config page', () => {
 		expect(getByRole('textbox')).toBeInTheDocument();
 	});
 
+	it('secret entries display masked value by default', async () => {
+		makeApiMock();
+		const { getByTestId, queryByRole } = render(SystemConfigPage);
+		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
+
+		expect(getByTestId('value-api_key').textContent).toBe('••••••••');
+	});
+
+	it('clicking the show toggle reveals the actual value', async () => {
+		makeApiMock();
+		const { getByTestId, queryByRole } = render(SystemConfigPage);
+		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
+
+		fireEvent.click(getByTestId('toggle-api_key'));
+
+		await waitFor(() => expect(getByTestId('value-api_key').textContent).toBe('***'));
+	});
+
+	it('clicking the show toggle again re-masks the value', async () => {
+		makeApiMock();
+		const { getByTestId, queryByRole } = render(SystemConfigPage);
+		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
+
+		fireEvent.click(getByTestId('toggle-api_key'));
+		await waitFor(() => expect(getByTestId('value-api_key').textContent).toBe('***'));
+
+		fireEvent.click(getByTestId('toggle-api_key'));
+		await waitFor(() => expect(getByTestId('value-api_key').textContent).toBe('••••••••'));
+	});
+
+	it('entering edit mode pre-fills input with actual value for secret entries', async () => {
+		makeApiMock();
+		const { getByTestId, queryByRole, getByRole } = render(SystemConfigPage);
+		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
+
+		fireEvent.click(getByTestId('value-api_key'));
+
+		await waitFor(() => expect(getByRole('textbox')).toBeInTheDocument());
+		expect((getByRole('textbox') as HTMLInputElement).value).toBe('***');
+	});
+
+	it('non-secret rows are not masked and have no toggle', async () => {
+		makeApiMock();
+		const { getByTestId, queryByTestId, queryByRole } = render(SystemConfigPage);
+		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
+
+		expect(getByTestId('value-zip_code').textContent).toBe('10001');
+		expect(queryByTestId('toggle-zip_code')).not.toBeInTheDocument();
+	});
+
 	it('clicking Cancel returns the row to display mode', async () => {
 		makeApiMock();
 		const { getByTestId, queryByRole, getByRole } = render(SystemConfigPage);

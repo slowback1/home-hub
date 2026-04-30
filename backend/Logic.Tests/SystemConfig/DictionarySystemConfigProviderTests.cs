@@ -66,7 +66,7 @@ public class DictionarySystemConfigProviderTests
     }
 
     [Test]
-    public async Task GetAllAsync_ReturnsMaskedSecrets()
+    public async Task GetAllAsync_ReturnsActualValues_IncludingSecrets()
     {
         var entries = new[]
         {
@@ -79,7 +79,7 @@ public class DictionarySystemConfigProviderTests
 
         Assert.That(results.Count, Is.EqualTo(2));
         Assert.That(results.First(e => e.Key == "site_name").Value, Is.EqualTo("HomeHub"));
-        Assert.That(results.First(e => e.Key == "api_key").Value, Is.EqualTo("***"));
+        Assert.That(results.First(e => e.Key == "api_key").Value, Is.EqualTo("real-key"));
     }
 
     [Test]

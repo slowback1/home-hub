@@ -81,7 +81,7 @@ public class EfSystemConfigProviderTests
     }
 
     [Test]
-    public async Task GetAllAsync_ReturnsMaskedSecrets()
+    public async Task GetAllAsync_ReturnsActualValues_IncludingSecrets()
     {
         using var ctx = CreateContext();
         var provider = await CreateProvider(ctx,
@@ -92,7 +92,7 @@ public class EfSystemConfigProviderTests
 
         Assert.That(results.Count, Is.EqualTo(2));
         Assert.That(results.First(e => e.Key == "site_name").Value, Is.EqualTo("HomeHub"));
-        Assert.That(results.First(e => e.Key == "api_key").Value, Is.EqualTo("***"));
+        Assert.That(results.First(e => e.Key == "api_key").Value, Is.EqualTo("real-key"));
     }
 
     [Test]

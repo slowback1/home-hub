@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
+	import { Eye, EyeOff } from 'lucide-svelte';
 	import Spinner from '$lib/ui/feedback/Spinner.svelte';
 	import Heading from '$lib/ui/typography/Heading/Heading.svelte';
 	import Button from '$lib/ui/buttons/Button/Button.svelte';
 	import TextBox from '$lib/ui/inputs/TextBox/TextBox.svelte';
 	import SystemConfigApi, { type SystemConfig } from '$lib/api/SystemConfigApi';
 	import ToastService, { ToastVariant } from '$lib/ui/containers/toast/ToastService';
+
+	const MASK = '••••••••';
+	const ICON_SIZE = 16;
 
 	const api = new SystemConfigApi();
 	const toastService = new ToastService();
@@ -15,6 +20,7 @@
 	let grouped = new Map<string, SystemConfig[]>();
 	let editingId: string | null = null;
 	let editValue = '';
+	let revealedIds = new SvelteSet<string>();
 
 	onMount(async () => {
 		try {
@@ -34,6 +40,19 @@
 			map.set(entry.namespace, items);
 			return map;
 		}, new Map<string, SystemConfig[]>());
+	}
+
+	function toggleReveal(id: string) {
+		if (revealedIds.has(id)) {
+			revealedIds.delete(id);
+		} else {
+			revealedIds.add(id);
+		}
+	}
+
+	function displayValue(entry: SystemConfig): string {
+		if (!entry.isSecret) return entry.value;
+		return revealedIds.has(entry.id) ? entry.value : MASK;
 	}
 
 	function startEdit(entry: SystemConfig) {
@@ -103,16 +122,32 @@
 										>
 									</div>
 								{:else}
-									<span
-										class="value-display"
-										data-testid="value-{entry.key}"
-										role="button"
-										tabindex="0"
-										on:click={() => startEdit(entry)}
-										on:keydown={(e) => {
-											if (e.key === 'Enter') startEdit(entry);
-										}}>{entry.value}</span
-									>
+									<div class="value-row">
+										<span
+											class="value-display"
+											data-testid="value-{entry.key}"
+											role="button"
+											tabindex="0"
+											on:click={() => startEdit(entry)}
+											on:keydown={(e) => {
+												if (e.key === 'Enter') startEdit(entry);
+											}}>{displayValue(entry)}</span
+										>
+										{#if entry.isSecret}
+											<button
+												class="toggle-reveal"
+												data-testid="toggle-{entry.key}"
+												aria-label={revealedIds.has(entry.id) ? 'Hide value' : 'Show value'}
+												on:click={() => toggleReveal(entry.id)}
+											>
+												{#if revealedIds.has(entry.id)}
+													<EyeOff size={ICON_SIZE} />
+												{:else}
+													<Eye size={ICON_SIZE} />
+												{/if}
+											</button>
+										{/if}
+									</div>
 								{/if}
 							</td>
 						</tr>
@@ -157,6 +192,12 @@
 		color: var(--color-text-primary);
 	}
 
+	.value-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
 	.value-display {
 		cursor: pointer;
 	}
@@ -164,6 +205,20 @@
 	.value-display:hover {
 		color: var(--color-brand-lighter);
 		text-decoration: underline;
+	}
+
+	.toggle-reveal {
+		background: none;
+		border: none;
+		padding: var(--space-1);
+		cursor: pointer;
+		color: var(--color-text-secondary);
+		display: flex;
+		align-items: center;
+	}
+
+	.toggle-reveal:hover {
+		color: var(--color-text-primary);
 	}
 
 	.edit-row {

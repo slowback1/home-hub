@@ -18,8 +18,7 @@ public class EfSystemConfigProvider(ICrudFactory crudFactory) : ISystemConfigPro
 
     public async Task<IEnumerable<SystemConfig>> GetAllAsync()
     {
-        var all = await _crud.QueryAsync(_ => true);
-        return all.Select(e => e.IsSecret ? Mask(e) : e);
+        return await _crud.QueryAsync(_ => true);
     }
 
     public async Task<SystemConfig> UpdateAsync(string @namespace, string key, string value)
