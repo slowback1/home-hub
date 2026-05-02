@@ -8,7 +8,6 @@ Ideas captured for future refinement. Run the `write-prd` skill to promote a stu
 | [ollama-ai-client-infrastructure](ollama-ai-client-infrastructure.md) | Ollama / AI Client Infrastructure | Shared client layer for talking to local AI models via the home network Ollama instance | 2026-04-17 |
 | [chore-task-tracker](chore-task-tracker.md) | Chore / Task Tracker | Personal task tracker supporting one-off and recurring tasks | 2026-04-17 |
 | [retro-achievements-random-game](retro-achievements-random-game.md) | RetroAchievements Random Game | Picks a random game from a given console via the RetroAchievements API | 2026-04-17 |
-| [random-task-picker](random-task-picker.md) | Random Task Picker | Hourly background job randomly selects a daily activity from a user-defined list | 2026-04-17 |
 | [weather-widget](weather-widget.md) | Weather Widget | Displays current weather for a config-defined location via a third-party weather API | 2026-04-17 |
 | [feature-flags-ui](feature-flags-ui.md) | Feature Flags Admin UI | Admin UI for toggling existing feature flags at runtime without code or DB changes | 2026-04-28 |
 | [spit-counter](spit-counter.md) | Spit Counter | Baseball-themed click counter page ported from a standalone side project | 2026-04-28 |
