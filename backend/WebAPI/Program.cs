@@ -2,6 +2,7 @@ using Common.Interfaces;
 using Common.Models;
 using Hangfire;
 using InMemory;
+using Logic.ActivityPicker;
 using Logic.SystemConfig;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -26,6 +27,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 CrudFactoryConfigurator.ConfigureCrudFactory(builder.Services, builder.Configuration);
+builder.Services.AddScoped<ActivityPickerJob>();
 CorsConfigurator.ConfigureCors(builder.Services, builder.Configuration);
 HangfireConfigurator.ConfigureHangfire(builder.Services, builder.Configuration);
 
@@ -73,6 +75,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors(CorsConfigurator.PolicyName);
 app.UseHangfireDashboard("/admin/hangfire", HangfireConfigurator.DashboardOptions);
+RecurringJob.AddOrUpdate<ActivityPickerJob>("activity-picker", j => j.ExecuteAsync(), "0 * * * *");
 app.MapControllers();
 app.UseHttpsRedirection();
 
