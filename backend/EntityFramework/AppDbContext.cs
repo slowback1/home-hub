@@ -14,4 +14,5 @@ public class AppDbContext : DbContext
     public DbSet<ExampleData> ExampleData => Set<ExampleData>();
     public DbSet<SystemConfig> SystemConfigs => Set<SystemConfig>();
     public DbSet<Activity> Activities => Set<Activity>();
+    public DbSet<ActivityPick> ActivityPicks => Set<ActivityPick>();
 }

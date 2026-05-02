@@ -1,6 +1,7 @@
 using Common.Interfaces;
 using Common.Models;
 using Hangfire;
+using InMemory;
 using Logic.SystemConfig;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -36,6 +37,11 @@ if (crudImpl == "entityframework")
     builder.Services.AddDbContext<EntityFramework.AppDbContext>(options =>
         options.UseNpgsql(connStr));
     builder.Services.AddScoped<ISystemConfigProvider, EntityFramework.EfSystemConfigProvider>();
+    builder.Services.AddScoped<IActivityPickRepository, EntityFramework.EfActivityPickRepository>();
+}
+else
+{
+    builder.Services.AddSingleton<IActivityPickRepository, InMemoryActivityPickRepository>();
 }
 
 if (builder.Environment.IsEnvironment("E2E"))
