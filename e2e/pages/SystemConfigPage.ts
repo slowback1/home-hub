@@ -56,6 +56,8 @@ export class SystemConfigPage {
 
 	async clickShowToggle(key: string): Promise<void> {
 		await this.page.locator(`[data-testid="toggle-${key}"]`).click();
+		// Wait until Svelte flushes the reactivity update and the span no longer shows the mask.
+		await expect(this.page.locator(`[data-testid="value-${key}"]`)).not.toHaveText(this.MASK);
 	}
 
 	async hasSuccessToast(): Promise<boolean> {
