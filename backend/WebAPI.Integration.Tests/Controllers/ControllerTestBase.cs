@@ -115,6 +115,35 @@ public abstract class ControllerTestBase : IDisposable
 		return await Client.SendAsync(request);
 	}
 
+	protected async Task<HttpResponseMessage> PutRawAsync<TRequest>(string url,
+		TRequest body,
+		bool includeToken = true)
+	{
+		var request = new HttpRequestMessage(HttpMethod.Put, url)
+		{
+			Content = JsonContent.Create(body)
+		};
+		if (includeToken)
+		{
+			var token = await GetLoginTokenAsync();
+			request.Headers.Add("X-User-Token", token);
+		}
+
+		return await Client.SendAsync(request);
+	}
+
+	protected async Task<HttpResponseMessage> DeleteRawAsync(string url, bool includeToken = true)
+	{
+		var request = new HttpRequestMessage(HttpMethod.Delete, url);
+		if (includeToken)
+		{
+			var token = await GetLoginTokenAsync();
+			request.Headers.Add("X-User-Token", token);
+		}
+
+		return await Client.SendAsync(request);
+	}
+
 	private async Task<string> GetLoginTokenAsync()
 	{
 		if (HasInitialized)
