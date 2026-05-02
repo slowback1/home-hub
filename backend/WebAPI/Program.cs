@@ -1,10 +1,11 @@
 using Common.Interfaces;
 using Common.Models;
+using Hangfire;
 using Logic.SystemConfig;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using WebAPI.Configuration;
-using Microsoft.EntityFrameworkCore; // Required for UseNpgsql
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 CrudFactoryConfigurator.ConfigureCrudFactory(builder.Services, builder.Configuration);
 CorsConfigurator.ConfigureCors(builder.Services, builder.Configuration);
+HangfireConfigurator.ConfigureHangfire(builder.Services, builder.Configuration);
 
 // Register AppDbContext and EF-backed services only if EntityFramework is selected
 var crudImpl = builder.Configuration["CrudFactory:Implementation"]?.ToLower() ?? "inmemory";
@@ -64,6 +66,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors(CorsConfigurator.PolicyName);
+app.UseHangfireDashboard("/admin/hangfire", HangfireConfigurator.DashboardOptions);
 app.MapControllers();
 app.UseHttpsRedirection();
 
