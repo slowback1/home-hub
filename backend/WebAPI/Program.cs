@@ -24,6 +24,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 CrudFactoryConfigurator.ConfigureCrudFactory(builder.Services, builder.Configuration);
+CorsConfigurator.ConfigureCors(builder.Services, builder.Configuration);
 
 // Register AppDbContext and EF-backed services only if EntityFramework is selected
 var crudImpl = builder.Configuration["CrudFactory:Implementation"]?.ToLower() ?? "inmemory";
@@ -62,6 +63,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors(CorsConfigurator.PolicyName);
 app.MapControllers();
 app.UseHttpsRedirection();
 
