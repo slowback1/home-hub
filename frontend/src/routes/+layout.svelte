@@ -9,12 +9,16 @@
 	import ConfigFeatureFlagProvider from '$lib/services/FeatureFlag/ConfigFeatureFlagProvider';
 	import LocalStorageProvider from '$lib/bus/providers/localStorageProvider';
 	import Sidebar from '$lib/ui/navigation/Sidebar.svelte';
+	import Spinner from '$lib/ui/feedback/Spinner.svelte';
 
-	onMount(() => {
+	let ready = false;
+
+	onMount(async () => {
 		MessageBus.initialize(new LocalStorageProvider());
 		UrlPathProvider.initialize(new RealUrlProvider());
-		ConfigService.initialize();
+		await ConfigService.initialize();
 		FeatureFlagService.initialize(new ConfigFeatureFlagProvider());
+		ready = true;
 	});
 </script>
 
@@ -22,13 +26,19 @@
 	<meta name="description" content="HomeHub" />
 </svelte:head>
 
-<div class="app-shell">
-	<Sidebar currentPath={$page.url.pathname} />
-	<ToastWrapper />
-	<main id="content" class="main-content">
-		<slot />
-	</main>
-</div>
+{#if ready}
+	<div class="app-shell">
+		<Sidebar currentPath={$page.url.pathname} />
+		<ToastWrapper />
+		<main id="content" class="main-content">
+			<slot />
+		</main>
+	</div>
+{:else}
+	<div class="loading-shell">
+		<Spinner />
+	</div>
+{/if}
 
 <style global>
 	@import '../style/reset.css';
@@ -45,5 +55,12 @@
 		display: flex;
 		flex-direction: column;
 		overflow: auto;
+	}
+
+	.loading-shell {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 100vh;
 	}
 </style>

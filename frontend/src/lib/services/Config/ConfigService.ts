@@ -8,8 +8,8 @@ export type ApplicationConfig = {
 };
 
 export default class ConfigService {
-	static initialize() {
-		this.getConfigFromFile();
+	static initialize(): Promise<void> {
+		return this.getConfigFromFile();
 	}
 
 	private static async getConfigFromFile() {
