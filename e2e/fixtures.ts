@@ -3,11 +3,15 @@ import { createBdd } from 'playwright-bdd';
 import { ExamplePage } from './pages/ExamplePage';
 import { DesignSystemPage } from './pages/DesignSystemPage';
 import { SystemConfigPage } from './pages/SystemConfigPage';
+import { ActivityConfigPage } from './pages/ActivityConfigPage';
+import { ActivityPage } from './pages/ActivityPage';
 
 type Fixtures = {
 	examplePage: ExamplePage;
 	designSystemPage: DesignSystemPage;
 	systemConfigPage: SystemConfigPage;
+	activityConfigPage: ActivityConfigPage;
+	activityPage: ActivityPage;
 };
 
 const test = base.extend<Fixtures>({
@@ -19,6 +23,12 @@ const test = base.extend<Fixtures>({
 	},
 	systemConfigPage: async ({ page }, use) => {
 		await use(new SystemConfigPage(page));
+	},
+	activityConfigPage: async ({ page }, use) => {
+		await use(new ActivityConfigPage(page));
+	},
+	activityPage: async ({ page }, use) => {
+		await use(new ActivityPage(page));
 	}
 });
 
