@@ -36,5 +36,15 @@ public class TestHelperController(IActivityPickRepository repository, IWebHostEn
         return NoContent();
     }
 
+    [HttpDelete("activities")]
+    public ActionResult ClearActivities()
+    {
+        if (!env.IsEnvironment("Test") && !env.IsEnvironment("E2E"))
+            return NotFound();
+
+        InMemoryCrud<Activity>.ClearStaticState();
+        return NoContent();
+    }
+
     public record SeedPickRequest(string ActivityName, DateTime PickedAt);
 }
