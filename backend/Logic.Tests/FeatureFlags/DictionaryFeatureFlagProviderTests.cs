@@ -32,4 +32,25 @@ public class DictionaryFeatureFlagProviderTests
 		Assert.That(result.Last().Name, Is.EqualTo("Feature2"));
 		Assert.That(result.Last().IsEnabled, Is.EqualTo(false));
 	}
+
+	[Test]
+	public async Task UpdateAsync_TogglesFlagState()
+	{
+		var provider = new DictionaryFeatureFlagProvider(new Dictionary<string, bool> { ["MY_FLAG"] = false });
+
+		var result = await provider.UpdateAsync("MY_FLAG", true);
+
+		Assert.That(result.Name, Is.EqualTo("MY_FLAG"));
+		Assert.That(result.IsEnabled, Is.True);
+		var flags = (await provider.GetFeatureFlags()).ToList();
+		Assert.That(flags.Single().IsEnabled, Is.True);
+	}
+
+	[Test]
+	public void UpdateAsync_ThrowsKeyNotFoundException_WhenFlagDoesNotExist()
+	{
+		var provider = new DictionaryFeatureFlagProvider(new Dictionary<string, bool>());
+
+		Assert.ThrowsAsync<KeyNotFoundException>(() => provider.UpdateAsync("UNKNOWN", true));
+	}
 }
