@@ -115,6 +115,17 @@ export default abstract class BaseApi {
 		);
 	}
 
+	protected async Patch<T>(
+		url: string,
+		body: any,
+		queryParameters: Record<string, string> = {}
+	): Promise<T> {
+		return this.request<T>(
+			url,
+			this.buildPostyRequestInit(body, HTTP_METHODS.PATCH, queryParameters)
+		);
+	}
+
 	protected async Delete<T>(url: string, queryParameters: Record<string, string> = {}): Promise<T> {
 		return this.request<T>(url, { method: HTTP_METHODS.DELETE, queryParameters });
 	}
@@ -124,5 +135,6 @@ const HTTP_METHODS = {
 	GET: 'GET',
 	POST: 'POST',
 	PUT: 'PUT',
+	PATCH: 'PATCH',
 	DELETE: 'DELETE'
 };
