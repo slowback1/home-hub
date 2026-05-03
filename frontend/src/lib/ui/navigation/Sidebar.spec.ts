@@ -97,4 +97,10 @@ describe('Sidebar', () => {
 		const item = getByTestId('nav-item-admin');
 		expect(item).toHaveClass('active');
 	});
+
+	it('marks Admin nav item active when current path is /admin/feature-flags', () => {
+		const { getByTestId } = render(Sidebar, { props: { currentPath: '/admin/feature-flags' } });
+		const item = getByTestId('nav-item-admin');
+		expect(item).toHaveClass('active');
+	});
 });

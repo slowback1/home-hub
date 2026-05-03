@@ -23,7 +23,13 @@
 		{ testId: 'nav-item-activity', href: '/activity', label: 'Activity Picker', icon: Shuffle },
 		{ testId: 'nav-item-retro', href: '/retro', label: 'RetroAchievements', icon: Gamepad2 },
 		{ testId: 'nav-item-weather', href: '/weather', label: 'Weather', icon: Cloud },
-		{ testId: 'nav-item-admin', href: '/admin/system-config', label: 'Admin', icon: Settings }
+		{
+			testId: 'nav-item-admin',
+			href: '/admin/system-config',
+			label: 'Admin',
+			icon: Settings,
+			activePath: '/admin'
+		}
 	];
 
 	let navEl: HTMLElement;
@@ -44,9 +50,10 @@
 		return () => btn?.removeEventListener('click', toggleCollapse);
 	});
 
-	function isActive(href: string, path: string): boolean {
-		if (href === '/') return path === '/';
-		return path.startsWith(href);
+	function isActive(href: string, path: string, activePath?: string): boolean {
+		const prefix = activePath ?? href;
+		if (prefix === '/') return path === '/';
+		return path.startsWith(prefix);
 	}
 </script>
 
@@ -61,7 +68,7 @@
 			{@const Icon = item.icon}
 			<li
 				class="nav-item"
-				class:active={isActive(item.href, currentPath)}
+				class:active={isActive(item.href, currentPath, item.activePath)}
 				data-testid={item.testId}
 			>
 				<a href={item.href} class="nav-link" title={item.label}>
