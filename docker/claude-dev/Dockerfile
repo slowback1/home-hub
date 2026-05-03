@@ -13,6 +13,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Playwright system dependencies for Chromium (must run as root)
+RUN npx -y playwright@1.49.0 install-deps chromium
+
 RUN sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
 
 RUN npm install -g @anthropic-ai/claude-code
