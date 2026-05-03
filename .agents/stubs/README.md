@@ -13,3 +13,5 @@ Ideas captured for future refinement. Run the `write-prd` skill to promote a stu
 | [spit-counter](spit-counter.md) | Spit Counter | Baseball-themed click counter page ported from a standalone side project | 2026-04-28 |
 | [epub-to-audiobook-gpu-service](epub-to-audiobook-gpu-service.md) | Epub-to-Audiobook GPU Service | Standalone GPU microservice wrapping the ai-epub-to-audiobook script with an HTTP API for TTS conversion jobs | 2026-05-03 |
 | [epub-to-audiobook-ui](epub-to-audiobook-ui.md) | Epub-to-Audiobook UI | Dashboard page for uploading an epub and converting it to an audiobook via the GPU TTS service | 2026-05-03 |
+| [customizable-dashboard-skeleton](customizable-dashboard-skeleton.md) | Customizable Dashboard Skeleton | Configurable widget grid overview page with persistent per-slot layout preferences | 2026-05-03 |
+| [dashboard-widgets](dashboard-widgets.md) | Dashboard Widgets | Slimmed-down widget components for each completed feature, slotting into the dashboard grid | 2026-05-03 |
