@@ -6,6 +6,8 @@ import UrlEncodingMiddleware from '$lib/api/middleware/UrlEncodingMiddleware';
 
 export type RequestParameters = RequestInit & { queryParameters?: Record<string, string> };
 
+const HTTP_NO_CONTENT = 204;
+
 export default abstract class BaseApi {
 	private readonly middlewares: IRequestMiddleware[] = [];
 	protected constructor() {
@@ -26,7 +28,7 @@ export default abstract class BaseApi {
 
 		const res = await this.runRequest(apiRequest);
 
-		if (res.status === 204) return undefined as T;
+		if (res.status === HTTP_NO_CONTENT) return undefined as T;
 		return res.json();
 	}
 

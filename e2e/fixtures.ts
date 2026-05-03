@@ -5,6 +5,7 @@ import { DesignSystemPage } from './pages/DesignSystemPage';
 import { SystemConfigPage } from './pages/SystemConfigPage';
 import { ActivityConfigPage } from './pages/ActivityConfigPage';
 import { ActivityPage } from './pages/ActivityPage';
+import { FeatureFlagsPage } from './pages/FeatureFlagsPage';
 
 type Fixtures = {
 	examplePage: ExamplePage;
@@ -12,6 +13,7 @@ type Fixtures = {
 	systemConfigPage: SystemConfigPage;
 	activityConfigPage: ActivityConfigPage;
 	activityPage: ActivityPage;
+	featureFlagsPage: FeatureFlagsPage;
 };
 
 const test = base.extend<Fixtures>({
@@ -29,6 +31,9 @@ const test = base.extend<Fixtures>({
 	},
 	activityPage: async ({ page }, use) => {
 		await use(new ActivityPage(page));
+	},
+	featureFlagsPage: async ({ page }, use) => {
+		await use(new FeatureFlagsPage(page));
 	}
 });
 
