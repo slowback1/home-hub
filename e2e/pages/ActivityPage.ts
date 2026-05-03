@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 
-const BACKEND_URL = 'http://localhost:5272';
+const BACKEND_URL = 'http://localhost:5273';
 
 export class ActivityPage {
 	constructor(private readonly page: Page) {}

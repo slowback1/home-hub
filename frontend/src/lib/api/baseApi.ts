@@ -26,6 +26,7 @@ export default abstract class BaseApi {
 
 		const res = await this.runRequest(apiRequest);
 
+		if (res.status === 204) return undefined as T;
 		return res.json();
 	}
 

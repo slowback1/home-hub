@@ -1,24 +1,27 @@
 using Common.Interfaces;
 using Common.Models;
-using InMemory;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers;
 
 /// <summary>
-/// Test-only endpoints for seeding and clearing state. Returns 404 outside of Test/E2E environments.
+/// Test-only endpoints for seeding and clearing state. Returns 404 in Production.
 /// </summary>
 [Route("api/test")]
-public class TestHelperController(IActivityPickRepository repository, IWebHostEnvironment env)
-    : ControllerBase
+public class TestHelperController(
+    IActivityPickRepository pickRepository,
+    ICrudFactory crudFactory,
+    IWebHostEnvironment env) : ControllerBase
 {
+    private bool IsAllowed =>
+        env.IsEnvironment("Test") || env.IsEnvironment("E2E") || env.IsDevelopment();
+
     [HttpPost("activity-picks")]
     public async Task<ActionResult> SeedActivityPick([FromBody] SeedPickRequest request)
     {
-        if (!env.IsEnvironment("Test") && !env.IsEnvironment("E2E"))
-            return NotFound();
+        if (!IsAllowed) return NotFound();
 
-        await repository.WriteAsync(new ActivityPick
+        await pickRepository.WriteAsync(new ActivityPick
         {
             ActivityName = request.ActivityName,
             PickedAt = request.PickedAt
@@ -27,22 +30,24 @@ public class TestHelperController(IActivityPickRepository repository, IWebHostEn
     }
 
     [HttpDelete("activity-picks")]
-    public ActionResult ClearActivityPicks()
+    public async Task<ActionResult> ClearActivityPicks()
     {
-        if (!env.IsEnvironment("Test") && !env.IsEnvironment("E2E"))
-            return NotFound();
+        if (!IsAllowed) return NotFound();
 
-        InMemoryActivityPickRepository.ClearStaticState();
+        await pickRepository.ClearAllAsync();
         return NoContent();
     }
 
     [HttpDelete("activities")]
-    public ActionResult ClearActivities()
+    public async Task<ActionResult> ClearActivities()
     {
-        if (!env.IsEnvironment("Test") && !env.IsEnvironment("E2E"))
-            return NotFound();
+        if (!IsAllowed) return NotFound();
 
-        InMemoryCrud<Activity>.ClearStaticState();
+        var crud = crudFactory.GetCrud<Activity>();
+        var all = await crud.QueryAsync(_ => true);
+        foreach (var activity in all)
+            await crud.DeleteAsync(activity.Id);
+
         return NoContent();
     }
 

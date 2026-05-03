@@ -21,4 +21,6 @@ public class EfActivityPickRepository(AppDbContext db) : IActivityPickRepository
             .Where(p => p.PickedAt >= from && p.PickedAt <= to)
             .OrderBy(p => p.PickedAt)
             .ToListAsync();
+
+    public async Task ClearAllAsync() => await db.ActivityPicks.ExecuteDeleteAsync();
 }

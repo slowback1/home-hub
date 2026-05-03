@@ -30,5 +30,11 @@ public class InMemoryActivityPickRepository : IActivityPickRepository
         return Task.FromResult(results);
     }
 
+    public Task ClearAllAsync()
+    {
+        Picks.Clear();
+        return Task.CompletedTask;
+    }
+
     public static void ClearStaticState() => Picks.Clear();
 }

@@ -5,7 +5,7 @@ const CONFIG_PATH = path.resolve(__dirname, '../frontend/static/config/config.js
 const BACKUP_PATH = CONFIG_PATH + '.bak';
 
 const E2E_CONFIG = {
-	baseUrl: 'http://localhost:5272',
+	baseUrl: 'http://localhost:5273',
 	bigBeanSpawnChance: 0.05,
 	bigBeanTimeoutMs: 2000,
 	featureFlags: [

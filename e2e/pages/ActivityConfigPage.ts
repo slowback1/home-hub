@@ -9,7 +9,7 @@ export class ActivityConfigPage {
 	}
 
 	async addActivity(name: string, weight: number): Promise<void> {
-		await this.page.fill('[data-testid="new-activity-name"] input', name);
+		await this.page.fill('[data-testid="new-activity-name"]', name);
 		await this.page.click(`[data-testid="new-weight-btn-${weight}"]`);
 		await this.page.click('[data-testid="add-activity-btn"]');
 		await this.page.waitForSelector(`[data-testid="activity-row-${name}"]`, { state: 'visible' });

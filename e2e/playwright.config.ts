@@ -22,12 +22,12 @@ export default defineConfig({
 	],
 	webServer: [
 		{
-			command: 'dotnet run --project backend/WebAPI',
+			command: 'dotnet run --project backend/WebAPI --no-launch-profile',
 			cwd: '..',
-			url: 'http://localhost:5272/HealthCheck',
+			url: 'http://localhost:5273/HealthCheck',
 			reuseExistingServer: !process.env.CI,
 			timeout: 120000,
-			env: { ASPNETCORE_ENVIRONMENT: 'E2E' }
+			env: { ASPNETCORE_ENVIRONMENT: 'E2E', ASPNETCORE_URLS: 'http://localhost:5273' }
 		},
 		{
 			command: 'npm run dev',

@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 import { Given, When, Then, Before } from '../fixtures';
 
-const BACKEND_URL = 'http://localhost:5272';
+const BACKEND_URL = 'http://localhost:5273';
 
 Before({ tags: '@activity' }, async ({ request }) => {
 	await request.delete(`${BACKEND_URL}/api/test/activities`);

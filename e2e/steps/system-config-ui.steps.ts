@@ -1,13 +1,15 @@
 import { expect } from '@playwright/test';
 import { Given, When, Then, Before } from '../fixtures';
 
+const BACKEND_URL = 'http://localhost:5273';
+
 // Reset E2E seed data before each admin scenario so tests don't bleed state
 // into each other via the in-memory DictionarySystemConfigProvider singleton.
 Before({ tags: '@admin' }, async ({ request }) => {
-	await request.put('http://localhost:5272/api/system-config/weather/zip_code', {
+	await request.put(`${BACKEND_URL}/api/system-config/weather/zip_code`, {
 		data: { value: '10001' }
 	});
-	await request.put('http://localhost:5272/api/system-config/weather/api_key', {
+	await request.put(`${BACKEND_URL}/api/system-config/weather/api_key`, {
 		data: { value: 'test-api-key-1' }
 	});
 });
