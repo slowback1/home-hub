@@ -3,6 +3,7 @@ using Common.Models;
 using Hangfire;
 using InMemory;
 using Logic.ActivityPicker;
+using Logic.FeatureFlags;
 using Logic.SystemConfig;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -40,10 +41,20 @@ if (crudImpl == "entityframework")
         options.UseNpgsql(connStr));
     builder.Services.AddScoped<ISystemConfigProvider, EntityFramework.EfSystemConfigProvider>();
     builder.Services.AddScoped<IActivityPickRepository, EntityFramework.EfActivityPickRepository>();
+    builder.Services.AddScoped<IFeatureFlagProvider, EntityFramework.EntityFrameworkFeatureFlagProvider>();
+    builder.Services.AddScoped<IFeatureFlagRepository, EntityFramework.EntityFrameworkFeatureFlagRepository>();
+    builder.Services.AddScoped<UpdateFeatureFlagUseCase>();
 }
 else
 {
     builder.Services.AddSingleton<IActivityPickRepository, InMemoryActivityPickRepository>();
+    var inMemoryFlagStore = new DictionaryFeatureFlagProvider(new System.Collections.Generic.Dictionary<string, bool>
+    {
+        ["DEMO_FEATURE_FLAG"] = false
+    });
+    builder.Services.AddSingleton<IFeatureFlagProvider>(inMemoryFlagStore);
+    builder.Services.AddSingleton<IFeatureFlagRepository>(inMemoryFlagStore);
+    builder.Services.AddSingleton<UpdateFeatureFlagUseCase>();
 }
 
 if (builder.Environment.IsEnvironment("E2E"))

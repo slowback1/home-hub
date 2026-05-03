@@ -6,7 +6,8 @@ using Common.Models;
 
 namespace Logic.FeatureFlags;
 
-public class DictionaryFeatureFlagProvider(Dictionary<string, bool> featureFlags) : IFeatureFlagProvider
+public class DictionaryFeatureFlagProvider(Dictionary<string, bool> featureFlags)
+    : IFeatureFlagProvider, IFeatureFlagRepository
 {
     public Task<IEnumerable<FeatureFlag>> GetFeatureFlags()
     {
@@ -15,5 +16,14 @@ public class DictionaryFeatureFlagProvider(Dictionary<string, bool> featureFlags
             Name = kvp.Key,
             IsEnabled = kvp.Value
         }));
+    }
+
+    public Task<FeatureFlag> UpdateAsync(string name, bool isEnabled)
+    {
+        if (!featureFlags.ContainsKey(name))
+            throw new KeyNotFoundException($"Feature flag '{name}' not found.");
+
+        featureFlags[name] = isEnabled;
+        return Task.FromResult(new FeatureFlag { Name = name, IsEnabled = isEnabled });
     }
 }

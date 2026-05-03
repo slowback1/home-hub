@@ -15,4 +15,11 @@ public class AppDbContext : DbContext
     public DbSet<SystemConfig> SystemConfigs => Set<SystemConfig>();
     public DbSet<Activity> Activities => Set<Activity>();
     public DbSet<ActivityPick> ActivityPicks => Set<ActivityPick>();
+    public DbSet<FeatureFlag> FeatureFlags => Set<FeatureFlag>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<FeatureFlag>().HasKey(f => f.Name);
+    }
 }
