@@ -2,6 +2,7 @@ import os
 import signal
 import shutil
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, Form, status
+from fastapi.responses import FileResponse
 from app.auth import require_api_key
 from app.database import create_job, get_job, list_jobs, update_job_status
 
@@ -75,3 +76,46 @@ def cancel_job(job_id: str) -> None:
     job_dir = os.path.join(os.getenv("JOBS_DIR", "/data/jobs"), job_id)
     if os.path.isdir(job_dir):
         shutil.rmtree(job_dir)
+
+
+def _find_m4b(job_dir: str) -> str | None:
+    """Return the path to the M4B file in job_dir, or None if not found."""
+    for name in os.listdir(job_dir) if os.path.isdir(job_dir) else []:
+        if name.endswith(".m4b"):
+            return os.path.join(job_dir, name)
+    return None
+
+
+@router.get("/{job_id}/file", dependencies=[Depends(require_api_key)])
+def download_file(job_id: str) -> FileResponse:
+    db_path = get_db_path()
+    job = get_job(db_path, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job["status"] != "completed":
+        raise HTTPException(status_code=409, detail=f"Job is not completed (status: {job['status']})")
+    job_dir = os.path.join(os.getenv("JOBS_DIR", "/data/jobs"), job_id)
+    m4b_path = _find_m4b(job_dir)
+    if m4b_path is None:
+        raise HTTPException(status_code=410, detail="File has already been deleted")
+    filename = os.path.basename(m4b_path)
+    return FileResponse(
+        path=m4b_path,
+        media_type="audio/mp4",
+        filename=filename,
+    )
+
+
+@router.delete("/{job_id}/file", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_api_key)])
+def delete_file(job_id: str) -> None:
+    db_path = get_db_path()
+    job = get_job(db_path, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job["status"] != "completed":
+        raise HTTPException(status_code=409, detail=f"Job is not completed (status: {job['status']})")
+    job_dir = os.path.join(os.getenv("JOBS_DIR", "/data/jobs"), job_id)
+    m4b_path = _find_m4b(job_dir)
+    if m4b_path is None:
+        raise HTTPException(status_code=404, detail="File not found or already deleted")
+    os.remove(m4b_path)
