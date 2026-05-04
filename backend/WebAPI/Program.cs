@@ -76,6 +76,15 @@ if (builder.Environment.IsEnvironment("E2E"))
                 new SystemConfigOption { SystemConfigId = "weather::provider", Value = "mock", Label = "Mock" },
                 new SystemConfigOption { SystemConfigId = "weather::provider", Value = "openweathermap", Label = "Open Weather Map" }
             ]
+        },
+        new()
+        {
+            Id = "weather::units", Namespace = "weather", Key = "units", Value = "imperial", Type = "select", IsSecret = false,
+            Options =
+            [
+                new SystemConfigOption { SystemConfigId = "weather::units", Value = "imperial", Label = "Imperial (°F, mph)" },
+                new SystemConfigOption { SystemConfigId = "weather::units", Value = "metric", Label = "Metric (°C, km/h)" }
+            ]
         }
     };
     builder.Services.AddSingleton<ISystemConfigProvider>(new DictionarySystemConfigProvider(e2eEntries));
