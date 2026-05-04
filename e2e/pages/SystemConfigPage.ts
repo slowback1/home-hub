@@ -76,6 +76,30 @@ export class SystemConfigPage {
 		return this.page.locator('role=textbox').isVisible();
 	}
 
+	async hasSelectField(label: string, sectionHeader: string): Promise<boolean> {
+		throw new Error('not implemented');
+	}
+
+	async getSelectOptions(label: string): Promise<string[]> {
+		throw new Error('not implemented');
+	}
+
+	async selectDropdownOption(label: string, option: string): Promise<void> {
+		throw new Error('not implemented');
+	}
+
+	async getSelectValue(label: string): Promise<string> {
+		throw new Error('not implemented');
+	}
+
+	async hasSectionHeader(header: string): Promise<boolean> {
+		throw new Error('not implemented');
+	}
+
+	async hasFieldLabel(label: string, sectionHeader: string): Promise<boolean> {
+		throw new Error('not implemented');
+	}
+
 	async clickEntryValueWithErrorOnSave(key: string): Promise<void> {
 		await this.page.route('**/api/system-config/**', (route) => {
 			if (route.request().method() === 'PUT') {
