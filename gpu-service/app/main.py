@@ -1,9 +1,9 @@
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends
-from app.database import init_db, list_jobs
-from app.auth import require_api_key
+from fastapi import FastAPI
+from app.database import init_db
 from app.routers import voice_samples
+from app.routers import jobs
 
 
 def get_db_path() -> str:
@@ -21,13 +21,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Epub-to-Audiobook GPU Service", lifespan=lifespan)
 
 app.include_router(voice_samples.router)
+app.include_router(jobs.router)
 
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
-
-
-@app.get("/jobs", dependencies=[Depends(require_api_key)])
-def list_jobs_route():
-    return list_jobs(get_db_path())
