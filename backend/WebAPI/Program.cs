@@ -5,10 +5,12 @@ using InMemory;
 using Logic.ActivityPicker;
 using Logic.FeatureFlags;
 using Logic.SystemConfig;
+using Logic.Weather;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using WebAPI.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +91,23 @@ if (builder.Environment.IsEnvironment("E2E"))
     };
     builder.Services.AddSingleton<ISystemConfigProvider>(new DictionarySystemConfigProvider(e2eEntries));
 }
+
+// Weather provider — resolved per-request based on weather::provider config value
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<WeatherService>();
+builder.Services.AddScoped<MockWeatherProvider>();
+builder.Services.AddHttpClient<OpenWeatherMapProvider>();
+builder.Services.AddScoped<OpenWeatherMapProvider>();
+builder.Services.AddScoped<IWeatherProvider>(sp =>
+{
+    var cfg = sp.GetRequiredService<ISystemConfigProvider>();
+    string key;
+    try { key = cfg.GetAsync("weather", "provider").GetAwaiter().GetResult().Value; }
+    catch { key = "mock"; }
+    return key == "openweathermap"
+        ? sp.GetRequiredService<OpenWeatherMapProvider>()
+        : sp.GetRequiredService<MockWeatherProvider>();
+});
 
 var app = builder.Build();
 
