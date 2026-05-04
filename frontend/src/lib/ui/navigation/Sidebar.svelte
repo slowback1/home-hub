@@ -10,6 +10,10 @@
 		ChevronLeft,
 		ChevronRight
 	} from 'lucide-svelte';
+	import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
+	import { FeatureFlags } from '$lib/services/FeatureFlag/FeatureFlags';
+	import MessageBus from '$lib/bus/MessageBus';
+	import { Messages } from '$lib/bus/Messages';
 
 	export let currentPath: string = '/';
 
@@ -19,10 +23,34 @@
 
 	const navItems = [
 		{ testId: 'nav-item-home', href: '/', label: 'Home', icon: House },
-		{ testId: 'nav-item-tasks', href: '/tasks', label: 'Chore / Task Tracker', icon: CheckSquare },
-		{ testId: 'nav-item-activity', href: '/activity', label: 'Activity Picker', icon: Shuffle },
-		{ testId: 'nav-item-retro', href: '/retro', label: 'RetroAchievements', icon: Gamepad2 },
-		{ testId: 'nav-item-weather', href: '/weather', label: 'Weather', icon: Cloud },
+		{
+			testId: 'nav-item-tasks',
+			href: '/tasks',
+			label: 'Chore / Task Tracker',
+			icon: CheckSquare,
+			flag: FeatureFlags.CHORE_TASK_TRACKER_ENABLED
+		},
+		{
+			testId: 'nav-item-activity',
+			href: '/activity',
+			label: 'Activity Picker',
+			icon: Shuffle,
+			flag: FeatureFlags.ACTIVITY_PICKER_ENABLED
+		},
+		{
+			testId: 'nav-item-retro',
+			href: '/retro',
+			label: 'RetroAchievements',
+			icon: Gamepad2,
+			flag: FeatureFlags.RETRO_ACHIEVEMENTS_ENABLED
+		},
+		{
+			testId: 'nav-item-weather',
+			href: '/weather',
+			label: 'Weather',
+			icon: Cloud,
+			flag: FeatureFlags.WEATHER_ENABLED
+		},
 		{
 			testId: 'nav-item-admin',
 			href: '/admin/system-config',
@@ -31,6 +59,12 @@
 			activePath: '/admin'
 		}
 	];
+
+	let enabledFlags = new Set(
+		FeatureFlagService.featureFlags.filter((f) => f.isEnabled).map((f) => f.name)
+	);
+
+	$: visibleNavItems = navItems.filter((item) => !item.flag || enabledFlags.has(item.flag));
 
 	let navEl: HTMLElement;
 
@@ -47,7 +81,17 @@
 		const btn = navEl.querySelector<HTMLElement>('[data-testid="sidebar-toggle"]');
 		btn?.addEventListener('click', toggleCollapse);
 		navEl.setAttribute('data-mounted', 'true');
-		return () => btn?.removeEventListener('click', toggleCollapse);
+
+		const unsubscribe = MessageBus.subscribe(Messages.FeatureFlagsChanged, () => {
+			enabledFlags = new Set(
+				FeatureFlagService.featureFlags.filter((f) => f.isEnabled).map((f) => f.name)
+			);
+		});
+
+		return () => {
+			btn?.removeEventListener('click', toggleCollapse);
+			unsubscribe();
+		};
 	});
 
 	function isActive(href: string, path: string, activePath?: string): boolean {
@@ -64,7 +108,7 @@
 	</a>
 
 	<ul class="sidebar-nav">
-		{#each navItems as item (item.href)}
+		{#each visibleNavItems as item (item.href)}
 			{@const Icon = item.icon}
 			<li
 				class="nav-item"

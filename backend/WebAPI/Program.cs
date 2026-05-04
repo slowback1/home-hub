@@ -50,7 +50,11 @@ else
     builder.Services.AddSingleton<IActivityPickRepository, InMemoryActivityPickRepository>();
     var inMemoryFlagStore = new DictionaryFeatureFlagProvider(new System.Collections.Generic.Dictionary<string, bool>
     {
-        ["DEMO_FEATURE_FLAG"] = false
+        ["DEMO_FEATURE_FLAG"] = false,
+        ["CHORE_TASK_TRACKER_ENABLED"] = true,
+        ["ACTIVITY_PICKER_ENABLED"] = true,
+        ["RETRO_ACHIEVEMENTS_ENABLED"] = true,
+        ["WEATHER_ENABLED"] = true
     });
     builder.Services.AddSingleton<IFeatureFlagProvider>(inMemoryFlagStore);
     builder.Services.AddSingleton<IFeatureFlagRepository>(inMemoryFlagStore);

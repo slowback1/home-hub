@@ -6,7 +6,7 @@
 	import ConfigService from '$lib/services/Config/ConfigService';
 	import ToastWrapper from '$lib/ui/containers/toast/ToastWrapper.svelte';
 	import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
-	import ConfigFeatureFlagProvider from '$lib/services/FeatureFlag/ConfigFeatureFlagProvider';
+	import ApiFeatureFlagProvider from '$lib/services/FeatureFlag/ApiFeatureFlagProvider';
 	import LocalStorageProvider from '$lib/bus/providers/localStorageProvider';
 	import Sidebar from '$lib/ui/navigation/Sidebar.svelte';
 	import Spinner from '$lib/ui/feedback/Spinner.svelte';
@@ -17,7 +17,7 @@
 		MessageBus.initialize(new LocalStorageProvider());
 		UrlPathProvider.initialize(new RealUrlProvider());
 		await ConfigService.initialize();
-		FeatureFlagService.initialize(new ConfigFeatureFlagProvider());
+		FeatureFlagService.initialize(new ApiFeatureFlagProvider());
 		ready = true;
 	});
 </script>

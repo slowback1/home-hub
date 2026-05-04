@@ -1,14 +1,25 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/svelte';
 import { beforeEach, afterEach } from 'vitest';
 import Sidebar from './Sidebar.svelte';
+import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
+import { FeatureFlags } from '$lib/services/FeatureFlag/FeatureFlags';
+
+const ALL_NAV_FLAGS_ENABLED = [
+	{ name: FeatureFlags.CHORE_TASK_TRACKER_ENABLED, isEnabled: true },
+	{ name: FeatureFlags.ACTIVITY_PICKER_ENABLED, isEnabled: true },
+	{ name: FeatureFlags.RETRO_ACHIEVEMENTS_ENABLED, isEnabled: true },
+	{ name: FeatureFlags.WEATHER_ENABLED, isEnabled: true }
+];
 
 describe('Sidebar', () => {
 	beforeEach(() => {
 		localStorage.clear();
+		FeatureFlagService.featureFlags = ALL_NAV_FLAGS_ENABLED;
 	});
 
 	afterEach(() => {
 		localStorage.clear();
+		FeatureFlagService.featureFlags = [];
 	});
 
 	it('renders a nav element', () => {
