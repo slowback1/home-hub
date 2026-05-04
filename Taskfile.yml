@@ -13,6 +13,10 @@ includes:
     taskfile: ./e2e/Taskfile.yml
     dir: ./e2e
     internal: true
+  gpu-service:
+    taskfile: ./gpu-service/Taskfile.yml
+    dir: ./gpu-service
+    internal: true
 
 tasks:
   setup:
@@ -39,6 +43,7 @@ tasks:
     cmds:
       - task: backend:precommit
       - task: frontend:precommit
+      - task: gpu-service:precommit
 
   help:
     desc: Show available tasks

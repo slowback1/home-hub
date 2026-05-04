@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  test:
+    desc: Run all gpu-service tests
+    cmds:
+      - /home/claude/.local/bin/pytest tests/ -v
+
+  precommit:
+    desc: Run pre-commit checks for gpu-service
+    cmds:
+      - /home/claude/.local/bin/pytest tests/ -v

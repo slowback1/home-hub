@@ -1,0 +1,22 @@
+services:
+  gpu-service:
+    build: .
+    ports:
+      - "8765:8765"
+    env_file:
+      - .env
+    volumes:
+      - jobs_data:/data/jobs
+      - voice_samples_data:/data/voice-samples
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+volumes:
+  jobs_data:
+  voice_samples_data:
