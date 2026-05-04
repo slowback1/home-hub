@@ -25,7 +25,8 @@ public class SystemConfigDiTests
                     services.AddDbContext<AppDbContext>(options =>
                         options.UseInMemoryDatabase("SystemConfigDiTests"));
 
-                    services.AddScoped<ISystemConfigProvider, EfSystemConfigProvider>();
+                    services.AddScoped<ISystemConfigProvider>(sp =>
+                        new EfSystemConfigProvider(sp.GetRequiredService<AppDbContext>()));
                 });
             });
 

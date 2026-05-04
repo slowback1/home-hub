@@ -39,7 +39,8 @@ if (crudImpl == "entityframework")
     var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
     builder.Services.AddDbContext<EntityFramework.AppDbContext>(options =>
         options.UseNpgsql(connStr));
-    builder.Services.AddScoped<ISystemConfigProvider, EntityFramework.EfSystemConfigProvider>();
+    builder.Services.AddScoped<ISystemConfigProvider>(sp =>
+        new EntityFramework.EfSystemConfigProvider(sp.GetRequiredService<EntityFramework.AppDbContext>()));
     builder.Services.AddScoped<IActivityPickRepository, EntityFramework.EfActivityPickRepository>();
     builder.Services.AddScoped<IFeatureFlagProvider, EntityFramework.EntityFrameworkFeatureFlagProvider>();
     builder.Services.AddScoped<IFeatureFlagRepository, EntityFramework.EntityFrameworkFeatureFlagRepository>();

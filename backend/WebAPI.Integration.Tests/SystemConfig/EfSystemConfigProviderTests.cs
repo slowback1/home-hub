@@ -1,3 +1,4 @@
+using Common.Models;
 using EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using SC = Common.Models.SystemConfig;
@@ -26,7 +27,7 @@ public class EfSystemConfigProviderTests
     {
         ctx.SystemConfigs.AddRange(seed);
         await ctx.SaveChangesAsync();
-        return new EfSystemConfigProvider(new EfCrudFactory(ctx));
+        return new EfSystemConfigProvider(ctx);
     }
 
     [Test]
@@ -55,7 +56,7 @@ public class EfSystemConfigProviderTests
     public void GetAsync_Throws_WhenKeyNotFound()
     {
         using var ctx = CreateContext();
-        var provider = new EfSystemConfigProvider(new EfCrudFactory(ctx));
+        var provider = new EfSystemConfigProvider(ctx);
 
         Assert.ThrowsAsync<KeyNotFoundException>(() => provider.GetAsync("general", "missing"));
     }
@@ -75,7 +76,7 @@ public class EfSystemConfigProviderTests
     public void GetSecretAsync_Throws_WhenKeyNotFound()
     {
         using var ctx = CreateContext();
-        var provider = new EfSystemConfigProvider(new EfCrudFactory(ctx));
+        var provider = new EfSystemConfigProvider(ctx);
 
         Assert.ThrowsAsync<KeyNotFoundException>(() => provider.GetSecretAsync("general", "missing"));
     }
@@ -117,5 +118,57 @@ public class EfSystemConfigProviderTests
         var result = await provider.UpdateAsync("general", "site_name", "NewName");
 
         Assert.That(result.Value, Is.EqualTo("NewName"));
+    }
+
+    [Test]
+    public async Task GetAllAsync_IncludesOptions_ForSelectTypeEntries()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        using (var seedCtx = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(dbName).Options))
+        {
+            seedCtx.SystemConfigs.Add(new SC
+            {
+                Id = "weather::provider", Namespace = "weather", Key = "provider",
+                Value = "mock", Type = "select", IsSecret = false,
+                Options =
+                [
+                    new SystemConfigOption { SystemConfigId = "weather::provider", Value = "mock", Label = "Mock" },
+                    new SystemConfigOption { SystemConfigId = "weather::provider", Value = "openweathermap", Label = "Open Weather Map" }
+                ]
+            });
+            await seedCtx.SaveChangesAsync();
+        }
+
+        using var readCtx = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(dbName).Options);
+        var provider = new EfSystemConfigProvider(readCtx);
+
+        var results = (await provider.GetAllAsync()).ToList();
+
+        var providerEntry = results.First(e => e.Key == "provider");
+        Assert.That(providerEntry.Options.Count, Is.EqualTo(2));
+        Assert.That(providerEntry.Options.Any(o => o.Value == "mock" && o.Label == "Mock"), Is.True);
+    }
+
+    [Test]
+    public async Task GetAsync_IncludesOptions_ForSelectTypeEntry()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        using (var seedCtx = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(dbName).Options))
+        {
+            seedCtx.SystemConfigs.Add(new SC
+            {
+                Id = "weather::provider", Namespace = "weather", Key = "provider",
+                Value = "mock", Type = "select", IsSecret = false,
+                Options = [new SystemConfigOption { SystemConfigId = "weather::provider", Value = "mock", Label = "Mock" }]
+            });
+            await seedCtx.SaveChangesAsync();
+        }
+
+        using var readCtx = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(dbName).Options);
+        var provider = new EfSystemConfigProvider(readCtx);
+
+        var result = await provider.GetAsync("weather", "provider");
+
+        Assert.That(result.Options.Count, Is.EqualTo(1));
     }
 }

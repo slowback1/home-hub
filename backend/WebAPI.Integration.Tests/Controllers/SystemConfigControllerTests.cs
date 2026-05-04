@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Common.Interfaces;
+using Common.Models;
 using Logic.SystemConfig;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -101,5 +102,35 @@ public class SystemConfigControllerTests
             new { value = "anything" });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task GetAll_IncludesOptions_ForSelectTypeEntries()
+    {
+        var selectEntry = new SC
+        {
+            Id = "weather::provider",
+            Namespace = "weather",
+            Key = "provider",
+            Value = "mock",
+            Type = "select",
+            IsSecret = false,
+            Options =
+            [
+                new SystemConfigOption { SystemConfigId = "weather::provider", Value = "mock", Label = "Mock" },
+                new SystemConfigOption { SystemConfigId = "weather::provider", Value = "openweathermap", Label = "Open Weather Map" }
+            ]
+        };
+        var client = CreateClient(selectEntry);
+
+        var response = await client.GetAsync("/api/system-config");
+        var entries = await response.Content.ReadFromJsonAsync<List<SC>>();
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        var provider = entries!.First(e => e.Key == "provider");
+        Assert.That(provider.Type, Is.EqualTo("select"));
+        Assert.That(provider.Options.Count, Is.EqualTo(2));
+        Assert.That(provider.Options.Any(o => o.Value == "mock" && o.Label == "Mock"), Is.True);
+        Assert.That(provider.Options.Any(o => o.Value == "openweathermap" && o.Label == "Open Weather Map"), Is.True);
     }
 }

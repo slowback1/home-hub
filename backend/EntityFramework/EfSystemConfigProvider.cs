@@ -1,12 +1,11 @@
 using Common.Interfaces;
 using Common.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace EntityFramework;
 
-public class EfSystemConfigProvider(ICrudFactory crudFactory) : ISystemConfigProvider
+public class EfSystemConfigProvider(AppDbContext context) : ISystemConfigProvider
 {
-    private readonly ICrud<SystemConfig> _crud = crudFactory.GetCrud<SystemConfig>();
-
     public async Task<SystemConfig> GetAsync(string @namespace, string key)
     {
         var entry = await FindAsync(@namespace, key);
@@ -18,22 +17,25 @@ public class EfSystemConfigProvider(ICrudFactory crudFactory) : ISystemConfigPro
 
     public async Task<IEnumerable<SystemConfig>> GetAllAsync()
     {
-        return await _crud.QueryAsync(_ => true);
+        return await context.SystemConfigs
+            .Include(c => c.Options)
+            .ToListAsync();
     }
 
     public async Task<SystemConfig> UpdateAsync(string @namespace, string key, string value)
     {
         var entry = await FindAsync(@namespace, key);
         entry.Value = value;
-        var updated = await _crud.UpdateAsync(entry.Id, entry)
-            ?? throw new KeyNotFoundException($"System config key '{entry.Id}' was not found.");
-        return updated.IsSecret ? Mask(updated) : updated;
+        await context.SaveChangesAsync();
+        return entry.IsSecret ? Mask(entry) : entry;
     }
 
     private async Task<SystemConfig> FindAsync(string @namespace, string key)
     {
         var id = $"{@namespace}::{key}";
-        return await _crud.GetByIdAsync(id)
+        return await context.SystemConfigs
+            .Include(c => c.Options)
+            .FirstOrDefaultAsync(c => c.Id == id)
             ?? throw new KeyNotFoundException($"System config key '{id}' was not found.");
     }
 
@@ -45,6 +47,7 @@ public class EfSystemConfigProvider(ICrudFactory crudFactory) : ISystemConfigPro
             Key = entry.Key,
             Value = "***",
             Type = entry.Type,
-            IsSecret = entry.IsSecret
+            IsSecret = entry.IsSecret,
+            Options = entry.Options
         };
 }
