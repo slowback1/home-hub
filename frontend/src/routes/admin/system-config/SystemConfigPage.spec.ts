@@ -81,7 +81,7 @@ describe('Admin System Config page', () => {
 		makeApiMock();
 		const { queryByRole, getByText } = render(SystemConfigPage);
 		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
-		expect(getByText('zip_code')).toBeInTheDocument();
+		expect(getByText('Zip Code')).toBeInTheDocument();
 		expect(getByText('10001')).toBeInTheDocument();
 	});
 

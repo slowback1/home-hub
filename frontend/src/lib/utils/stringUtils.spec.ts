@@ -1,4 +1,4 @@
-import { slugify } from '$lib/utils/stringUtils';
+import { slugify, toTitleCase } from '$lib/utils/stringUtils';
 
 describe('String Utilities', () => {
 	describe('slugify', () => {
@@ -12,6 +12,18 @@ describe('String Utilities', () => {
 			const result = slugify(input);
 
 			expect(result).toEqual(expectedOutput);
+		});
+	});
+
+	describe('toTitleCase', () => {
+		it.each([
+			['weather', 'Weather'],
+			['zip_code', 'Zip Code'],
+			['api_key', 'Api Key'],
+			['retro_achievements', 'Retro Achievements'],
+			['provider', 'Provider']
+		])('with input %s gets output %s', (input, expected) => {
+			expect(toTitleCase(input)).toEqual(expected);
 		});
 	});
 });

@@ -8,6 +8,7 @@
 	import TextBox from '$lib/ui/inputs/TextBox/TextBox.svelte';
 	import SystemConfigApi, { type SystemConfig } from '$lib/api/SystemConfigApi';
 	import ToastService, { ToastVariant } from '$lib/ui/containers/toast/ToastService';
+	import { toTitleCase } from '$lib/utils/stringUtils';
 
 	const MASK = '••••••••';
 	const ICON_SIZE = 16;
@@ -98,12 +99,12 @@
 	<Heading level={1}>System Config</Heading>
 	{#each [...grouped.entries()] as [namespace, entries] (namespace)}
 		<section class="namespace-section">
-			<h2 class="namespace-header" data-testid="namespace-{namespace}">{namespace}</h2>
+			<h2 class="namespace-header" data-testid="namespace-{namespace}">{toTitleCase(namespace)}</h2>
 			<table class="config-table">
 				<tbody>
 					{#each entries as entry (entry.id)}
 						<tr data-testid="config-row-{entry.key}">
-							<td class="cell-key">{entry.key}</td>
+							<td class="cell-key" data-testid="label-{entry.key}">{toTitleCase(entry.key)}</td>
 							<td class="cell-value">
 								{#if editingId === entry.id}
 									<div class="edit-row" role="presentation" on:keydown={handleKeydown}>
@@ -168,7 +169,6 @@
 		font-weight: var(--font-weight-semibold);
 		color: var(--color-text-primary);
 		margin-bottom: var(--space-2);
-		text-transform: capitalize;
 	}
 
 	.config-table {

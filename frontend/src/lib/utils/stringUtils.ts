@@ -1,3 +1,10 @@
+export function toTitleCase(input: string): string {
+	return input
+		.split('_')
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ');
+}
+
 export function slugify(input: string): string {
 	return String(input)
 		.normalize('NFKD')
