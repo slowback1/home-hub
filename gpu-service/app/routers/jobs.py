@@ -1,7 +1,9 @@
 import os
+import signal
+import shutil
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, Form, status
 from app.auth import require_api_key
-from app.database import create_job, get_job, list_jobs
+from app.database import create_job, get_job, list_jobs, update_job_status
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -48,3 +50,28 @@ def get_job_route(job_id: str) -> dict:
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
     return job
+
+
+_TERMINAL_STATUSES = {"completed", "failed", "cancelled"}
+
+
+@router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_api_key)])
+def cancel_job(job_id: str) -> None:
+    db_path = get_db_path()
+    job = get_job(db_path, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job["status"] in _TERMINAL_STATUSES:
+        raise HTTPException(status_code=409, detail=f"Cannot cancel a job with status '{job['status']}'")
+
+    if job["status"] == "in_progress" and job["pid"]:
+        try:
+            os.kill(job["pid"], signal.SIGTERM)
+        except ProcessLookupError:
+            pass  # process already exited
+
+    update_job_status(db_path, job_id, "cancelled")
+
+    job_dir = os.path.join(os.getenv("JOBS_DIR", "/data/jobs"), job_id)
+    if os.path.isdir(job_dir):
+        shutil.rmtree(job_dir)
