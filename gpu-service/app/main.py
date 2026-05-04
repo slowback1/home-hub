@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from app.database import init_db
 from app.routers import voice_samples
 from app.routers import jobs
-from app.worker import start_worker
+from app.worker import start_worker, reset_stale_jobs
 
 
 def get_db_path() -> str:
@@ -18,6 +18,7 @@ async def lifespan(app: FastAPI):
     init_db(db_path)
     jobs_dir = os.getenv("JOBS_DIR", "/data/jobs")
     voices_dir = os.getenv("VOICE_SAMPLES_DIR", "/data/voice-samples")
+    reset_stale_jobs(db_path, jobs_dir)
     _, stop_event = start_worker(db_path, jobs_dir, voices_dir)
     yield
     stop_event.set()

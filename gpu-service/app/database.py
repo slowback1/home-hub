@@ -68,7 +68,7 @@ def update_job_status(db_path: str, job_id: str, status: str) -> None:
         )
 
 
-def update_job_pid(db_path: str, job_id: str, pid: int) -> None:
+def update_job_pid(db_path: str, job_id: str, pid: int | None) -> None:
     now = datetime.now(timezone.utc).isoformat()
     with _connect(db_path) as conn:
         conn.execute(
