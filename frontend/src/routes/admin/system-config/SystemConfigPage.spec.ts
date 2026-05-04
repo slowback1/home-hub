@@ -19,8 +19,9 @@ const zipEntry = {
 	namespace: 'weather',
 	key: 'zip_code',
 	value: '10001',
-	type: '',
-	isSecret: false
+	type: 'text',
+	isSecret: false,
+	options: []
 };
 
 const apiKeyEntry = {
@@ -28,15 +29,37 @@ const apiKeyEntry = {
 	namespace: 'weather',
 	key: 'api_key',
 	value: '***',
-	type: '',
-	isSecret: true
+	type: 'secret',
+	isSecret: true,
+	options: []
 };
 
-const weatherEntries = [zipEntry, apiKeyEntry];
+const providerEntry = {
+	id: 'weather::provider',
+	namespace: 'weather',
+	key: 'provider',
+	value: 'mock',
+	type: 'select',
+	isSecret: false,
+	options: [
+		{ value: 'mock', label: 'Mock' },
+		{ value: 'openweathermap', label: 'Open Weather Map' }
+	]
+};
+
+const weatherEntries = [zipEntry, apiKeyEntry, providerEntry];
 
 const multiNsEntries = [
 	...weatherEntries,
-	{ id: 'app::debug', namespace: 'app', key: 'debug', value: 'false', type: '', isSecret: false }
+	{
+		id: 'app::debug',
+		namespace: 'app',
+		key: 'debug',
+		value: 'false',
+		type: '',
+		isSecret: false,
+		options: []
+	}
 ];
 
 function makeApiMock({
@@ -212,6 +235,44 @@ describe('Admin System Config page', () => {
 
 		expect(getByTestId('value-zip_code').textContent).toBe('10001');
 		expect(queryByTestId('toggle-zip_code')).not.toBeInTheDocument();
+	});
+
+	it('select-type entries render as a dropdown', async () => {
+		makeApiMock();
+		const { getByTestId, queryByRole } = render(SystemConfigPage);
+		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
+
+		expect(getByTestId('select-provider')).toBeInTheDocument();
+		expect(getByTestId('select-provider').tagName).toBe('SELECT');
+	});
+
+	it('select dropdown contains the correct options', async () => {
+		makeApiMock();
+		const { getByTestId, queryByRole } = render(SystemConfigPage);
+		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
+
+		const select = getByTestId('select-provider') as HTMLSelectElement;
+		const optionValues = Array.from(select.options).map((o) => o.value);
+		expect(optionValues).toContain('mock');
+		expect(optionValues).toContain('openweathermap');
+	});
+
+	it('changing a select field calls update immediately and shows success toast', async () => {
+		const mockUpdate = vi.fn().mockResolvedValue({ ...providerEntry, value: 'openweathermap' });
+		vi.mocked(SystemConfigApi).mockImplementation(
+			() => ({ getAll: vi.fn().mockResolvedValue(weatherEntries), update: mockUpdate }) as never
+		);
+		const { getByTestId, queryByRole } = render(SystemConfigPage);
+		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
+
+		fireEvent.change(getByTestId('select-provider'), { target: { value: 'openweathermap' } });
+
+		await waitFor(() =>
+			expect(mockUpdate).toHaveBeenCalledWith('weather', 'provider', 'openweathermap')
+		);
+		await waitFor(() =>
+			expect(mockAddToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 3 }))
+		);
 	});
 
 	it('clicking Cancel returns the row to display mode', async () => {

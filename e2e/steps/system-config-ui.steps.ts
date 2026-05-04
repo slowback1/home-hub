@@ -12,6 +12,9 @@ Before({ tags: '@admin' }, async ({ request }) => {
 	await request.put(`${BACKEND_URL}/api/system-config/weather/api_key`, {
 		data: { value: 'test-api-key-1' }
 	});
+	await request.put(`${BACKEND_URL}/api/system-config/weather/provider`, {
+		data: { value: 'mock' }
+	});
 });
 
 Given('I navigate to the admin system config page', async ({ systemConfigPage }) => {

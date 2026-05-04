@@ -76,28 +76,36 @@ export class SystemConfigPage {
 		return this.page.locator('role=textbox').isVisible();
 	}
 
-	async hasSelectField(label: string, sectionHeader: string): Promise<boolean> {
-		throw new Error('not implemented');
+	async hasSelectField(label: string, _sectionHeader: string): Promise<boolean> {
+		const row = this.page.locator('tr').filter({ has: this.page.locator('td', { hasText: label }) });
+		return row.locator('select').isVisible();
 	}
 
 	async getSelectOptions(label: string): Promise<string[]> {
-		throw new Error('not implemented');
+		const row = this.page.locator('tr').filter({ has: this.page.locator('td', { hasText: label }) });
+		const options = await row.locator('select option').all();
+		return Promise.all(options.map((o) => o.textContent().then((t) => t?.trim() ?? '')));
 	}
 
 	async selectDropdownOption(label: string, option: string): Promise<void> {
-		throw new Error('not implemented');
+		const row = this.page.locator('tr').filter({ has: this.page.locator('td', { hasText: label }) });
+		await row.locator('select').selectOption({ label: option });
 	}
 
 	async getSelectValue(label: string): Promise<string> {
-		throw new Error('not implemented');
+		const row = this.page.locator('tr').filter({ has: this.page.locator('td', { hasText: label }) });
+		const select = row.locator('select');
+		const selectedValue = await select.inputValue();
+		const selectedOption = row.locator(`select option[value="${selectedValue}"]`);
+		return (await selectedOption.textContent())?.trim() ?? '';
 	}
 
 	async hasSectionHeader(header: string): Promise<boolean> {
-		throw new Error('not implemented');
+		return this.page.locator('h2', { hasText: header }).isVisible();
 	}
 
-	async hasFieldLabel(label: string, sectionHeader: string): Promise<boolean> {
-		throw new Error('not implemented');
+	async hasFieldLabel(label: string, _sectionHeader: string): Promise<boolean> {
+		return this.page.locator('td', { hasText: label }).isVisible();
 	}
 
 	async clickEntryValueWithErrorOnSave(key: string): Promise<void> {

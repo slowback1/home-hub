@@ -1,5 +1,10 @@
 import BaseApi from './baseApi';
 
+export type SystemConfigOption = {
+	value: string;
+	label: string;
+};
+
 export type SystemConfig = {
 	id: string;
 	namespace: string;
@@ -7,6 +12,7 @@ export type SystemConfig = {
 	value: string;
 	type: string;
 	isSecret: boolean;
+	options: SystemConfigOption[];
 };
 
 export default class SystemConfigApi extends BaseApi {

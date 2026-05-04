@@ -77,6 +77,21 @@
 		}
 	}
 
+	async function saveSelect(entry: SystemConfig, newValue: string) {
+		try {
+			const updated = await api.update(entry.namespace, entry.key, newValue);
+			const items = grouped.get(entry.namespace);
+			if (items) {
+				const idx = items.findIndex((e) => e.id === entry.id);
+				if (idx >= 0) items[idx] = updated;
+				grouped = new Map(grouped);
+			}
+			toastService.AddToast({ message: 'Config saved.', variant: ToastVariant.success });
+		} catch {
+			toastService.AddToast({ message: 'Failed to save config.', variant: ToastVariant.error });
+		}
+	}
+
 	function cancelEdit() {
 		editingId = null;
 		editValue = '';
@@ -106,7 +121,17 @@
 						<tr data-testid="config-row-{entry.key}">
 							<td class="cell-key" data-testid="label-{entry.key}">{toTitleCase(entry.key)}</td>
 							<td class="cell-value">
-								{#if editingId === entry.id}
+								{#if entry.type === 'select'}
+									<select
+										data-testid="select-{entry.key}"
+										value={entry.value}
+										on:change={(e) => saveSelect(entry, e.currentTarget.value)}
+									>
+										{#each entry.options as opt (opt.value)}
+											<option value={opt.value}>{opt.label}</option>
+										{/each}
+									</select>
+								{:else if editingId === entry.id}
 									<div class="edit-row" role="presentation" on:keydown={handleKeydown}>
 										<TextBox label="" id="edit-{entry.key}" bind:value={editValue} />
 										<Button
