@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Common.Interfaces;
 
 namespace Common.Models;
@@ -10,4 +11,6 @@ public class SystemConfig : IIdentifyable
     public string Value { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty;
     public bool IsSecret { get; set; }
+
+    public ICollection<SystemConfigOption> Options { get; set; } = [];
 }

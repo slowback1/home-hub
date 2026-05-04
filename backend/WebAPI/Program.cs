@@ -65,8 +65,17 @@ if (builder.Environment.IsEnvironment("E2E"))
 {
     var e2eEntries = new List<SystemConfig>
     {
-        new() { Id = "weather::zip_code", Namespace = "weather", Key = "zip_code", Value = "10001", Type = "", IsSecret = false },
-        new() { Id = "weather::api_key",  Namespace = "weather", Key = "api_key",  Value = "test-api-key-1", Type = "", IsSecret = true }
+        new() { Id = "weather::zip_code", Namespace = "weather", Key = "zip_code", Value = "10001", Type = "text", IsSecret = false },
+        new() { Id = "weather::api_key",  Namespace = "weather", Key = "api_key",  Value = "test-api-key-1", Type = "secret", IsSecret = true },
+        new()
+        {
+            Id = "weather::provider", Namespace = "weather", Key = "provider", Value = "mock", Type = "select", IsSecret = false,
+            Options =
+            [
+                new SystemConfigOption { SystemConfigId = "weather::provider", Value = "mock", Label = "Mock" },
+                new SystemConfigOption { SystemConfigId = "weather::provider", Value = "openweathermap", Label = "Open Weather Map" }
+            ]
+        }
     };
     builder.Services.AddSingleton<ISystemConfigProvider>(new DictionarySystemConfigProvider(e2eEntries));
 }
