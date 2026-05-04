@@ -24,7 +24,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<FeatureFlag>().HasKey(f => f.Name);
         modelBuilder.Entity<SystemConfigOption>().HasKey(o => new { o.SystemConfigId, o.Value });
         modelBuilder.Entity<SystemConfigOption>()
-            .HasOne(o => o.SystemConfig)
+            .HasOne<SystemConfig>()
             .WithMany(c => c.Options)
             .HasForeignKey(o => o.SystemConfigId);
     }
