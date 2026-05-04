@@ -16,47 +16,49 @@ After({ tags: '@weather-feature-flag-hidden' }, async ({ request }) => {
 });
 
 Given('the weather provider is {string}', async ({ request }, provider: string) => {
-	throw new Error('not implemented');
+	await request.put(`${BACKEND_URL}/api/system-config/weather/provider`, {
+		data: { value: provider }
+	});
 });
 
 When('I navigate to the weather page', async ({ weatherPage }) => {
-	throw new Error('not implemented');
+	await weatherPage.goto();
 });
 
 When(
 	'I navigate to the weather page and the weather API returns an error',
 	async ({ weatherPage }) => {
-		throw new Error('not implemented');
+		await weatherPage.gotoWithApiError();
 	}
 );
 
 Then('I should see a temperature value', async ({ weatherPage }) => {
-	throw new Error('not implemented');
+	expect(await weatherPage.hasTemperatureValue()).toBe(true);
 });
 
 Then('I should see a condition description', async ({ weatherPage }) => {
-	throw new Error('not implemented');
+	expect(await weatherPage.hasConditionDescription()).toBe(true);
 });
 
 Then('I should see a humidity value', async ({ weatherPage }) => {
-	throw new Error('not implemented');
+	expect(await weatherPage.hasHumidityValue()).toBe(true);
 });
 
 Then('I should see a wind speed value', async ({ weatherPage }) => {
-	throw new Error('not implemented');
+	expect(await weatherPage.hasWindSpeedValue()).toBe(true);
 });
 
 Then('I should see a {string} message', async ({ weatherPage }, message: string) => {
-	throw new Error('not implemented');
+	expect(await weatherPage.hasMessage(message)).toBe(true);
 });
 
 Given(
 	'the {string} feature flag is disabled',
-	async ({ request }, flagName: string) => {
-		// handled by Before hook for @weather-feature-flag-hidden
+	async () => {
+		// handled by @weather-feature-flag-hidden Before hook
 	}
 );
 
 Then('I should be redirected or see a not-found state', async ({ weatherPage }) => {
-	throw new Error('not implemented');
+	expect(await weatherPage.isNotFoundState()).toBe(true);
 });

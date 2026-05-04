@@ -17,7 +17,7 @@
 		MessageBus.initialize(new LocalStorageProvider());
 		UrlPathProvider.initialize(new RealUrlProvider());
 		await ConfigService.initialize();
-		FeatureFlagService.initialize(new ApiFeatureFlagProvider());
+		await FeatureFlagService.initialize(new ApiFeatureFlagProvider());
 		ready = true;
 	});
 </script>
