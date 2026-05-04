@@ -6,6 +6,7 @@ import { SystemConfigPage } from './pages/SystemConfigPage';
 import { ActivityConfigPage } from './pages/ActivityConfigPage';
 import { ActivityPage } from './pages/ActivityPage';
 import { FeatureFlagsPage } from './pages/FeatureFlagsPage';
+import { WeatherPage } from './pages/WeatherPage';
 
 type Fixtures = {
 	examplePage: ExamplePage;
@@ -14,6 +15,7 @@ type Fixtures = {
 	activityConfigPage: ActivityConfigPage;
 	activityPage: ActivityPage;
 	featureFlagsPage: FeatureFlagsPage;
+	weatherPage: WeatherPage;
 };
 
 const test = base.extend<Fixtures>({
@@ -34,8 +36,11 @@ const test = base.extend<Fixtures>({
 	},
 	featureFlagsPage: async ({ page }, use) => {
 		await use(new FeatureFlagsPage(page));
+	},
+	weatherPage: async ({ page }, use) => {
+		await use(new WeatherPage(page));
 	}
 });
 
-export const { Given, When, Then, Before } = createBdd(test);
+export const { Given, When, Then, Before, After } = createBdd(test);
 export { test };
