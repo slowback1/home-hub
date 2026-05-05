@@ -119,6 +119,18 @@ public class MockAudiobookService : IAudiobookService
         return Task.CompletedTask;
     }
 
+    public Task ResetAsync()
+    {
+        _jobs.Clear();
+        _deletedFiles.Clear();
+        lock (_voiceSamplesLock)
+        {
+            _voiceSamples.Clear();
+            _voiceSamples.Add("default");
+        }
+        return Task.CompletedTask;
+    }
+
     // Internal test helper — allows tests to force a job to a specific status
     public Task ForceStatusAsync(string id, AudiobookJobStatus status)
     {

@@ -1,4 +1,5 @@
 import BaseApi from './baseApi';
+import ConfigService from '$lib/services/Config/ConfigService';
 
 export type AudiobookJobStatus = 'queued' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
 
@@ -30,7 +31,9 @@ export default class AudiobookApi extends BaseApi {
 	}
 
 	getFileUrl(id: string): string {
-		return `/api/audiobook/jobs/${id}/file`;
+		const config = new ConfigService();
+		const base = (config.getConfig<string>('baseUrl') ?? '').replace(/\/$/, '');
+		return `${base}/api/audiobook/jobs/${id}/file`;
 	}
 
 	async deleteFile(id: string): Promise<void> {
@@ -38,10 +41,12 @@ export default class AudiobookApi extends BaseApi {
 	}
 
 	async submitJob(epubFile: File, voiceSampleName: string): Promise<AudiobookJob> {
+		const config = new ConfigService();
+		const base = (config.getConfig<string>('baseUrl') ?? '').replace(/\/$/, '');
 		const form = new FormData();
 		form.append('epubFile', epubFile, epubFile.name);
 		form.append('voiceSampleName', voiceSampleName);
-		const response = await fetch('/api/audiobook/jobs', { method: 'POST', body: form });
+		const response = await fetch(`${base}/api/audiobook/jobs`, { method: 'POST', body: form });
 		return response.json();
 	}
 
@@ -50,10 +55,12 @@ export default class AudiobookApi extends BaseApi {
 	}
 
 	async uploadVoiceSample(file: File, name: string): Promise<void> {
+		const config = new ConfigService();
+		const base = (config.getConfig<string>('baseUrl') ?? '').replace(/\/$/, '');
 		const form = new FormData();
 		form.append('file', file, file.name);
 		form.append('name', name);
-		await fetch('/api/audiobook/voice-samples', { method: 'POST', body: form });
+		await fetch(`${base}/api/audiobook/voice-samples`, { method: 'POST', body: form });
 	}
 
 	async deleteVoiceSample(name: string): Promise<void> {

@@ -1,5 +1,6 @@
 using Common.Interfaces;
 using Common.Models;
+using Logic.Audiobook;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers;
@@ -11,6 +12,7 @@ namespace WebAPI.Controllers;
 public class TestHelperController(
     IActivityPickRepository pickRepository,
     ICrudFactory crudFactory,
+    MockAudiobookService audiobookMock,
     IWebHostEnvironment env) : ControllerBase
 {
     private bool IsAllowed =>
@@ -48,6 +50,14 @@ public class TestHelperController(
         foreach (var activity in all)
             await crud.DeleteAsync(activity.Id);
 
+        return NoContent();
+    }
+
+    [HttpDelete("audiobook")]
+    public async Task<ActionResult> ResetAudiobookMock()
+    {
+        if (!IsAllowed) return NotFound();
+        await audiobookMock.ResetAsync();
         return NoContent();
     }
 
