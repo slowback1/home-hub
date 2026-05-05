@@ -57,7 +57,8 @@ else
         ["CHORE_TASK_TRACKER_ENABLED"] = true,
         ["ACTIVITY_PICKER_ENABLED"] = true,
         ["RETRO_ACHIEVEMENTS_ENABLED"] = true,
-        ["WEATHER_ENABLED"] = true
+        ["WEATHER_ENABLED"] = true,
+        ["AUDIOBOOK_ENABLED"] = false
     });
     builder.Services.AddSingleton<IFeatureFlagProvider>(inMemoryFlagStore);
     builder.Services.AddSingleton<IFeatureFlagRepository>(inMemoryFlagStore);
@@ -87,7 +88,18 @@ if (builder.Environment.IsEnvironment("E2E"))
                 new SystemConfigOption { SystemConfigId = "weather::units", Value = "imperial", Label = "Imperial (°F, mph)" },
                 new SystemConfigOption { SystemConfigId = "weather::units", Value = "metric", Label = "Metric (°C, km/h)" }
             ]
-        }
+        },
+        new()
+        {
+            Id = "audiobook::provider", Namespace = "audiobook", Key = "provider", Value = "mock", Type = "select", IsSecret = false,
+            Options =
+            [
+                new SystemConfigOption { SystemConfigId = "audiobook::provider", Value = "mock", Label = "Mock" },
+                new SystemConfigOption { SystemConfigId = "audiobook::provider", Value = "gpu-service", Label = "GPU Service" }
+            ]
+        },
+        new() { Id = "audiobook::url",     Namespace = "audiobook", Key = "url",     Value = "",     Type = "string", IsSecret = false },
+        new() { Id = "audiobook::api_key", Namespace = "audiobook", Key = "api_key", Value = "",     Type = "string", IsSecret = true }
     };
     builder.Services.AddSingleton<ISystemConfigProvider>(new DictionarySystemConfigProvider(e2eEntries));
 }
