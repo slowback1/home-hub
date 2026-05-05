@@ -7,6 +7,8 @@ import { ActivityConfigPage } from './pages/ActivityConfigPage';
 import { ActivityPage } from './pages/ActivityPage';
 import { FeatureFlagsPage } from './pages/FeatureFlagsPage';
 import { WeatherPage } from './pages/WeatherPage';
+import { AudiobookConvertPage } from './pages/AudiobookConvertPage';
+import { AudiobookVoiceSamplesPage } from './pages/AudiobookVoiceSamplesPage';
 
 type Fixtures = {
 	examplePage: ExamplePage;
@@ -16,6 +18,8 @@ type Fixtures = {
 	activityPage: ActivityPage;
 	featureFlagsPage: FeatureFlagsPage;
 	weatherPage: WeatherPage;
+	audiobookConvertPage: AudiobookConvertPage;
+	audiobookVoiceSamplesPage: AudiobookVoiceSamplesPage;
 };
 
 const test = base.extend<Fixtures>({
@@ -39,6 +43,12 @@ const test = base.extend<Fixtures>({
 	},
 	weatherPage: async ({ page }, use) => {
 		await use(new WeatherPage(page));
+	},
+	audiobookConvertPage: async ({ page }, use) => {
+		await use(new AudiobookConvertPage(page));
+	},
+	audiobookVoiceSamplesPage: async ({ page }, use) => {
+		await use(new AudiobookVoiceSamplesPage(page));
 	}
 });
 
