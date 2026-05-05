@@ -5,6 +5,7 @@ using InMemory;
 using Logic.ActivityPicker;
 using Logic.FeatureFlags;
 using Logic.SystemConfig;
+using Logic.Audiobook;
 using Logic.Weather;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -103,6 +104,21 @@ if (builder.Environment.IsEnvironment("E2E"))
     };
     builder.Services.AddSingleton<ISystemConfigProvider>(new DictionarySystemConfigProvider(e2eEntries));
 }
+
+// Audiobook service — singleton mock or scoped GPU client based on audiobook::provider config value
+builder.Services.AddSingleton<MockAudiobookService>();
+builder.Services.AddHttpClient<GpuServiceClient>();
+builder.Services.AddScoped<GpuServiceClient>();
+builder.Services.AddScoped<IAudiobookService>(sp =>
+{
+    var cfg = sp.GetRequiredService<ISystemConfigProvider>();
+    string key;
+    try { key = cfg.GetAsync("audiobook", "provider").GetAwaiter().GetResult().Value; }
+    catch { key = "mock"; }
+    return key == "gpu-service"
+        ? sp.GetRequiredService<GpuServiceClient>()
+        : sp.GetRequiredService<MockAudiobookService>();
+});
 
 // Weather provider — resolved per-request based on weather::provider config value
 builder.Services.AddMemoryCache();
