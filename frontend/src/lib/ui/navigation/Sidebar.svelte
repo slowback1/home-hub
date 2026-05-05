@@ -7,6 +7,7 @@
 		Gamepad2,
 		Cloud,
 		Settings,
+		BookAudio,
 		ChevronLeft,
 		ChevronRight
 	} from 'lucide-svelte';
@@ -50,6 +51,14 @@
 			label: 'Weather',
 			icon: Cloud,
 			flag: FeatureFlags.WEATHER_ENABLED
+		},
+		{
+			testId: 'nav-item-audiobook',
+			href: '/audiobook',
+			label: 'Audiobook',
+			icon: BookAudio,
+			flag: FeatureFlags.AUDIOBOOK_ENABLED,
+			activePath: '/audiobook'
 		},
 		{
 			testId: 'nav-item-admin',
