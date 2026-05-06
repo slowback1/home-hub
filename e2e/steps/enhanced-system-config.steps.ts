@@ -12,7 +12,7 @@ Then(
 Then(
 	'the dropdown should contain {string} and {string} as options',
 	async ({ systemConfigPage }, option1: string, option2: string) => {
-		const options = await systemConfigPage.getSelectOptions('Provider');
+		const options = await systemConfigPage.getSelectOptions('Provider', 'Weather');
 		expect(options).toContain(option1);
 		expect(options).toContain(option2);
 	}
@@ -21,14 +21,14 @@ Then(
 When(
 	'I change the {string} dropdown to {string}',
 	async ({ systemConfigPage }, label: string, option: string) => {
-		await systemConfigPage.selectDropdownOption(label, option);
+		await systemConfigPage.selectDropdownOption(label, option, 'Weather');
 	}
 );
 
 Then(
 	'the {string} field should display {string}',
 	async ({ systemConfigPage }, label: string, value: string) => {
-		const displayed = await systemConfigPage.getSelectValue(label);
+		const displayed = await systemConfigPage.getSelectValue(label, 'Weather');
 		expect(displayed).toBe(value);
 	}
 );

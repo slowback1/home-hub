@@ -141,7 +141,7 @@ describe('Admin System Config page', () => {
 		const { getByTestId, queryByRole } = render(SystemConfigPage);
 		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
 
-		fireEvent.click(getByTestId('value-zip_code'));
+		fireEvent.click(getByTestId('value-weather-zip_code'));
 
 		await waitFor(() => expect(queryByRole('textbox')).toBeInTheDocument());
 		expect(getByTestId('btn-save')).toBeInTheDocument();
@@ -153,7 +153,7 @@ describe('Admin System Config page', () => {
 		const { getByTestId, queryByRole, getByRole } = render(SystemConfigPage);
 		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
 
-		fireEvent.click(getByTestId('value-zip_code'));
+		fireEvent.click(getByTestId('value-weather-zip_code'));
 		await waitFor(() => expect(getByRole('textbox')).toBeInTheDocument());
 
 		const input = getByRole('textbox');
@@ -177,7 +177,7 @@ describe('Admin System Config page', () => {
 		const { getByTestId, queryByRole, getByRole } = render(SystemConfigPage);
 		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
 
-		fireEvent.click(getByTestId('value-zip_code'));
+		fireEvent.click(getByTestId('value-weather-zip_code'));
 		await waitFor(() => expect(getByRole('textbox')).toBeInTheDocument());
 		fireEvent.click(getByTestId('btn-save'));
 
@@ -192,7 +192,7 @@ describe('Admin System Config page', () => {
 		const { getByTestId, queryByRole } = render(SystemConfigPage);
 		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
 
-		expect(getByTestId('value-api_key').textContent).toBe('••••••••');
+		expect(getByTestId('value-weather-api_key').textContent).toBe('••••••••');
 	});
 
 	it('clicking the show toggle reveals the actual value', async () => {
@@ -200,9 +200,9 @@ describe('Admin System Config page', () => {
 		const { getByTestId, queryByRole } = render(SystemConfigPage);
 		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
 
-		fireEvent.click(getByTestId('toggle-api_key'));
+		fireEvent.click(getByTestId('toggle-weather-api_key'));
 
-		await waitFor(() => expect(getByTestId('value-api_key').textContent).toBe('***'));
+		await waitFor(() => expect(getByTestId('value-weather-api_key').textContent).toBe('***'));
 	});
 
 	it('clicking the show toggle again re-masks the value', async () => {
@@ -210,11 +210,11 @@ describe('Admin System Config page', () => {
 		const { getByTestId, queryByRole } = render(SystemConfigPage);
 		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
 
-		fireEvent.click(getByTestId('toggle-api_key'));
-		await waitFor(() => expect(getByTestId('value-api_key').textContent).toBe('***'));
+		fireEvent.click(getByTestId('toggle-weather-api_key'));
+		await waitFor(() => expect(getByTestId('value-weather-api_key').textContent).toBe('***'));
 
-		fireEvent.click(getByTestId('toggle-api_key'));
-		await waitFor(() => expect(getByTestId('value-api_key').textContent).toBe('••••••••'));
+		fireEvent.click(getByTestId('toggle-weather-api_key'));
+		await waitFor(() => expect(getByTestId('value-weather-api_key').textContent).toBe('••••••••'));
 	});
 
 	it('entering edit mode pre-fills input with actual value for secret entries', async () => {
@@ -222,7 +222,7 @@ describe('Admin System Config page', () => {
 		const { getByTestId, queryByRole, getByRole } = render(SystemConfigPage);
 		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
 
-		fireEvent.click(getByTestId('value-api_key'));
+		fireEvent.click(getByTestId('value-weather-api_key'));
 
 		await waitFor(() => expect(getByRole('textbox')).toBeInTheDocument());
 		expect((getByRole('textbox') as HTMLInputElement).value).toBe('***');
@@ -233,8 +233,8 @@ describe('Admin System Config page', () => {
 		const { getByTestId, queryByTestId, queryByRole } = render(SystemConfigPage);
 		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
 
-		expect(getByTestId('value-zip_code').textContent).toBe('10001');
-		expect(queryByTestId('toggle-zip_code')).not.toBeInTheDocument();
+		expect(getByTestId('value-weather-zip_code').textContent).toBe('10001');
+		expect(queryByTestId('toggle-weather-zip_code')).not.toBeInTheDocument();
 	});
 
 	it('select-type entries render as a dropdown', async () => {
@@ -280,12 +280,12 @@ describe('Admin System Config page', () => {
 		const { getByTestId, queryByRole, getByRole } = render(SystemConfigPage);
 		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
 
-		fireEvent.click(getByTestId('value-zip_code'));
+		fireEvent.click(getByTestId('value-weather-zip_code'));
 		await waitFor(() => expect(getByRole('textbox')).toBeInTheDocument());
 
 		fireEvent.click(getByTestId('btn-cancel'));
 
 		await waitFor(() => expect(queryByRole('textbox')).not.toBeInTheDocument());
-		expect(getByTestId('value-zip_code')).toBeInTheDocument();
+		expect(getByTestId('value-weather-zip_code')).toBeInTheDocument();
 	});
 });

@@ -77,8 +77,8 @@ When('I click cancel on the queued job', async ({ audiobookConvertPage }) => {
 	await audiobookConvertPage.clickCancelOnLastJob();
 });
 
-When('I click download on the completed job', async ({ audiobookConvertPage }) => {
-	await audiobookConvertPage.clickDownloadOnLastJob();
+When('I click download on the completed job', async () => {
+	// Download click and event capture are handled together in the Then step
 });
 
 Then('a new job appears in the queue with status {string}', async ({ audiobookConvertPage }, status: string) => {
@@ -97,10 +97,15 @@ Then('the job status changes to {string}', async ({ audiobookConvertPage }, stat
 	await audiobookConvertPage.waitForLastJobStatus(status, 10_000);
 });
 
-Then('the file download is initiated', async ({ page }) => {
-	const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
-	// Download was triggered by clicking the anchor — wait for it
-	await downloadPromise;
+Then('the file download is initiated', async ({ page, audiobookConvertPage }) => {
+	// Verify clicking the download button causes a successful GET request to the file endpoint
+	const [response] = await Promise.all([
+		page.waitForResponse((r) => r.url().includes('/file') && r.request().method() === 'GET', {
+			timeout: 10_000
+		}),
+		audiobookConvertPage.clickDownloadOnLastJob()
+	]);
+	expect(response.status()).toBe(200);
 });
 
 Then('an error message is visible on the failed job row', async ({ audiobookConvertPage }) => {

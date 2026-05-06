@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Common.Interfaces;
 using Common.Models;
 using Logic.Audiobook;
@@ -12,6 +14,12 @@ namespace WebAPI.Integration.Tests.Controllers;
 
 public class AudiobookControllerTests
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower) }
+    };
+
     private MockAudiobookService _service = null!;
     private HttpClient _client = null!;
     private WebApplicationFactory<Program> _factory = null!;
@@ -57,7 +65,7 @@ public class AudiobookControllerTests
         await _service.SubmitJobAsync("book.epub", [], "default");
 
         var response = await _client.GetAsync("/api/audiobook/jobs");
-        var jobs = await response.Content.ReadFromJsonAsync<List<AudiobookJob>>();
+        var jobs = await response.Content.ReadFromJsonAsync<List<AudiobookJob>>(JsonOptions);
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         Assert.That(jobs, Has.Count.EqualTo(1));
@@ -74,7 +82,7 @@ public class AudiobookControllerTests
         form.Add(new StringContent("default"), "voiceSampleName");
 
         var response = await _client.PostAsync("/api/audiobook/jobs", form);
-        var job = await response.Content.ReadFromJsonAsync<AudiobookJob>();
+        var job = await response.Content.ReadFromJsonAsync<AudiobookJob>(JsonOptions);
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
         Assert.That(job!.EpubFilename, Is.EqualTo("book.epub"));
@@ -89,7 +97,7 @@ public class AudiobookControllerTests
         var submitted = await _service.SubmitJobAsync("book.epub", [], "default");
 
         var response = await _client.GetAsync($"/api/audiobook/jobs/{submitted.Id}");
-        var job = await response.Content.ReadFromJsonAsync<AudiobookJob>();
+        var job = await response.Content.ReadFromJsonAsync<AudiobookJob>(JsonOptions);
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         Assert.That(job!.Id, Is.EqualTo(submitted.Id));

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Common.Interfaces;
 using Common.Models;
 using Hangfire;
@@ -29,7 +30,10 @@ builder.Services.AddOpenTelemetry()
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.SnakeCaseLower)));
 CrudFactoryConfigurator.ConfigureCrudFactory(builder.Services, builder.Configuration);
 builder.Services.AddScoped<ActivityPickerJob>();
 CorsConfigurator.ConfigureCors(builder.Services, builder.Configuration);

@@ -151,7 +151,7 @@
 									<div class="value-row">
 										<span
 											class="value-display"
-											data-testid="value-{entry.key}"
+											data-testid="value-{entry.namespace}-{entry.key}"
 											role="button"
 											tabindex="0"
 											on:click={() => startEdit(entry)}
@@ -162,7 +162,7 @@
 										{#if entry.isSecret}
 											<button
 												class="toggle-reveal"
-												data-testid="toggle-{entry.key}"
+												data-testid="toggle-{entry.namespace}-{entry.key}"
 												aria-label={revealedIds.has(entry.id) ? 'Hide value' : 'Show value'}
 												on:click={() => toggleReveal(entry.id)}
 											>
