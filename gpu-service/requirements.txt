@@ -7,3 +7,4 @@ beautifulsoup4==4.12.3
 TTS==0.22.0
 soundfile==0.12.1
 torch==2.4.1+cu124
+torchaudio==2.4.1+cu124
