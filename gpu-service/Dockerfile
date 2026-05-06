@@ -2,6 +2,7 @@ FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
+ENV COQUI_TOS_AGREED=1
 
 RUN apt-get update && apt-get install -y \
     python3 \
