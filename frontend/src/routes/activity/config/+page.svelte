@@ -189,7 +189,7 @@
 		width: 2rem;
 		height: 2rem;
 		border: 1px solid var(--color-border-subtle);
-		background: var(--color-surface-secondary, #f5f5f5);
+		background: var(--color-surface-raised);
 		color: var(--color-text-primary);
 		border-radius: var(--radius-sm, 4px);
 		cursor: pointer;

@@ -19,7 +19,9 @@
 </script>
 
 <div class="select__group select__base">
-	<label class="select__label" for={id}>{label}</label>
+	{#if label}
+		<label class="select__label" for={id}>{label}</label>
+	{/if}
 	<select
 		aria-labelledby={id}
 		class="select__input"

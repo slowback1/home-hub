@@ -6,6 +6,7 @@
 	import Heading from '$lib/ui/typography/Heading/Heading.svelte';
 	import Button from '$lib/ui/buttons/Button/Button.svelte';
 	import TextBox from '$lib/ui/inputs/TextBox/TextBox.svelte';
+	import Select from '$lib/ui/inputs/Select/Select.svelte';
 	import SystemConfigApi, { type SystemConfig } from '$lib/api/SystemConfigApi';
 	import ToastService, { ToastVariant } from '$lib/ui/containers/toast/ToastService';
 	import { toTitleCase } from '$lib/utils/stringUtils';
@@ -122,15 +123,14 @@
 							<td class="cell-key" data-testid="label-{entry.key}">{toTitleCase(entry.key)}</td>
 							<td class="cell-value">
 								{#if entry.type === 'select'}
-									<select
-										data-testid="select-{entry.key}"
+									<Select
+										id="select-{entry.key}"
+										label=""
+										options={entry.options}
 										value={entry.value}
-										on:change={(e) => saveSelect(entry, e.currentTarget.value)}
-									>
-										{#each entry.options as opt (opt.value)}
-											<option value={opt.value}>{opt.label}</option>
-										{/each}
-									</select>
+										onChange={(v) => saveSelect(entry, v)}
+										data-testid="select-{entry.key}"
+									/>
 								{:else if editingId === entry.id}
 									<div class="edit-row" role="presentation" on:keydown={handleKeydown}>
 										<TextBox label="" id="edit-{entry.key}" bind:value={editValue} />

@@ -263,8 +263,8 @@
 	}
 
 	.grid-cell--current {
-		background: var(--color-brand-lightest, #eff6ff);
-		border-color: var(--color-brand);
+		background: var(--color-brand-light);
+		border-color: var(--color-brand-lighter);
 	}
 
 	.cell-label {
