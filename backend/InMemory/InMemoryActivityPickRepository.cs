@@ -30,6 +30,12 @@ public class InMemoryActivityPickRepository : IActivityPickRepository
         return Task.FromResult(results);
     }
 
+    public Task<IEnumerable<ActivityPick>> GetRecentAsync(int count)
+    {
+        var results = Picks.OrderByDescending(p => p.PickedAt).Take(count).AsEnumerable();
+        return Task.FromResult(results);
+    }
+
     public Task ClearAllAsync()
     {
         Picks.Clear();

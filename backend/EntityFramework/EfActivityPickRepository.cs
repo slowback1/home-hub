@@ -22,5 +22,8 @@ public class EfActivityPickRepository(AppDbContext db) : IActivityPickRepository
             .OrderBy(p => p.PickedAt)
             .ToListAsync();
 
+    public async Task<IEnumerable<ActivityPick>> GetRecentAsync(int count) =>
+        await db.ActivityPicks.OrderByDescending(p => p.PickedAt).Take(count).ToListAsync();
+
     public async Task ClearAllAsync() => await db.ActivityPicks.ExecuteDeleteAsync();
 }
