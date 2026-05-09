@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Common.Interfaces;
 using Common.Models;
 using InMemory;
 using Logic.ActivityPicker;
@@ -17,7 +22,7 @@ public class ActivityPickerJobTests
         InMemoryActivityPickRepository.ClearStaticState();
         _crudFactory = new InMemoryCrudFactory();
         _pickRepository = new InMemoryActivityPickRepository();
-        _job = new ActivityPickerJob(_crudFactory, _pickRepository);
+        _job = new ActivityPickerJob(_crudFactory, _pickRepository, new RandomActivitySelector());
     }
 
     [Test]
@@ -77,5 +82,51 @@ public class ActivityPickerJobTests
 
         Assert.That(counts["Common"], Is.GreaterThan(counts["Rare"] * 2),
             "Higher-weight activity should be picked significantly more often");
+    }
+
+    [Test]
+    public async Task ExecuteAsync_PassesAllActivitiesToSelector()
+    {
+        var activityCrud = _crudFactory.GetCrud<Activity>();
+        await activityCrud.CreateAsync(new Activity { Name = "A", Weight = 1 });
+        await activityCrud.CreateAsync(new Activity { Name = "B", Weight = 1 });
+        var capturing = new CapturingSelector(new Activity { Name = "A" });
+        var job = new ActivityPickerJob(_crudFactory, _pickRepository, capturing);
+
+        await job.ExecuteAsync();
+
+        Assert.That(capturing.CapturedActivities!.Select(a => a.Name),
+            Is.EquivalentTo(new[] { "A", "B" }));
+    }
+
+    [Test]
+    public async Task ExecuteAsync_PassesRecentPicksToSelector_CountIsDoubleActivityCount()
+    {
+        var activityCrud = _crudFactory.GetCrud<Activity>();
+        await activityCrud.CreateAsync(new Activity { Name = "A", Weight = 1 });
+        await activityCrud.CreateAsync(new Activity { Name = "B", Weight = 1 });
+
+        for (var i = 0; i < 6; i++)
+            await _pickRepository.WriteAsync(new ActivityPick { ActivityName = "A", PickedAt = DateTime.UtcNow.AddMinutes(-i) });
+
+        var capturing = new CapturingSelector(new Activity { Name = "A" });
+        var job = new ActivityPickerJob(_crudFactory, _pickRepository, capturing);
+
+        await job.ExecuteAsync();
+
+        Assert.That(capturing.CapturedRecentPicks!.Count, Is.EqualTo(4));
+    }
+
+    private class CapturingSelector(Activity result) : IActivitySelector
+    {
+        public IList<Activity>? CapturedActivities { get; private set; }
+        public IList<ActivityPick>? CapturedRecentPicks { get; private set; }
+
+        public Task<Activity> SelectAsync(IList<Activity> activities, IList<ActivityPick> recentPicks)
+        {
+            CapturedActivities = activities;
+            CapturedRecentPicks = recentPicks;
+            return Task.FromResult(result);
+        }
     }
 }

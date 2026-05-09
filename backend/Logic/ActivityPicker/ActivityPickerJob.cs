@@ -6,7 +6,7 @@ using Common.Models;
 
 namespace Logic.ActivityPicker;
 
-public class ActivityPickerJob(ICrudFactory crudFactory, IActivityPickRepository pickRepository)
+public class ActivityPickerJob(ICrudFactory crudFactory, IActivityPickRepository pickRepository, IActivitySelector selector)
 {
     private readonly ICrud<Activity> _activities = crudFactory.GetCrud<Activity>();
 
@@ -16,25 +16,12 @@ public class ActivityPickerJob(ICrudFactory crudFactory, IActivityPickRepository
         if (activities.Count == 0)
             return;
 
-        var selected = WeightedRandom(activities);
+        var recentPicks = (await pickRepository.GetRecentAsync(activities.Count * 2)).ToList();
+        var selected = await selector.SelectAsync(activities, recentPicks);
         await pickRepository.WriteAsync(new ActivityPick
         {
             ActivityName = selected.Name,
             PickedAt = DateTime.UtcNow
         });
-    }
-
-    private static Activity WeightedRandom(System.Collections.Generic.List<Activity> activities)
-    {
-        var totalWeight = activities.Sum(a => a.Weight);
-        var roll = new Random().Next(totalWeight);
-        var cumulative = 0;
-        foreach (var activity in activities)
-        {
-            cumulative += activity.Weight;
-            if (roll < cumulative)
-                return activity;
-        }
-        return activities[^1];
     }
 }
