@@ -5,6 +5,7 @@ using Hangfire;
 using InMemory;
 using Logic.ActivityPicker;
 using Logic.FeatureFlags;
+using Logic.Ollama;
 using Logic.SystemConfig;
 using Logic.Audiobook;
 using Logic.Weather;
@@ -104,7 +105,10 @@ if (builder.Environment.IsEnvironment("E2E"))
             ]
         },
         new() { Id = "audiobook::url",     Namespace = "audiobook", Key = "url",     Value = "",     Type = "string", IsSecret = false },
-        new() { Id = "audiobook::api_key", Namespace = "audiobook", Key = "api_key", Value = "",     Type = "string", IsSecret = true }
+        new() { Id = "audiobook::api_key", Namespace = "audiobook", Key = "api_key", Value = "",     Type = "string", IsSecret = true },
+        new() { Id = "ollama::url",            Namespace = "ollama",    Key = "url",       Value = "",         Type = "string", IsSecret = false },
+        new() { Id = "activity::selector",     Namespace = "activity",  Key = "selector",  Value = "random",   Type = "string", IsSecret = false },
+        new() { Id = "activity::ai_model",     Namespace = "activity",  Key = "ai_model",  Value = "llama3.2", Type = "string", IsSecret = false }
     };
     builder.Services.AddSingleton<ISystemConfigProvider>(new DictionarySystemConfigProvider(e2eEntries));
 }
@@ -139,6 +143,29 @@ builder.Services.AddScoped<IWeatherProvider>(sp =>
     return key == "openweathermap"
         ? sp.GetRequiredService<OpenWeatherMapProvider>()
         : sp.GetRequiredService<MockWeatherProvider>();
+});
+
+// Ollama client
+builder.Services.AddHttpClient<OllamaClient>()
+    .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(60));
+builder.Services.AddScoped<IOllamaClient>(sp => sp.GetRequiredService<OllamaClient>());
+
+// Activity selector — resolved per-request based on activity::selector config value
+builder.Services.AddScoped<RandomActivitySelector>();
+builder.Services.AddScoped<AiActivitySelector>();
+builder.Services.AddScoped<IActivitySelector>(sp =>
+{
+    string key = "random";
+    try
+    {
+        var cfg = sp.GetService<ISystemConfigProvider>();
+        if (cfg != null)
+            key = cfg.GetAsync("activity", "selector").GetAwaiter().GetResult().Value;
+    }
+    catch { key = "random"; }
+    return key == "ai"
+        ? sp.GetRequiredService<AiActivitySelector>()
+        : sp.GetRequiredService<RandomActivitySelector>();
 });
 
 var app = builder.Build();
