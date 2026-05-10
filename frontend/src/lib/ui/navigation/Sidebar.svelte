@@ -8,6 +8,7 @@
 		Cloud,
 		Settings,
 		BookAudio,
+		Image,
 		ChevronLeft,
 		ChevronRight
 	} from 'lucide-svelte';
@@ -59,6 +60,13 @@
 			icon: BookAudio,
 			flag: FeatureFlags.AUDIOBOOK_ENABLED,
 			activePath: '/audiobook'
+		},
+		{
+			testId: 'nav-item-comfyui',
+			href: '/comfyui',
+			label: 'ComfyUI',
+			icon: Image,
+			activePath: '/comfyui'
 		},
 		{
 			testId: 'nav-item-admin',
