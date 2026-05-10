@@ -5,6 +5,7 @@ using Hangfire;
 using InMemory;
 using Logic.ActivityPicker;
 using Logic.FeatureFlags;
+using Logic.ComfyUi;
 using Logic.Ollama;
 using Logic.SystemConfig;
 using Logic.Audiobook;
@@ -108,7 +109,8 @@ if (builder.Environment.IsEnvironment("E2E"))
         new() { Id = "audiobook::api_key", Namespace = "audiobook", Key = "api_key", Value = "",     Type = "string", IsSecret = true },
         new() { Id = "ollama::url",            Namespace = "ollama",    Key = "url",       Value = "",         Type = "string", IsSecret = false },
         new() { Id = "activity::selector",     Namespace = "activity",  Key = "selector",  Value = "random",   Type = "string", IsSecret = false },
-        new() { Id = "activity::ai_model",     Namespace = "activity",  Key = "ai_model",  Value = "llama3.2", Type = "string", IsSecret = false }
+        new() { Id = "activity::ai_model",     Namespace = "activity",  Key = "ai_model",  Value = "llama3.2", Type = "string", IsSecret = false },
+        new() { Id = "comfyui::base_url",       Namespace = "comfyui",   Key = "base_url",  Value = "",         Type = "string", IsSecret = false }
     };
     builder.Services.AddSingleton<ISystemConfigProvider>(new DictionarySystemConfigProvider(e2eEntries));
 }
@@ -144,6 +146,11 @@ builder.Services.AddScoped<IWeatherProvider>(sp =>
         ? sp.GetRequiredService<OpenWeatherMapProvider>()
         : sp.GetRequiredService<MockWeatherProvider>();
 });
+
+// ComfyUI client
+builder.Services.AddHttpClient<ComfyUiClient>()
+    .ConfigureHttpClient(c => c.Timeout = TimeSpan.FromSeconds(120));
+builder.Services.AddScoped<IComfyUiClient>(sp => sp.GetRequiredService<ComfyUiClient>());
 
 // Ollama client
 builder.Services.AddHttpClient<OllamaClient>()
