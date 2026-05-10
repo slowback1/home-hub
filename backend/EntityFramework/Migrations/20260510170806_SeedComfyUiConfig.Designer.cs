@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EntityFramework.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260510170010_AddComfyUiWorkflow")]
-    partial class AddComfyUiWorkflow
+    [Migration("20260510170806_SeedComfyUiConfig")]
+    partial class SeedComfyUiConfig
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -78,11 +78,8 @@ namespace EntityFramework.Migrations
 
             modelBuilder.Entity("Common.Models.ComfyUiWorkflow", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
