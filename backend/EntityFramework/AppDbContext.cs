@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
     public DbSet<Activity> Activities => Set<Activity>();
     public DbSet<ActivityPick> ActivityPicks => Set<ActivityPick>();
     public DbSet<FeatureFlag> FeatureFlags => Set<FeatureFlag>();
+    public DbSet<ComfyUiWorkflow> ComfyUiWorkflows => Set<ComfyUiWorkflow>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
