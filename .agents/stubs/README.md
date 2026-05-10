@@ -14,4 +14,3 @@ Ideas captured for future refinement. Run the `write-prd` skill to promote a stu
 | [audiobook-job-pause-resume](audiobook-job-pause-resume.md) | Audiobook Job Pause / Resume | Pause a running conversion to free the GPU via SIGSTOP/SIGCONT, resume it on demand | 2026-05-06 |
 | [ebook-library](ebook-library.md) | Ebook Library | Backend directory scanner + frontend browse view for discovering epub files on the server | 2026-05-07 |
 | [ebook-reader](ebook-reader.md) | Ebook Reader | In-app reader view that renders epub content chapter by chapter in the browser | 2026-05-07 |
-| [comfyui-text-to-image](comfyui-text-to-image.md) | ComfyUI Text-to-Image | Select a ComfyUI workflow, enter a prompt, run inference, and view the generated image in-app | 2026-05-09 |
