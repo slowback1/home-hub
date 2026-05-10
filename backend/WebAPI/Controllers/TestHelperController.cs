@@ -61,5 +61,18 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpDelete("comfyui")]
+    public async Task<ActionResult> ClearComfyUiWorkflows()
+    {
+        if (!IsAllowed) return NotFound();
+
+        var crud = crudFactory.GetCrud<ComfyUiWorkflow>();
+        var all = await crud.QueryAsync(_ => true);
+        foreach (var workflow in all)
+            await crud.DeleteAsync(workflow.Id);
+
+        return NoContent();
+    }
+
     public record SeedPickRequest(string ActivityName, DateTime PickedAt);
 }

@@ -110,7 +110,7 @@ if (builder.Environment.IsEnvironment("E2E"))
         new() { Id = "ollama::url",            Namespace = "ollama",    Key = "url",       Value = "",         Type = "string", IsSecret = false },
         new() { Id = "activity::selector",     Namespace = "activity",  Key = "selector",  Value = "random",   Type = "string", IsSecret = false },
         new() { Id = "activity::ai_model",     Namespace = "activity",  Key = "ai_model",  Value = "llama3.2", Type = "string", IsSecret = false },
-        new() { Id = "comfyui::base_url",       Namespace = "comfyui",   Key = "base_url",  Value = "",         Type = "string", IsSecret = false }
+        new() { Id = "comfyui::base_url",       Namespace = "comfyui",   Key = "base_url",  Value = "http://localhost:8199", Type = "string", IsSecret = false }
     };
     builder.Services.AddSingleton<ISystemConfigProvider>(new DictionarySystemConfigProvider(e2eEntries));
 }

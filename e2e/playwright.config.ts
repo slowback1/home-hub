@@ -35,6 +35,12 @@ export default defineConfig({
 			url: 'http://localhost:5173',
 			reuseExistingServer: !process.env.CI,
 			timeout: 60000
+		},
+		{
+			command: 'node stub-servers/comfyui/server.js',
+			url: 'http://localhost:8199/health',
+			reuseExistingServer: !process.env.CI,
+			timeout: 10000
 		}
 	]
 });
