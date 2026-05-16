@@ -74,16 +74,10 @@
 		}
 	}
 
-	async function handleDeleteFile(job: AudiobookJob) {
+	async function handleDeleteJob(job: AudiobookJob) {
 		try {
-			await api.deleteFile(job.id);
-			jobs = jobs.map((j) =>
-				j.id === job.id
-					? ({ ...j, status: 'completed', _fileDeleted: true } as AudiobookJob & {
-							_fileDeleted?: boolean;
-						})
-					: j
-			);
+			await api.deleteJob(job.id);
+			jobs = jobs.filter((j) => j.id !== job.id);
 		} catch {
 			// ignore
 		}
@@ -174,7 +168,6 @@
 				</thead>
 				<tbody>
 					{#each jobs as job (job.id)}
-						{@const fileDeleted = (job as AudiobookJob & { _fileDeleted?: boolean })._fileDeleted}
 						<tr
 							class="job-row"
 							class:job-row--in-progress={job.status === 'in_progress'}
@@ -202,7 +195,7 @@
 										Cancel
 									</button>
 								{/if}
-								{#if job.status === 'completed' && !fileDeleted}
+								{#if job.status === 'completed'}
 									<a
 										href={api.getFileUrl(job.id)}
 										download
@@ -211,12 +204,14 @@
 									>
 										Download
 									</a>
+								{/if}
+								{#if TERMINAL_STATUSES.has(job.status)}
 									<button
 										class="action-btn action-btn--secondary"
-										data-testid="delete-file-button"
-										on:click={() => handleDeleteFile(job)}
+										data-testid="delete-job-button"
+										on:click={() => handleDeleteJob(job)}
 									>
-										Delete File
+										Delete
 									</button>
 								{/if}
 							</td>

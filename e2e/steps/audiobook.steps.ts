@@ -121,27 +121,36 @@ Then('a message directing me to the Voice Samples tab is visible', async ({ audi
 });
 
 Given('a failed job exists', async ({ audiobookConvertPage }) => {
-	throw new Error('not implemented');
+	await audiobookConvertPage.uploadEpubFile(FAIL_EPUB_FIXTURE);
+	await audiobookConvertPage.selectFirstVoiceSample();
+	await audiobookConvertPage.submitForm();
+	await audiobookConvertPage.waitForLastJobStatus('failed', 15_000);
 });
 
 Given('a cancelled job exists', async ({ audiobookConvertPage }) => {
-	throw new Error('not implemented');
+	await audiobookConvertPage.uploadEpubFile(EPUB_FIXTURE);
+	await audiobookConvertPage.selectFirstVoiceSample();
+	await audiobookConvertPage.submitForm();
+	await audiobookConvertPage.waitForLastJobStatus('queued', 5_000);
+	await audiobookConvertPage.clickCancelOnLastJob();
+	await audiobookConvertPage.waitForLastJobStatus('cancelled', 5_000);
 });
 
 When('I click delete on the completed job', async ({ audiobookConvertPage }) => {
-	throw new Error('not implemented');
+	await audiobookConvertPage.clickDeleteOnLastJob();
 });
 
 When('I click delete on the failed job', async ({ audiobookConvertPage }) => {
-	throw new Error('not implemented');
+	await audiobookConvertPage.clickDeleteOnLastJob();
 });
 
 When('I click delete on the cancelled job', async ({ audiobookConvertPage }) => {
-	throw new Error('not implemented');
+	await audiobookConvertPage.clickDeleteOnLastJob();
 });
 
 Then('the job is removed from the queue list', async ({ audiobookConvertPage }) => {
-	throw new Error('not implemented');
+	await audiobookConvertPage.waitForJobRowCount(0);
+	expect(await audiobookConvertPage.getJobRowCount()).toBe(0);
 });
 
 // --- Voice samples page steps ---

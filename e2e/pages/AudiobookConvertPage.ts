@@ -139,11 +139,20 @@ export class AudiobookConvertPage {
 	}
 
 	async clickDeleteOnLastJob(): Promise<void> {
-		throw new Error('not implemented');
+		const lastRow = this.page.locator('[data-testid="job-row"]').last();
+		await lastRow.locator('[data-testid="delete-job-button"]').click();
 	}
 
 	async getJobRowCount(): Promise<number> {
-		throw new Error('not implemented');
+		return this.page.locator('[data-testid="job-row"]').count();
+	}
+
+	async waitForJobRowCount(count: number, timeoutMs = 5_000): Promise<void> {
+		await this.page.waitForFunction(
+			(n) => document.querySelectorAll('[data-testid="job-row"]').length === n,
+			count,
+			{ timeout: timeoutMs }
+		);
 	}
 
 	async submitJobAndWaitForStatus(

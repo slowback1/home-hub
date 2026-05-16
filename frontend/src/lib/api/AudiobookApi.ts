@@ -30,6 +30,10 @@ export default class AudiobookApi extends BaseApi {
 		return this.Delete<void>(`/api/audiobook/jobs/${id}`);
 	}
 
+	async deleteJob(id: string): Promise<void> {
+		return this.Delete<void>(`/api/audiobook/jobs/${id}`);
+	}
+
 	getFileUrl(id: string): string {
 		const config = new ConfigService();
 		const base = (config.getConfig<string>('baseUrl') ?? '').replace(/\/$/, '');
