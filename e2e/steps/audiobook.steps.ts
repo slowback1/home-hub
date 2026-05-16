@@ -120,6 +120,30 @@ Then('a message directing me to the Voice Samples tab is visible', async ({ audi
 	expect(await audiobookConvertPage.hasNoVoiceSamplesMessage()).toBe(true);
 });
 
+Given('a failed job exists', async ({ audiobookConvertPage }) => {
+	throw new Error('not implemented');
+});
+
+Given('a cancelled job exists', async ({ audiobookConvertPage }) => {
+	throw new Error('not implemented');
+});
+
+When('I click delete on the completed job', async ({ audiobookConvertPage }) => {
+	throw new Error('not implemented');
+});
+
+When('I click delete on the failed job', async ({ audiobookConvertPage }) => {
+	throw new Error('not implemented');
+});
+
+When('I click delete on the cancelled job', async ({ audiobookConvertPage }) => {
+	throw new Error('not implemented');
+});
+
+Then('the job is removed from the queue list', async ({ audiobookConvertPage }) => {
+	throw new Error('not implemented');
+});
+
 // --- Voice samples page steps ---
 
 Given('I am on the audiobook voice samples page', async ({ audiobookVoiceSamplesPage }) => {

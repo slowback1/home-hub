@@ -138,6 +138,14 @@ export class AudiobookConvertPage {
 		return lastRow.locator('[data-testid="job-error-message"]').isVisible();
 	}
 
+	async clickDeleteOnLastJob(): Promise<void> {
+		throw new Error('not implemented');
+	}
+
+	async getJobRowCount(): Promise<number> {
+		throw new Error('not implemented');
+	}
+
 	async submitJobAndWaitForStatus(
 		epubPath: string,
 		targetStatus: string,

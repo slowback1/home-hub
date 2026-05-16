@@ -53,3 +53,24 @@ Feature: Epub to Audiobook
     And at least one voice sample exists
     When I delete a voice sample
     Then the voice sample is removed from the list
+
+  @audiobook-delete-completed-job
+  Scenario: Delete a completed job
+    Given I am on the audiobook convert page
+    And a completed job exists
+    When I click delete on the completed job
+    Then the job is removed from the queue list
+
+  @audiobook-delete-failed-job
+  Scenario: Delete a failed job
+    Given I am on the audiobook convert page
+    And a failed job exists
+    When I click delete on the failed job
+    Then the job is removed from the queue list
+
+  @audiobook-delete-cancelled-job
+  Scenario: Delete a cancelled job
+    Given I am on the audiobook convert page
+    And a cancelled job exists
+    When I click delete on the cancelled job
+    Then the job is removed from the queue list
