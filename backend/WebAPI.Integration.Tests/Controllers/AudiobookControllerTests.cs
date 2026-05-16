@@ -132,14 +132,42 @@ public class AudiobookControllerTests
     }
 
     [Test]
-    public async Task CancelJob_Returns409_ForCompletedJob()
+    public async Task DeleteJob_Returns204AndRemovesRecord_ForCompletedJob()
     {
         var submitted = await _service.SubmitJobAsync("book.epub", [], "default");
         await _service.ForceStatusAsync(submitted.Id, AudiobookJobStatus.Completed);
 
-        var response = await _client.DeleteAsync($"/api/audiobook/jobs/{submitted.Id}");
+        var deleteResponse = await _client.DeleteAsync($"/api/audiobook/jobs/{submitted.Id}");
+        var getResponse = await _client.GetAsync($"/api/audiobook/jobs/{submitted.Id}");
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
+        Assert.That(deleteResponse.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+        Assert.That(getResponse.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task DeleteJob_Returns204AndRemovesRecord_ForFailedJob()
+    {
+        var submitted = await _service.SubmitJobAsync("book.epub", [], "default");
+        await _service.ForceStatusAsync(submitted.Id, AudiobookJobStatus.Failed);
+
+        var deleteResponse = await _client.DeleteAsync($"/api/audiobook/jobs/{submitted.Id}");
+        var getResponse = await _client.GetAsync($"/api/audiobook/jobs/{submitted.Id}");
+
+        Assert.That(deleteResponse.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+        Assert.That(getResponse.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task DeleteJob_Returns204AndRemovesRecord_ForCancelledJob()
+    {
+        var submitted = await _service.SubmitJobAsync("book.epub", [], "default");
+        await _service.CancelJobAsync(submitted.Id);
+
+        var deleteResponse = await _client.DeleteAsync($"/api/audiobook/jobs/{submitted.Id}");
+        var getResponse = await _client.GetAsync($"/api/audiobook/jobs/{submitted.Id}");
+
+        Assert.That(deleteResponse.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+        Assert.That(getResponse.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
     }
 
     // --- GET /api/audiobook/jobs/{id}/file ---

@@ -41,11 +41,15 @@ public class AudiobookController(IAudiobookService service) : ControllerBase
     }
 
     [HttpDelete("jobs/{id}")]
-    public async Task<ActionResult> CancelJob(string id)
+    public async Task<ActionResult> DeleteOrCancelJob(string id)
     {
         try
         {
-            await service.CancelJobAsync(id);
+            var job = await service.GetJobAsync(id);
+            if (job.Status is AudiobookJobStatus.Queued or AudiobookJobStatus.InProgress)
+                await service.CancelJobAsync(id);
+            else
+                await service.DeleteJobAsync(id);
             return NoContent();
         }
         catch (KeyNotFoundException)
