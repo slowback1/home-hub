@@ -194,6 +194,76 @@ public class MockAudiobookServiceTests
         Assert.ThrowsAsync<InvalidOperationException>(() => _service.DeleteFileAsync(job.Id));
     }
 
+    // --- DeleteJobAsync ---
+
+    [Test]
+    public async Task DeleteJobAsync_RemovesCompletedJobRecord()
+    {
+        var job = await _service.SubmitJobAsync("book.epub", [], "default");
+        await _service.ForceStatusAsync(job.Id, AudiobookJobStatus.Completed);
+
+        await _service.DeleteJobAsync(job.Id);
+
+        Assert.ThrowsAsync<KeyNotFoundException>(() => _service.GetJobAsync(job.Id));
+    }
+
+    [Test]
+    public async Task DeleteJobAsync_RemovesFailedJobRecord()
+    {
+        var job = await _service.SubmitJobAsync("book.epub", [], "default");
+        await _service.ForceStatusAsync(job.Id, AudiobookJobStatus.Failed);
+
+        await _service.DeleteJobAsync(job.Id);
+
+        Assert.ThrowsAsync<KeyNotFoundException>(() => _service.GetJobAsync(job.Id));
+    }
+
+    [Test]
+    public async Task DeleteJobAsync_RemovesCancelledJobRecord()
+    {
+        var job = await _service.SubmitJobAsync("book.epub", [], "default");
+        await _service.CancelJobAsync(job.Id);
+
+        await _service.DeleteJobAsync(job.Id);
+
+        Assert.ThrowsAsync<KeyNotFoundException>(() => _service.GetJobAsync(job.Id));
+    }
+
+    [Test]
+    public void DeleteJobAsync_ThrowsKeyNotFoundForUnknownId()
+    {
+        Assert.ThrowsAsync<KeyNotFoundException>(() => _service.DeleteJobAsync("unknown-id"));
+    }
+
+    [Test]
+    public async Task DeleteJobAsync_ThrowsInvalidOperationForQueuedJob()
+    {
+        var job = await _service.SubmitJobAsync("book.epub", [], "default");
+
+        Assert.ThrowsAsync<InvalidOperationException>(() => _service.DeleteJobAsync(job.Id));
+    }
+
+    [Test]
+    public async Task DeleteJobAsync_ThrowsInvalidOperationForInProgressJob()
+    {
+        var job = await _service.SubmitJobAsync("book.epub", [], "default");
+        await _service.ForceStatusAsync(job.Id, AudiobookJobStatus.InProgress);
+
+        Assert.ThrowsAsync<InvalidOperationException>(() => _service.DeleteJobAsync(job.Id));
+    }
+
+    [Test]
+    public async Task DeleteJobAsync_RemovesJobFromList()
+    {
+        var job = await _service.SubmitJobAsync("book.epub", [], "default");
+        await _service.ForceStatusAsync(job.Id, AudiobookJobStatus.Completed);
+
+        await _service.DeleteJobAsync(job.Id);
+
+        var jobs = await _service.ListJobsAsync();
+        Assert.That(jobs.Any(j => j.Id == job.Id), Is.False);
+    }
+
     // --- Voice samples ---
 
     [Test]

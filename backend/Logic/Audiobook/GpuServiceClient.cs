@@ -116,6 +116,8 @@ public class GpuServiceClient(HttpClient httpClient, ISystemConfigProvider confi
         await HandleErrorResponseAsync(response);
     }
 
+    public Task DeleteJobAsync(string id) => throw new NotImplementedException();
+
     public async Task<Stream> GetFileAsync(string id)
     {
         var request = await BuildRequestAsync(HttpMethod.Get, $"jobs/{Uri.EscapeDataString(id)}/file");

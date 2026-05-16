@@ -66,6 +66,19 @@ public class MockAudiobookService : IAudiobookService
         return Task.CompletedTask;
     }
 
+    public Task DeleteJobAsync(string id)
+    {
+        if (!_jobs.TryGetValue(id, out var job))
+            throw new KeyNotFoundException($"Job {id} not found");
+
+        if (job.Status is AudiobookJobStatus.Queued or AudiobookJobStatus.InProgress)
+            throw new InvalidOperationException($"Cannot delete job in {job.Status} state");
+
+        _jobs.TryRemove(id, out _);
+        _deletedFiles.Remove(id);
+        return Task.CompletedTask;
+    }
+
     public Task<Stream> GetFileAsync(string id)
     {
         if (!_jobs.TryGetValue(id, out var job))

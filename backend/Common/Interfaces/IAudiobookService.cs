@@ -11,6 +11,7 @@ public interface IAudiobookService
     Task<AudiobookJob> SubmitJobAsync(string epubFilename, byte[] epubBytes, string voiceSampleName);
     Task<AudiobookJob> GetJobAsync(string id);
     Task CancelJobAsync(string id);
+    Task DeleteJobAsync(string id);
     Task<Stream> GetFileAsync(string id);
     Task DeleteFileAsync(string id);
     Task<IEnumerable<string>> ListVoiceSamplesAsync();
