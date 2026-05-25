@@ -8,6 +8,17 @@
 	let loadError: string | null = null;
 	let loading = true;
 
+	// Modal state
+	let modalOpen = false;
+	let editingTask: ChoreTask | null = null;
+	let formName = '';
+	let formDoDate = '';
+	let formIsRecurring = false;
+	let formIntervalDays = 7;
+	let formError: string | null = null;
+	let formSubmitting = false;
+	let formDeleting = false;
+
 	function today(): Date {
 		const d = new Date();
 		d.setHours(0, 0, 0, 0);
@@ -35,7 +46,91 @@
 		.sort((a, b) => new Date(a.doDate!).getTime() - new Date(b.doDate!).getTime());
 
 	function formatDate(iso: string): string {
-		return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+		return new Date(iso).toLocaleDateString(undefined, {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric'
+		});
+	}
+
+	function openAddModal() {
+		editingTask = null;
+		formName = '';
+		formDoDate = '';
+		formIsRecurring = false;
+		formIntervalDays = 7;
+		formError = null;
+		modalOpen = true;
+	}
+
+	function openEditModal(task: ChoreTask) {
+		editingTask = task;
+		formName = task.name;
+		formDoDate = task.doDate ? task.doDate.split('T')[0] : '';
+		formIsRecurring = task.isRecurring;
+		formIntervalDays = task.intervalDays ?? 7;
+		formError = null;
+		modalOpen = true;
+	}
+
+	function closeModal() {
+		modalOpen = false;
+		editingTask = null;
+		formError = null;
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') closeModal();
+	}
+
+	async function handleSubmit() {
+		if (!formName.trim()) {
+			formError = 'Name is required.';
+			return;
+		}
+		if (formIsRecurring && formIntervalDays < 1) {
+			formError = 'Interval must be at least 1 day.';
+			return;
+		}
+
+		formError = null;
+		formSubmitting = true;
+		try {
+			const payload = {
+				name: formName.trim(),
+				isRecurring: formIsRecurring,
+				intervalDays: formIsRecurring ? formIntervalDays : null,
+				doDate: formDoDate || null
+			};
+
+			if (editingTask) {
+				const updated = await api.updateTask(editingTask.id, payload);
+				tasks = tasks.map((t) => (t.id === updated.id ? updated : t));
+			} else {
+				const created = await api.createTask(payload);
+				tasks = [...tasks, created];
+			}
+			closeModal();
+		} catch {
+			formError = 'Something went wrong. Please try again.';
+		} finally {
+			formSubmitting = false;
+		}
+	}
+
+	async function handleDelete() {
+		if (!editingTask) return;
+		formError = null;
+		formDeleting = true;
+		try {
+			await api.deleteTask(editingTask.id);
+			tasks = tasks.filter((t) => t.id !== editingTask!.id);
+			closeModal();
+		} catch {
+			formError = 'Failed to delete task. Please try again.';
+		} finally {
+			formDeleting = false;
+		}
 	}
 
 	onMount(async () => {
@@ -53,10 +148,14 @@
 	<title>HomeHub — Task Tracker</title>
 </svelte:head>
 
+<svelte:window on:keydown={handleKeydown} />
+
 <div class="tasks-page" data-testid="tasks-page">
 	<div class="page-header">
 		<h1 class="page-title">Task Tracker</h1>
-		<button class="btn btn--primary" data-testid="add-task-button">Add Task</button>
+		<button class="btn btn--primary" data-testid="add-task-button" on:click={openAddModal}>
+			Add Task
+		</button>
 	</div>
 
 	{#if loadError}
@@ -83,6 +182,7 @@
 									class="btn btn--secondary btn--sm"
 									data-testid="edit-task-button"
 									aria-label="Edit {task.name}"
+									on:click={() => openEditModal(task)}
 								>
 									Edit
 								</button>
@@ -118,6 +218,7 @@
 									class="btn btn--secondary btn--sm"
 									data-testid="edit-task-button"
 									aria-label="Edit {task.name}"
+									on:click={() => openEditModal(task)}
 								>
 									Edit
 								</button>
@@ -129,6 +230,100 @@
 		</section>
 	{/if}
 </div>
+
+{#if modalOpen}
+	<div class="modal-backdrop" data-testid="modal-backdrop" on:click|self={closeModal} role="presentation">
+		<div class="modal" role="dialog" aria-modal="true" data-testid="task-modal">
+			<div class="modal-header">
+				<h2 class="modal-title">{editingTask ? 'Edit Task' : 'Add Task'}</h2>
+				<button class="modal-close" aria-label="Close" data-testid="modal-close-button" on:click={closeModal}>✕</button>
+			</div>
+
+			<form class="modal-form" on:submit|preventDefault={handleSubmit} data-testid="task-form">
+				<div class="form-field">
+					<label for="task-name">Name</label>
+					<input
+						id="task-name"
+						type="text"
+						bind:value={formName}
+						placeholder="Task name"
+						data-testid="task-name-input"
+						required
+					/>
+				</div>
+
+				<div class="form-field">
+					<label for="task-do-date">Do Date <span class="optional">(optional)</span></label>
+					<input
+						id="task-do-date"
+						type="date"
+						bind:value={formDoDate}
+						data-testid="task-do-date-input"
+					/>
+				</div>
+
+				<div class="form-field form-field--toggle">
+					<label for="task-recurring">Recurring</label>
+					<input
+						id="task-recurring"
+						type="checkbox"
+						bind:checked={formIsRecurring}
+						data-testid="task-recurring-toggle"
+					/>
+				</div>
+
+				{#if formIsRecurring}
+					<div class="form-field">
+						<label for="task-interval">Repeat every (days)</label>
+						<input
+							id="task-interval"
+							type="number"
+							min="1"
+							bind:value={formIntervalDays}
+							data-testid="task-interval-input"
+						/>
+					</div>
+				{/if}
+
+				{#if formError}
+					<p class="form-error" data-testid="form-error">{formError}</p>
+				{/if}
+
+				<div class="modal-actions">
+					{#if editingTask}
+						<button
+							type="button"
+							class="btn btn--danger"
+							data-testid="delete-task-button"
+							disabled={formDeleting || formSubmitting}
+							on:click={handleDelete}
+						>
+							{formDeleting ? 'Deleting…' : 'Delete'}
+						</button>
+					{/if}
+					<div class="modal-actions-right">
+						<button
+							type="button"
+							class="btn btn--secondary"
+							data-testid="cancel-modal-button"
+							on:click={closeModal}
+						>
+							Cancel
+						</button>
+						<button
+							type="submit"
+							class="btn btn--primary"
+							data-testid="submit-task-button"
+							disabled={formSubmitting || formDeleting}
+						>
+							{formSubmitting ? 'Saving…' : editingTask ? 'Save' : 'Add Task'}
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+{/if}
 
 <style>
 	.tasks-page {
@@ -223,6 +418,7 @@
 		font-size: var(--font-size-sm);
 	}
 
+	/* Buttons */
 	.btn {
 		padding: var(--space-2) var(--space-4);
 		border-radius: var(--radius-sm);
@@ -233,8 +429,13 @@
 		transition: opacity 0.15s ease;
 	}
 
-	.btn:hover {
+	.btn:hover:not(:disabled) {
 		opacity: 0.85;
+	}
+
+	.btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
 	}
 
 	.btn--sm {
@@ -256,5 +457,126 @@
 		background: #c6f6d5;
 		color: #276749;
 		border-color: #9ae6b4;
+	}
+
+	.btn--danger {
+		background: #fed7d7;
+		color: #9b2c2c;
+		border-color: #fc8181;
+	}
+
+	/* Modal */
+	.modal-backdrop {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 100;
+	}
+
+	.modal {
+		background: var(--color-surface-base);
+		border: 1px solid var(--color-border-subtle);
+		border-radius: var(--radius-md);
+		padding: var(--space-6);
+		width: 100%;
+		max-width: 480px;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.modal-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.modal-title {
+		font-size: var(--font-size-lg, 1.125rem);
+		font-weight: var(--font-weight-bold);
+		color: var(--color-text-primary);
+		margin: 0;
+	}
+
+	.modal-close {
+		background: none;
+		border: none;
+		font-size: var(--font-size-md);
+		color: var(--color-text-secondary);
+		cursor: pointer;
+		padding: var(--space-1);
+		line-height: 1;
+	}
+
+	.modal-close:hover {
+		color: var(--color-text-primary);
+	}
+
+	.modal-form {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+	}
+
+	.form-field {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+	}
+
+	.form-field--toggle {
+		flex-direction: row;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	.form-field label {
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		color: var(--color-text-secondary);
+	}
+
+	.optional {
+		font-weight: normal;
+		color: var(--color-text-disabled, #aaa);
+	}
+
+	.form-field input[type='text'],
+	.form-field input[type='date'],
+	.form-field input[type='number'] {
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm);
+		background-color: var(--color-surface-raised);
+		color: var(--color-text-primary);
+		font-size: var(--font-size-sm);
+	}
+
+	.form-field input:focus {
+		outline: none;
+		border-color: var(--color-brand-lighter);
+	}
+
+	.form-error {
+		color: var(--color-error, #e53e3e);
+		font-size: var(--font-size-sm);
+		margin: 0;
+	}
+
+	.modal-actions {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		padding-top: var(--space-2);
+	}
+
+	.modal-actions-right {
+		display: flex;
+		gap: var(--space-2);
+		margin-left: auto;
 	}
 </style>
