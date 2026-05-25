@@ -1,13 +1,5 @@
 import type { Component } from 'svelte';
-import {
-	CheckSquare,
-	Shuffle,
-	Gamepad2,
-	Cloud,
-	BookAudio,
-	Bookmark,
-	Image
-} from 'lucide-svelte';
+import { CheckSquare, Shuffle, Gamepad2, Cloud, BookAudio, Bookmark, Image } from 'lucide-svelte';
 import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { FeatureFlags } from '$lib/services/FeatureFlag/FeatureFlags';
 import TasksWidget from './widgets/TasksWidget.svelte';
