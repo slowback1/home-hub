@@ -25,7 +25,30 @@
 	let formUrlError: string | null = null;
 	let formSubmitting = false;
 
+	// Search and filter state
+	let searchQuery = '';
+	let starredOnly = false;
+
 	$: sorted = [...bookmarks].sort((a, b) => a.name.localeCompare(b.name));
+	$: starredCount = bookmarks.filter((b) => b.starred).length;
+	$: filtered = sorted.filter((bm) => {
+		if (starredOnly && !bm.starred) return false;
+		return !searchQuery.trim() || matchesSearch(bm, searchQuery);
+	});
+
+	function matchesSearch(bm: BookmarkItem, query: string): boolean {
+		const q = query.toLowerCase();
+		return (
+			bm.name.toLowerCase().includes(q) ||
+			bm.url.toLowerCase().includes(q) ||
+			(bm.description?.toLowerCase().includes(q) ?? false)
+		);
+	}
+
+	function clearFilters() {
+		searchQuery = '';
+		starredOnly = false;
+	}
 
 	$: derivedHost = (() => {
 		try {
@@ -113,6 +136,15 @@
 			undoTimer = setTimeout(clearUndoToast, UNDO_TIMEOUT_MS);
 		} catch {
 			bookmarks = [...bookmarks, snapshot];
+		}
+	}
+
+	async function handleStar(bm: BookmarkItem) {
+		try {
+			const updated = await api.toggleStar(bm.id);
+			bookmarks = bookmarks.map((b) => (b.id === updated.id ? updated : b));
+		} catch {
+			// star toggle failed silently
 		}
 	}
 
@@ -217,7 +249,7 @@
 
 	{#if loading}
 		<p class="loading" data-testid="loading">Loading…</p>
-	{:else if sorted.length === 0}
+	{:else if bookmarks.length === 0}
 		<div class="empty-state-zero" data-testid="bookmarks-empty-state">
 			<div class="empty-icon"><Bookmark size={ICON_EMPTY} /></div>
 			<h2>No bookmarks yet</h2>
@@ -234,67 +266,94 @@
 			</button>
 		</div>
 	{:else}
+		<div class="toolbar">
+			<input
+				type="search"
+				class="search-input"
+				bind:value={searchQuery}
+				placeholder="Search bookmarks…"
+				data-testid="bookmark-search"
+			/>
+			<button
+				class="starred-filter"
+				class:active={starredOnly}
+				data-testid="starred-filter"
+				on:click={() => (starredOnly = !starredOnly)}
+			>
+				<Star size={ICON_STAR} fill={starredOnly ? 'currentColor' : 'none'} />
+				Starred
+				{#if starredCount > 0}<span class="starred-count">{starredCount}</span>{/if}
+			</button>
+		</div>
+
 		<p class="results-summary" data-testid="results-summary">
-			<strong>{sorted.length}</strong>
-			{sorted.length === 1 ? 'bookmark' : 'bookmarks'}
+			<strong>{filtered.length}</strong> of <strong>{bookmarks.length}</strong>
+			{bookmarks.length === 1 ? 'bookmark' : 'bookmarks'}
 		</p>
 
-		<div class="bookmark-grid" data-testid="bookmark-grid">
-			{#each sorted as bm (bm.id)}
-				<a
-					class="bookmark-card"
-					href={bm.url}
-					target="_blank"
-					rel="noopener noreferrer"
-					data-testid="bookmark-card"
-					data-bookmark-name={bm.name}
-					title={bm.url}
-				>
-					<div class="card-top">
-						<Favicon url={bm.url} name={bm.name} size={ICON_FAVICON} />
-						<div class="title-block">
-							<span class="bm-name">{bm.name}</span>
-							<span class="bm-host">
-								{displayHost(bm.url)}
-								<ExternalLink size={ICON_HOST} />
-							</span>
+		{#if filtered.length === 0}
+			<div class="empty-state-filtered" data-testid="bookmarks-filtered-empty-state">
+				<p>No bookmarks match your filters.</p>
+				<button class="btn btn--secondary" on:click={clearFilters}>Clear filters</button>
+			</div>
+		{:else}
+			<div class="bookmark-grid" data-testid="bookmark-grid">
+				{#each filtered as bm (bm.id)}
+					<a
+						class="bookmark-card"
+						href={bm.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						data-testid="bookmark-card"
+						data-bookmark-name={bm.name}
+						title={bm.url}
+					>
+						<div class="card-top">
+							<Favicon url={bm.url} name={bm.name} size={ICON_FAVICON} />
+							<div class="title-block">
+								<span class="bm-name">{bm.name}</span>
+								<span class="bm-host">
+									{displayHost(bm.url)}
+									<ExternalLink size={ICON_HOST} />
+								</span>
+							</div>
+							<button
+								class="star-btn"
+								class:starred={bm.starred}
+								aria-label={bm.starred ? 'Unstar' : 'Star'}
+								data-testid="star-button"
+								on:click|preventDefault|stopPropagation={() => handleStar(bm)}
+							>
+								<Star size={ICON_STAR} fill={bm.starred ? 'currentColor' : 'none'} />
+							</button>
 						</div>
-						<button
-							class="star-btn"
-							class:starred={bm.starred}
-							aria-label={bm.starred ? 'Unstar' : 'Star'}
-							data-testid="star-button"
-							on:click|preventDefault|stopPropagation={() => {}}
-						>
-							<Star size={ICON_STAR} fill={bm.starred ? 'currentColor' : 'none'} />
-						</button>
-					</div>
 
-					{#if bm.description}
-						<p class="bm-description">{bm.description}</p>
-					{/if}
+						{#if bm.description}
+							<p class="bm-description">{bm.description}</p>
+						{/if}
 
-					<div class="card-actions" on:click|stopPropagation role="presentation">
-						<button
-							class="icon-btn"
-							aria-label="Edit {bm.name}"
-							data-testid="edit-bookmark-button"
-							on:click|preventDefault={() => openEditModal(bm)}
-						>
-							<Pencil size={ICON_ACTION} />
-						</button>
-						<button
-							class="icon-btn icon-btn--danger"
-							aria-label="Delete {bm.name}"
-							data-testid="delete-bookmark-button"
-							on:click|preventDefault={() => openDeleteConfirm(bm)}
-						>
-							<Trash2 size={ICON_ACTION} />
-						</button>
-					</div>
-				</a>
-			{/each}
-		</div>
+						<div class="card-actions" on:click|stopPropagation role="presentation">
+							<button
+								class="icon-btn"
+								aria-label="Edit {bm.name}"
+								data-testid="edit-bookmark-button"
+								on:click|preventDefault={() => openEditModal(bm)}
+							>
+								<Pencil size={ICON_ACTION} />
+							</button>
+							<button
+								class="icon-btn icon-btn--danger"
+								aria-label="Delete {bm.name}"
+								data-testid="delete-bookmark-button"
+								on:click|preventDefault={() => openDeleteConfirm(bm)}
+							>
+								<Trash2 size={ICON_ACTION} />
+							</button>
+						</div>
+					</a>
+				{/each}
+			</div>
+		{/if}
 	{/if}
 </div>
 
@@ -448,6 +507,84 @@
 		font-size: var(--font-size-xl);
 		font-weight: var(--font-weight-bold);
 		color: var(--color-text-primary);
+		margin: 0;
+	}
+
+	/* Toolbar */
+	.toolbar {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+	}
+
+	.search-input {
+		flex: 1;
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm);
+		background-color: var(--color-surface-raised);
+		color: var(--color-text-primary);
+		font-size: var(--font-size-sm);
+		font-family: inherit;
+	}
+
+	.search-input:focus {
+		outline: none;
+		border-color: var(--color-brand-lighter);
+	}
+
+	.starred-filter {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-full, 9999px);
+		background: var(--color-surface-raised);
+		color: var(--color-text-secondary);
+		font-size: var(--font-size-sm);
+		cursor: pointer;
+		white-space: nowrap;
+		transition:
+			background 0.15s ease,
+			color 0.15s ease,
+			border-color 0.15s ease;
+	}
+
+	.starred-filter:hover {
+		background: var(--color-surface-overlay);
+		color: var(--color-text-primary);
+	}
+
+	.starred-filter.active {
+		background: var(--color-surface-overlay);
+		color: #e9b84a;
+		border-color: #e9b84a;
+	}
+
+	.starred-count {
+		background: var(--color-surface-deep);
+		color: var(--color-text-secondary);
+		font-size: var(--font-size-xs);
+		padding: 0 var(--space-1);
+		border-radius: var(--radius-sm);
+		min-width: 1.2em;
+		text-align: center;
+	}
+
+	/* Filtered empty state */
+	.empty-state-filtered {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-4);
+		padding: var(--space-8, 3rem) var(--space-6);
+		color: var(--color-text-secondary);
+		text-align: center;
+		font-size: var(--font-size-sm);
+	}
+
+	.empty-state-filtered p {
 		margin: 0;
 	}
 
