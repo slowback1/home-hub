@@ -16,4 +16,3 @@ Ideas captured for future refinement. Run the `write-prd` skill to promote a stu
 | [homehub-rpg-core](homehub-rpg-core.md) | HomeHub RPG Core | Web-based idle RPG with Dragon Quest-style combat and backend-persisted character progression | 2026-05-25 |
 | [chore-tracker-rpg-integration](chore-tracker-rpg-integration.md) | Chore Tracker → RPG Integration | Converts chore task completions into RPG XP and rewards | 2026-05-25 |
 | [step-counter-rpg-integration](step-counter-rpg-integration.md) | Step Counter → RPG Integration | Converts synced walk sessions into RPG progression events proportional to steps/duration | 2026-05-25 |
-| [bookmarks](bookmarks.md) | Bookmarks | Configurable page of clickable bookmark cards with auto-fetched favicons and full CRUD management | 2026-05-25 |
