@@ -47,7 +47,7 @@ public class ChoreTaskController : ApplicationController
             Name = request.Name,
             IsRecurring = request.IsRecurring,
             IntervalDays = request.IsRecurring ? request.IntervalDays : null,
-            DoDate = request.DoDate,
+            DoDate = ToUtc(request.DoDate),
             CreatedAt = DateTime.UtcNow
         };
 
@@ -71,7 +71,7 @@ public class ChoreTaskController : ApplicationController
         existing.Name = request.Name;
         existing.IsRecurring = request.IsRecurring;
         existing.IntervalDays = request.IsRecurring ? request.IntervalDays : null;
-        existing.DoDate = request.DoDate;
+        existing.DoDate = ToUtc(request.DoDate);
 
         var updated = await _tasks.UpdateAsync(id, existing);
         return Ok(updated);
@@ -140,6 +140,9 @@ public class ChoreTaskController : ApplicationController
         var updated = await _tasks.UpdateAsync(id, task);
         return Ok(updated);
     }
+
+    private static DateTime? ToUtc(DateTime? dt) =>
+        dt.HasValue ? DateTime.SpecifyKind(dt.Value, DateTimeKind.Utc) : null;
 
     public record CreateChoreTaskRequest(string Name, bool IsRecurring, int? IntervalDays, DateTime? DoDate);
     public record UpdateChoreTaskRequest(string Name, bool IsRecurring, int? IntervalDays, DateTime? DoDate);
