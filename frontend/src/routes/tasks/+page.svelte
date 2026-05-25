@@ -672,7 +672,7 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-4);
-		padding: var(--space-3) var(--space-5);
+		padding: var(--space-3) var(--space-6);
 		background: var(--color-surface-overlay);
 		border: 1px solid var(--color-border-default);
 		border-radius: var(--radius-md);
