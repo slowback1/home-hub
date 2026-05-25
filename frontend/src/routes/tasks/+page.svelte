@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { SvelteDate } from 'svelte/reactivity';
 	import TasksApi, { type ChoreTask } from '$lib/api/TasksApi';
 
 	const api = new TasksApi();
@@ -14,6 +15,9 @@
 	let undoTimer: ReturnType<typeof setTimeout> | null = null;
 
 	const UNDO_TIMEOUT_MS = 5000;
+	const DEFAULT_INTERVAL_DAYS = 7;
+	const SORT_BEFORE = -1;
+	const SORT_AFTER = 1;
 
 	function clearUndoToast() {
 		undoTask = null;
@@ -58,13 +62,13 @@
 	let formName = '';
 	let formDoDate = '';
 	let formIsRecurring = false;
-	let formIntervalDays = 7;
+	let formIntervalDays = DEFAULT_INTERVAL_DAYS;
 	let formError: string | null = null;
 	let formSubmitting = false;
 	let formDeleting = false;
 
 	function today(): Date {
-		const d = new Date();
+		const d = new SvelteDate();
 		d.setHours(0, 0, 0, 0);
 		return d;
 	}
@@ -74,16 +78,20 @@
 		return new Date(task.doDate) <= today();
 	}
 
-	$: dueTasks = tasks
-		.filter((t) => t.completedAt == null && isDue(t))
-		.sort((a, b) => {
-			const aHasDate = !!a.doDate;
-			const bHasDate = !!b.doDate;
-			if (aHasDate && bHasDate) return new Date(a.doDate!).getTime() - new Date(b.doDate!).getTime();
-			if (aHasDate && !bHasDate) return -1;
-			if (!aHasDate && bHasDate) return 1;
-			return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-		});
+	function doDateMs(task: ChoreTask): number | null {
+		return task.doDate ? new Date(task.doDate).getTime() : null;
+	}
+
+	function compareDueTasks(a: ChoreTask, b: ChoreTask): number {
+		const aMs = doDateMs(a);
+		const bMs = doDateMs(b);
+		if (aMs !== null && bMs !== null) return aMs - bMs;
+		if (aMs !== null) return SORT_BEFORE;
+		if (bMs !== null) return SORT_AFTER;
+		return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+	}
+
+	$: dueTasks = tasks.filter((t) => t.completedAt == null && isDue(t)).sort(compareDueTasks);
 
 	$: upcomingTasks = tasks
 		.filter((t) => t.completedAt == null && t.doDate && new Date(t.doDate) > today())
@@ -102,7 +110,7 @@
 		formName = '';
 		formDoDate = '';
 		formIsRecurring = false;
-		formIntervalDays = 7;
+		formIntervalDays = DEFAULT_INTERVAL_DAYS;
 		formError = null;
 		modalOpen = true;
 	}
@@ -112,7 +120,7 @@
 		formName = task.name;
 		formDoDate = task.doDate ? task.doDate.split('T')[0] : '';
 		formIsRecurring = task.isRecurring;
-		formIntervalDays = task.intervalDays ?? 7;
+		formIntervalDays = task.intervalDays ?? DEFAULT_INTERVAL_DAYS;
 		formError = null;
 		modalOpen = true;
 	}
@@ -127,25 +135,37 @@
 		if (e.key === 'Escape') closeModal();
 	}
 
+	function validateTaskForm(): string | null {
+		if (!formName.trim()) return 'Name is required.';
+		if (formIsRecurring && formIntervalDays < 1) return 'Interval must be at least 1 day.';
+		return null;
+	}
+
+	function buildTaskPayload() {
+		return {
+			name: formName.trim(),
+			isRecurring: formIsRecurring,
+			intervalDays: formIsRecurring ? formIntervalDays : null,
+			doDate: formDoDate || null
+		};
+	}
+
+	function submitButtonLabel(): string {
+		if (formSubmitting) return 'Saving…';
+		return editingTask ? 'Save' : 'Add Task';
+	}
+
 	async function handleSubmit() {
-		if (!formName.trim()) {
-			formError = 'Name is required.';
-			return;
-		}
-		if (formIsRecurring && formIntervalDays < 1) {
-			formError = 'Interval must be at least 1 day.';
+		const validationError = validateTaskForm();
+		if (validationError) {
+			formError = validationError;
 			return;
 		}
 
 		formError = null;
 		formSubmitting = true;
 		try {
-			const payload = {
-				name: formName.trim(),
-				isRecurring: formIsRecurring,
-				intervalDays: formIsRecurring ? formIntervalDays : null,
-				doDate: formDoDate || null
-			};
+			const payload = buildTaskPayload();
 
 			if (editingTask) {
 				const updated = await api.updateTask(editingTask.id, payload);
@@ -285,11 +305,21 @@
 {/if}
 
 {#if modalOpen}
-	<div class="modal-backdrop" data-testid="modal-backdrop" on:click|self={closeModal} role="presentation">
+	<div
+		class="modal-backdrop"
+		data-testid="modal-backdrop"
+		on:click|self={closeModal}
+		role="presentation"
+	>
 		<div class="modal" role="dialog" aria-modal="true" data-testid="task-modal">
 			<div class="modal-header">
 				<h2 class="modal-title">{editingTask ? 'Edit Task' : 'Add Task'}</h2>
-				<button class="modal-close" aria-label="Close" data-testid="modal-close-button" on:click={closeModal}>✕</button>
+				<button
+					class="modal-close"
+					aria-label="Close"
+					data-testid="modal-close-button"
+					on:click={closeModal}>✕</button
+				>
 			</div>
 
 			<form class="modal-form" on:submit|preventDefault={handleSubmit} data-testid="task-form">
@@ -369,7 +399,7 @@
 							data-testid="submit-task-button"
 							disabled={formSubmitting || formDeleting}
 						>
-							{formSubmitting ? 'Saving…' : editingTask ? 'Save' : 'Add Task'}
+							{submitButtonLabel()}
 						</button>
 					</div>
 				</div>
