@@ -87,6 +87,19 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpDelete("dashboard")]
+    public async Task<ActionResult> ClearDashboard()
+    {
+        if (!IsAllowed) return NotFound();
+
+        var crud = crudFactory.GetCrud<DashboardSlot>();
+        var all = await crud.QueryAsync(_ => true);
+        foreach (var slot in all)
+            await crud.DeleteAsync(slot.Id);
+
+        return NoContent();
+    }
+
     [HttpDelete("tasks")]
     public async Task<ActionResult> ClearTasks()
     {
