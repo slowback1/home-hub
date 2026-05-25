@@ -74,7 +74,8 @@
 			href: '/comfyui',
 			label: 'ComfyUI',
 			icon: Image,
-			activePath: '/comfyui'
+			activePath: '/comfyui',
+			flag: FeatureFlags.COMFYUI_ENABLED
 		},
 		{
 			testId: 'nav-item-admin',

@@ -67,7 +67,8 @@ else
         ["ACTIVITY_PICKER_ENABLED"] = true,
         ["RETRO_ACHIEVEMENTS_ENABLED"] = true,
         ["WEATHER_ENABLED"] = true,
-        ["AUDIOBOOK_ENABLED"] = false
+        ["AUDIOBOOK_ENABLED"] = false,
+        ["COMFYUI_ENABLED"] = false
     });
     builder.Services.AddSingleton<IFeatureFlagProvider>(inMemoryFlagStore);
     builder.Services.AddSingleton<IFeatureFlagRepository>(inMemoryFlagStore);

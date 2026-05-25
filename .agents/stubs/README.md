@@ -7,7 +7,6 @@ Ideas captured for future refinement. Run the `write-prd` skill to promote a stu
 | [e2e-tests-in-ci](e2e-tests-in-ci.md) | E2E Tests in CI | Run the Playwright BDD suite in CI to catch full-stack regressions before deploy | 2026-04-17 |
 | [retro-achievements-random-game](retro-achievements-random-game.md) | RetroAchievements Random Game | Picks a random game from a given console via the RetroAchievements API | 2026-04-17 |
 | [spit-counter](spit-counter.md) | Spit Counter | Baseball-themed click counter page ported from a standalone side project | 2026-04-28 |
-| [customizable-dashboard-skeleton](customizable-dashboard-skeleton.md) | Customizable Dashboard Skeleton | Configurable widget grid overview page with persistent per-slot layout preferences | 2026-05-03 |
 | [dashboard-widgets](dashboard-widgets.md) | Dashboard Widgets | Slimmed-down widget components for each completed feature, slotting into the dashboard grid | 2026-05-03 |
 | [audiobook-job-pause-resume](audiobook-job-pause-resume.md) | Audiobook Job Pause / Resume | Pause a running conversion to free the GPU via SIGSTOP/SIGCONT, resume it on demand | 2026-05-06 |
 | [ebook-library](ebook-library.md) | Ebook Library | Backend directory scanner + frontend browse view for discovering epub files on the server | 2026-05-07 |

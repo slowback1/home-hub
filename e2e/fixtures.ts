@@ -13,6 +13,7 @@ import { ComfyUiPage } from './pages/ComfyUiPage';
 import { ComfyUiConfigPage } from './pages/ComfyUiConfigPage';
 import { TasksPage } from './pages/TasksPage';
 import { BookmarksPage } from './pages/BookmarksPage';
+import { DashboardPage } from './pages/DashboardPage';
 
 type Fixtures = {
 	examplePage: ExamplePage;
@@ -28,6 +29,7 @@ type Fixtures = {
 	comfyUiConfigPage: ComfyUiConfigPage;
 	tasksPage: TasksPage;
 	bookmarksPage: BookmarksPage;
+	dashboardPage: DashboardPage;
 };
 
 const test = base.extend<Fixtures>({
@@ -69,6 +71,9 @@ const test = base.extend<Fixtures>({
 	},
 	bookmarksPage: async ({ page }, use) => {
 		await use(new BookmarksPage(page));
+	},
+	dashboardPage: async ({ page }, use) => {
+		await use(new DashboardPage(page));
 	}
 });
 
