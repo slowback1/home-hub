@@ -18,6 +18,8 @@ public class AppDbContext : DbContext
     public DbSet<ActivityPick> ActivityPicks => Set<ActivityPick>();
     public DbSet<FeatureFlag> FeatureFlags => Set<FeatureFlag>();
     public DbSet<ComfyUiWorkflow> ComfyUiWorkflows => Set<ComfyUiWorkflow>();
+    public DbSet<ChoreTask> ChoreTasks => Set<ChoreTask>();
+    public DbSet<TaskCompletion> TaskCompletions => Set<TaskCompletion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,5 +30,10 @@ public class AppDbContext : DbContext
             .HasOne<SystemConfig>()
             .WithMany(c => c.Options)
             .HasForeignKey(o => o.SystemConfigId);
+        modelBuilder.Entity<TaskCompletion>()
+            .HasOne<ChoreTask>()
+            .WithMany()
+            .HasForeignKey(c => c.TaskId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
