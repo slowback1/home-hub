@@ -1,0 +1,65 @@
+import { getVisibleWidgets, WIDGET_REGISTRY } from './widgetRegistry';
+import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
+import { createTestFeatureFlag } from '$lib/testHelpers/testFeatureFlagProvider';
+
+describe('WIDGET_REGISTRY', () => {
+	it('contains entries for all 7 known widget types', () => {
+		const ids = WIDGET_REGISTRY.map((w) => w.id);
+		expect(ids).toContain('tasks');
+		expect(ids).toContain('activity');
+		expect(ids).toContain('retro');
+		expect(ids).toContain('weather');
+		expect(ids).toContain('audiobook');
+		expect(ids).toContain('bookmarks');
+		expect(ids).toContain('comfyui');
+	});
+
+	it('every entry has id, name, description, icon, href, and component', () => {
+		for (const entry of WIDGET_REGISTRY) {
+			expect(entry.id).toBeTruthy();
+			expect(entry.name).toBeTruthy();
+			expect(entry.description).toBeTruthy();
+			expect(entry.icon).toBeTruthy();
+			expect(entry.href).toBeTruthy();
+			expect(entry.component).toBeTruthy();
+		}
+	});
+});
+
+describe('getVisibleWidgets', () => {
+	it('includes widgets with no feature flag regardless of flag state', () => {
+		FeatureFlagService.featureFlags = [];
+		const visible = getVisibleWidgets();
+		const noFlagEntries = WIDGET_REGISTRY.filter((w) => !w.featureFlag);
+		for (const entry of noFlagEntries) {
+			expect(visible.map((v) => v.id)).toContain(entry.id);
+		}
+	});
+
+	it('excludes widgets whose feature flag is disabled', () => {
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('TASKS_ENABLED', false)];
+		// tasks widget has no feature flag in the registry, so this tests the general principle
+		// Use comfyui which has COMFYUI_ENABLED flag
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('COMFYUI_ENABLED', false)];
+		const visible = getVisibleWidgets();
+		expect(visible.map((v) => v.id)).not.toContain('comfyui');
+	});
+
+	it('includes widgets whose feature flag is enabled', () => {
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('COMFYUI_ENABLED', true)];
+		const visible = getVisibleWidgets();
+		expect(visible.map((v) => v.id)).toContain('comfyui');
+	});
+
+	it('includes bookmarks when BOOKMARKS_ENABLED is on', () => {
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('BOOKMARKS_ENABLED', true)];
+		const visible = getVisibleWidgets();
+		expect(visible.map((v) => v.id)).toContain('bookmarks');
+	});
+
+	it('excludes bookmarks when BOOKMARKS_ENABLED is off', () => {
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('BOOKMARKS_ENABLED', false)];
+		const visible = getVisibleWidgets();
+		expect(visible.map((v) => v.id)).not.toContain('bookmarks');
+	});
+});
