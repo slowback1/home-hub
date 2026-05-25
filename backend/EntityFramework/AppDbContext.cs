@@ -21,6 +21,7 @@ public class AppDbContext : DbContext
     public DbSet<ChoreTask> ChoreTasks => Set<ChoreTask>();
     public DbSet<TaskCompletion> TaskCompletions => Set<TaskCompletion>();
     public DbSet<Bookmark> Bookmarks => Set<Bookmark>();
+    public DbSet<DashboardSlot> DashboardSlots => Set<DashboardSlot>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,5 +37,9 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(c => c.TaskId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DashboardSlot>()
+            .HasIndex(s => new { s.LayoutFormat, s.SlotIndex })
+            .IsUnique();
     }
 }
