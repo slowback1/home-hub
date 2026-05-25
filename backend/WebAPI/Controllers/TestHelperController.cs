@@ -74,5 +74,24 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpDelete("tasks")]
+    public async Task<ActionResult> ClearTasks()
+    {
+        if (!IsAllowed) return NotFound();
+
+        var taskCrud = crudFactory.GetCrud<ChoreTask>();
+        var completionCrud = crudFactory.GetCrud<TaskCompletion>();
+
+        var completions = await completionCrud.QueryAsync(_ => true);
+        foreach (var c in completions)
+            await completionCrud.DeleteAsync(c.Id);
+
+        var tasks = await taskCrud.QueryAsync(_ => true);
+        foreach (var t in tasks)
+            await taskCrud.DeleteAsync(t.Id);
+
+        return NoContent();
+    }
+
     public record SeedPickRequest(string ActivityName, DateTime PickedAt);
 }
