@@ -52,12 +52,9 @@ Then('I should see a {string} message', async ({ weatherPage }, message: string)
 	expect(await weatherPage.hasMessage(message)).toBe(true);
 });
 
-Given(
-	'the {string} feature flag is disabled',
-	async () => {
-		// handled by @weather-feature-flag-hidden Before hook
-	}
-);
+Given('the {string} feature flag is disabled', async () => {
+	// handled by @weather-feature-flag-hidden Before hook
+});
 
 Then('I should be redirected or see a not-found state', async ({ weatherPage }) => {
 	expect(await weatherPage.isNotFoundState()).toBe(true);

@@ -17,9 +17,9 @@ export class ActivityConfigPage {
 
 	async changeWeight(name: string, weight: number): Promise<void> {
 		await this.page.click(`[data-testid="weight-btn-${name}-${weight}"]`);
-		await expect(
-			this.page.locator(`[data-testid="weight-btn-${name}-${weight}"]`)
-		).toHaveClass(/weight-btn--active/);
+		await expect(this.page.locator(`[data-testid="weight-btn-${name}-${weight}"]`)).toHaveClass(
+			/weight-btn--active/
+		);
 	}
 
 	async deleteActivity(name: string): Promise<void> {

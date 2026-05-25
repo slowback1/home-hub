@@ -48,12 +48,12 @@ export class DesignSystemPage {
 	}
 
 	async isSidebarExpanded(): Promise<boolean> {
-		const classList = await this.nav().getAttribute('class') ?? '';
+		const classList = (await this.nav().getAttribute('class')) ?? '';
 		return !classList.includes('collapsed');
 	}
 
 	async isSidebarCollapsed(): Promise<boolean> {
-		const classList = await this.nav().getAttribute('class') ?? '';
+		const classList = (await this.nav().getAttribute('class')) ?? '';
 		return classList.includes('collapsed');
 	}
 
@@ -82,7 +82,7 @@ export class DesignSystemPage {
 	}
 
 	async hasLightTheme(): Promise<boolean> {
-		const htmlClass = await this.page.locator('html').getAttribute('class') ?? '';
+		const htmlClass = (await this.page.locator('html').getAttribute('class')) ?? '';
 		return htmlClass.includes('light-theme');
 	}
 

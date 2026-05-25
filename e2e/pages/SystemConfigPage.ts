@@ -34,7 +34,9 @@ export class SystemConfigPage {
 		const saveBtn = this.page.locator('[data-testid="btn-save"]');
 		const cancelBtn = this.page.locator('[data-testid="btn-cancel"]');
 		const input = this.page.locator('role=textbox');
-		return (await saveBtn.isVisible()) && (await cancelBtn.isVisible()) && (await input.isVisible());
+		return (
+			(await saveBtn.isVisible()) && (await cancelBtn.isVisible()) && (await input.isVisible())
+		);
 	}
 
 	async typeValueAndSave(value: string): Promise<void> {
@@ -57,7 +59,9 @@ export class SystemConfigPage {
 	async clickShowToggle(namespaceKey: string): Promise<void> {
 		await this.page.locator(`[data-testid="toggle-${namespaceKey}"]`).click();
 		// Wait until Svelte flushes the reactivity update and the span no longer shows the mask.
-		await expect(this.page.locator(`[data-testid="value-${namespaceKey}"]`)).not.toHaveText(this.MASK);
+		await expect(this.page.locator(`[data-testid="value-${namespaceKey}"]`)).not.toHaveText(
+			this.MASK
+		);
 	}
 
 	async hasSuccessToast(): Promise<boolean> {
@@ -91,20 +95,26 @@ export class SystemConfigPage {
 
 	async getSelectOptions(label: string, sectionHeader?: string): Promise<string[]> {
 		const container = sectionHeader ? this.sectionLocator(sectionHeader) : this.page;
-		const row = container.locator('tr').filter({ has: this.page.locator('td', { hasText: label }) });
+		const row = container
+			.locator('tr')
+			.filter({ has: this.page.locator('td', { hasText: label }) });
 		const options = await row.locator('select option').all();
 		return Promise.all(options.map((o) => o.textContent().then((t) => t?.trim() ?? '')));
 	}
 
 	async selectDropdownOption(label: string, option: string, sectionHeader?: string): Promise<void> {
 		const container = sectionHeader ? this.sectionLocator(sectionHeader) : this.page;
-		const row = container.locator('tr').filter({ has: this.page.locator('td', { hasText: label }) });
+		const row = container
+			.locator('tr')
+			.filter({ has: this.page.locator('td', { hasText: label }) });
 		await row.locator('select').selectOption({ label: option });
 	}
 
 	async getSelectValue(label: string, sectionHeader?: string): Promise<string> {
 		const container = sectionHeader ? this.sectionLocator(sectionHeader) : this.page;
-		const row = container.locator('tr').filter({ has: this.page.locator('td', { hasText: label }) });
+		const row = container
+			.locator('tr')
+			.filter({ has: this.page.locator('td', { hasText: label }) });
 		const select = row.locator('select');
 		const selectedValue = await select.inputValue();
 		const selectedOption = row.locator(`select option[value="${selectedValue}"]`);

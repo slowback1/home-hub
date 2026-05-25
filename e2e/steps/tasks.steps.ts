@@ -7,21 +7,37 @@ Before({ tags: '@tasks' }, async ({ request }) => {
 	await request.delete(`${BACKEND_URL}/api/test/tasks`);
 });
 
-Given('a task {string} with DoDate {int} days ago', async ({ request }, name: string, days: number) => {
-	const doDate = new Date();
-	doDate.setDate(doDate.getDate() - days);
-	await request.post(`${BACKEND_URL}/api/tasks`, {
-		data: { name, doDate: doDate.toISOString().split('T')[0], isRecurring: false, intervalDays: null }
-	});
-});
+Given(
+	'a task {string} with DoDate {int} days ago',
+	async ({ request }, name: string, days: number) => {
+		const doDate = new Date();
+		doDate.setDate(doDate.getDate() - days);
+		await request.post(`${BACKEND_URL}/api/tasks`, {
+			data: {
+				name,
+				doDate: doDate.toISOString().split('T')[0],
+				isRecurring: false,
+				intervalDays: null
+			}
+		});
+	}
+);
 
-Given('a task {string} with DoDate {int} days from now', async ({ request }, name: string, days: number) => {
-	const doDate = new Date();
-	doDate.setDate(doDate.getDate() + days);
-	await request.post(`${BACKEND_URL}/api/tasks`, {
-		data: { name, doDate: doDate.toISOString().split('T')[0], isRecurring: false, intervalDays: null }
-	});
-});
+Given(
+	'a task {string} with DoDate {int} days from now',
+	async ({ request }, name: string, days: number) => {
+		const doDate = new Date();
+		doDate.setDate(doDate.getDate() + days);
+		await request.post(`${BACKEND_URL}/api/tasks`, {
+			data: {
+				name,
+				doDate: doDate.toISOString().split('T')[0],
+				isRecurring: false,
+				intervalDays: null
+			}
+		});
+	}
+);
 
 Given('a task {string} with no DoDate', async ({ request }, name: string) => {
 	await request.post(`${BACKEND_URL}/api/tasks`, {
@@ -98,13 +114,19 @@ When('I open the Add Task modal', async ({ tasksPage }) => {
 	await tasksPage.openAddTaskModal();
 });
 
-When('I fill in the task name {string} with DoDate {int} days from now', async ({ tasksPage }, name: string, days: number) => {
-	await tasksPage.fillOneOffTask(name, days);
-});
+When(
+	'I fill in the task name {string} with DoDate {int} days from now',
+	async ({ tasksPage }, name: string, days: number) => {
+		await tasksPage.fillOneOffTask(name, days);
+	}
+);
 
-When('I fill in the recurring task name {string} with interval {int} days', async ({ tasksPage }, name: string, days: number) => {
-	await tasksPage.fillRecurringTask(name, days);
-});
+When(
+	'I fill in the recurring task name {string} with interval {int} days',
+	async ({ tasksPage }, name: string, days: number) => {
+		await tasksPage.fillRecurringTask(name, days);
+	}
+);
 
 When('I submit the task form', async ({ tasksPage }) => {
 	await tasksPage.submitTaskForm();

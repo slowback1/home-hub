@@ -20,9 +20,12 @@ Given('I have collapsed the Sidebar', async ({ designSystemPage }) => {
 	expect(collapsed).toBe(true);
 });
 
-When('I click the {string} nav item in the Sidebar', async ({ designSystemPage }, label: string) => {
-	await designSystemPage.clickSidebarNavItem(label);
-});
+When(
+	'I click the {string} nav item in the Sidebar',
+	async ({ designSystemPage }, label: string) => {
+		await designSystemPage.clickSidebarNavItem(label);
+	}
+);
 
 When('I click the collapse toggle', async ({ designSystemPage }) => {
 	await designSystemPage.clickCollapseToggle();
@@ -36,10 +39,13 @@ Then('I should be on the task tracker page', async ({ designSystemPage }) => {
 	await designSystemPage.assertOnPath('/tasks');
 });
 
-Then('the {string} nav item should be marked as active', async ({ designSystemPage }, label: string) => {
-	const active = await designSystemPage.isNavItemActive(label);
-	expect(active).toBe(true);
-});
+Then(
+	'the {string} nav item should be marked as active',
+	async ({ designSystemPage }, label: string) => {
+		const active = await designSystemPage.isNavItemActive(label);
+		expect(active).toBe(true);
+	}
+);
 
 Then('the Sidebar should collapse to icon-only mode', async ({ designSystemPage }) => {
 	const collapsed = await designSystemPage.isSidebarCollapsed();

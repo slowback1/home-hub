@@ -41,7 +41,9 @@ export class ComfyUiPage {
 	}
 
 	async waitForError(timeout = 30000): Promise<void> {
-		await this.page.locator('[data-testid="generate-error"]').waitFor({ state: 'visible', timeout });
+		await this.page
+			.locator('[data-testid="generate-error"]')
+			.waitFor({ state: 'visible', timeout });
 	}
 
 	async getResultImageSrc(): Promise<string | null> {

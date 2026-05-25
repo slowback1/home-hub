@@ -81,9 +81,12 @@ When('I click download on the completed job', async () => {
 	// Download click and event capture are handled together in the Then step
 });
 
-Then('a new job appears in the queue with status {string}', async ({ audiobookConvertPage }, status: string) => {
-	await audiobookConvertPage.waitForLastJobStatus(status, 5_000);
-});
+Then(
+	'a new job appears in the queue with status {string}',
+	async ({ audiobookConvertPage }, status: string) => {
+		await audiobookConvertPage.waitForLastJobStatus(status, 5_000);
+	}
+);
 
 Then('the job progresses to {string}', async ({ audiobookConvertPage }, status: string) => {
 	await audiobookConvertPage.waitForLastJobStatus(status, 15_000);
@@ -116,9 +119,12 @@ Then('the conversion form is disabled', async ({ audiobookConvertPage }) => {
 	expect(await audiobookConvertPage.isFormDisabled()).toBe(true);
 });
 
-Then('a message directing me to the Voice Samples tab is visible', async ({ audiobookConvertPage }) => {
-	expect(await audiobookConvertPage.hasNoVoiceSamplesMessage()).toBe(true);
-});
+Then(
+	'a message directing me to the Voice Samples tab is visible',
+	async ({ audiobookConvertPage }) => {
+		expect(await audiobookConvertPage.hasNoVoiceSamplesMessage()).toBe(true);
+	}
+);
 
 Given('a failed job exists', async ({ audiobookConvertPage }) => {
 	await audiobookConvertPage.uploadEpubFile(FAIL_EPUB_FIXTURE);

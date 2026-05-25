@@ -102,15 +102,15 @@
 	/* --------------------------------------------------------
 	   Motion
 	   -------------------------------------------------------- */
-	--duration-fast: 0.15s;   /* color/border transitions */
-	--duration-medium: 0.2s;  /* layout transitions (sidebar collapse) */
+	--duration-fast: 0.15s; /* color/border transitions */
+	--duration-medium: 0.2s; /* layout transitions (sidebar collapse) */
 	--ease-default: ease;
 
 	/* --------------------------------------------------------
 	   Elevation
 	   -------------------------------------------------------- */
 	--shadow-floating: 0 4px 12px rgba(0, 0, 0, 0.15); /* toasts, floating surfaces */
-	--backdrop-modal: rgba(0, 0, 0, 0.5);               /* modal overlay */
+	--backdrop-modal: rgba(0, 0, 0, 0.5); /* modal overlay */
 }
 
 /* ============================================================
@@ -129,28 +129,32 @@ main {
 /* ============================================================
    Semantic Typography
    ============================================================ */
-h1, .h1 {
+h1,
+.h1 {
 	font-size: var(--font-size-3xl);
 	font-weight: var(--font-weight-semibold);
 	line-height: var(--line-height-tight);
 	color: var(--color-text-primary);
 }
 
-h2, .h2 {
+h2,
+.h2 {
 	font-size: var(--font-size-2xl);
 	font-weight: var(--font-weight-semibold);
 	line-height: var(--line-height-tight);
 	color: var(--color-text-primary);
 }
 
-h3, .h3 {
+h3,
+.h3 {
 	font-size: var(--font-size-xl);
 	font-weight: var(--font-weight-semibold);
 	line-height: var(--line-height-tight);
 	color: var(--color-text-primary);
 }
 
-h4, .h4 {
+h4,
+.h4 {
 	font-size: var(--font-size-lg);
 	font-weight: var(--font-weight-semibold);
 	line-height: var(--line-height-tight);
@@ -165,7 +169,8 @@ h4, .h4 {
 	line-height: var(--line-height-tight);
 }
 
-p, .body {
+p,
+.body {
 	font-size: var(--font-size-md);
 	line-height: var(--line-height-normal);
 	color: var(--color-text-primary);
@@ -188,7 +193,8 @@ p, .body {
 	color: var(--color-text-secondary);
 }
 
-a, .link {
+a,
+.link {
 	color: var(--color-brand-lighter);
 	text-decoration: none;
 }
@@ -198,7 +204,9 @@ a:hover,
 	text-decoration: underline;
 }
 
-code, .code, kbd {
+code,
+.code,
+kbd {
 	font-family: var(--font-family-mono);
 	font-size: 0.9em;
 	background-color: var(--color-surface-raised);

@@ -46,10 +46,13 @@ When(
 	}
 );
 
-Given('the activity list contains {string}', async ({ activityConfigPage, request }, name: string) => {
-	await request.post(`${BACKEND_URL}/api/activities`, { data: { name, weight: 1 } });
-	await activityConfigPage.goto();
-});
+Given(
+	'the activity list contains {string}',
+	async ({ activityConfigPage, request }, name: string) => {
+		await request.post(`${BACKEND_URL}/api/activities`, { data: { name, weight: 1 } });
+		await activityConfigPage.goto();
+	}
+);
 
 When('I delete {string}', async ({ activityConfigPage }, name: string) => {
 	await activityConfigPage.deleteActivity(name);

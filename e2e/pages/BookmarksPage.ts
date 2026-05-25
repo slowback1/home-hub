@@ -21,7 +21,8 @@ export class BookmarksPage {
 	async fillAndSubmitBookmark(url: string, name: string, description: string): Promise<void> {
 		await this.page.fill('[data-testid="bookmark-url-input"]', url);
 		if (name) await this.page.fill('[data-testid="bookmark-name-input"]', name);
-		if (description) await this.page.fill('[data-testid="bookmark-description-input"]', description);
+		if (description)
+			await this.page.fill('[data-testid="bookmark-description-input"]', description);
 		await this.page.click('[data-testid="submit-bookmark-button"]');
 		await this.page.waitForSelector('[data-testid="bookmark-modal"]', { state: 'detached' });
 	}

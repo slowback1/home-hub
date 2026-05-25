@@ -17,7 +17,9 @@ export class TasksPage {
 
 	async isTaskVisibleInUpcomingSection(name: string): Promise<boolean> {
 		const upcomingSection = this.page.locator('[data-testid="upcoming-section"]');
-		const row = upcomingSection.locator('[data-testid="upcoming-task-row"]').filter({ hasText: name });
+		const row = upcomingSection
+			.locator('[data-testid="upcoming-task-row"]')
+			.filter({ hasText: name });
 		return row.isVisible();
 	}
 

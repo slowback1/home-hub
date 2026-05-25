@@ -21,10 +21,13 @@ Given('I navigate to the admin system config page', async ({ systemConfigPage })
 	await systemConfigPage.goto();
 });
 
-Then('I should see a {string} namespace section', async ({ systemConfigPage }, namespace: string) => {
-	const visible = await systemConfigPage.hasNamespaceSection(namespace);
-	expect(visible).toBe(true);
-});
+Then(
+	'I should see a {string} namespace section',
+	async ({ systemConfigPage }, namespace: string) => {
+		const visible = await systemConfigPage.hasNamespaceSection(namespace);
+		expect(visible).toBe(true);
+	}
+);
 
 Then(
 	'I should see a {string} entry with value {string}',
@@ -34,19 +37,25 @@ Then(
 	}
 );
 
-Then('I should see an {string} entry with a masked value', async ({ systemConfigPage }, key: string) => {
-	const masked = await systemConfigPage.isEntryMasked(key);
-	expect(masked).toBe(true);
-});
+Then(
+	'I should see an {string} entry with a masked value',
+	async ({ systemConfigPage }, key: string) => {
+		const masked = await systemConfigPage.isEntryMasked(key);
+		expect(masked).toBe(true);
+	}
+);
 
 When('I click on the {string} value', async ({ systemConfigPage }, key: string) => {
 	await systemConfigPage.clickEntryValue(key);
 });
 
-Then('an inline text input with Save and Cancel buttons should appear', async ({ systemConfigPage }) => {
-	const visible = await systemConfigPage.isEditModeVisible('zip_code');
-	expect(visible).toBe(true);
-});
+Then(
+	'an inline text input with Save and Cancel buttons should appear',
+	async ({ systemConfigPage }) => {
+		const visible = await systemConfigPage.isEditModeVisible('zip_code');
+		expect(visible).toBe(true);
+	}
+);
 
 When('I type {string} and click Save', async ({ systemConfigPage }, value: string) => {
 	await systemConfigPage.typeValueAndSave(value);

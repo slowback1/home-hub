@@ -85,7 +85,10 @@ export class AudiobookConvertPage {
 					const current = jobs[jobs.length - 1].status;
 					if (current === expectedStatus) return true;
 					// Accept terminal state as proof job passed through in_progress
-					if (expectedStatus === 'in_progress' && ['completed', 'failed', 'cancelled'].includes(current))
+					if (
+						expectedStatus === 'in_progress' &&
+						['completed', 'failed', 'cancelled'].includes(current)
+					)
 						return true;
 					return false;
 				} catch {
@@ -100,13 +103,14 @@ export class AudiobookConvertPage {
 		while (Date.now() < deadline) {
 			const count = await this.page.locator('[data-testid="job-row"]').count();
 			if (count > 0) {
-				const text = (
-					await this.page
-						.locator('[data-testid="job-row"]')
-						.last()
-						.locator('[data-testid="job-status"]')
-						.textContent()
-				)?.trim() ?? '';
+				const text =
+					(
+						await this.page
+							.locator('[data-testid="job-row"]')
+							.last()
+							.locator('[data-testid="job-status"]')
+							.textContent()
+					)?.trim() ?? '';
 				if (this.hasReachedStatus(text.replace(' ', '_'), status)) return;
 			}
 			// DOM doesn't reflect the expected status yet — reload to pull fresh data

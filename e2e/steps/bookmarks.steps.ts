@@ -62,15 +62,25 @@ When('I navigate to the bookmarks page', async ({ bookmarksPage }) => {
 	await bookmarksPage.goto();
 });
 
-When('I open the add bookmark modal and submit a URL, name, and description', async ({ bookmarksPage }) => {
-	await bookmarksPage.openAddModal();
-	await bookmarksPage.fillAndSubmitBookmark('https://news.ycombinator.com', 'Hacker News', 'Tech news.');
-});
+When(
+	'I open the add bookmark modal and submit a URL, name, and description',
+	async ({ bookmarksPage }) => {
+		await bookmarksPage.openAddModal();
+		await bookmarksPage.fillAndSubmitBookmark(
+			'https://news.ycombinator.com',
+			'Hacker News',
+			'Tech news.'
+		);
+	}
+);
 
-When('I add a bookmark with the URL {string} and no protocol', async ({ bookmarksPage }, url: string) => {
-	await bookmarksPage.openAddModal();
-	await bookmarksPage.addBookmarkByUrl(url);
-});
+When(
+	'I add a bookmark with the URL {string} and no protocol',
+	async ({ bookmarksPage }, url: string) => {
+		await bookmarksPage.openAddModal();
+		await bookmarksPage.addBookmarkByUrl(url);
+	}
+);
 
 When('I open the edit modal and change the name and description', async ({ bookmarksPage }) => {
 	await bookmarksPage.openEditModal('GitHub');
@@ -96,20 +106,27 @@ When('I type a search term that matches only one bookmark', async ({ bookmarksPa
 	await bookmarksPage.search('GitHub');
 });
 
-Then('I should see each bookmark displayed as a card with its title and favicon', async ({ bookmarksPage }) => {
-	const visible = await bookmarksPage.isCardVisible('GitHub');
-	if (!visible) throw new Error('Expected GitHub card to be visible');
-});
+Then(
+	'I should see each bookmark displayed as a card with its title and favicon',
+	async ({ bookmarksPage }) => {
+		const visible = await bookmarksPage.isCardVisible('GitHub');
+		if (!visible) throw new Error('Expected GitHub card to be visible');
+	}
+);
 
 Then('the new bookmark card should appear on the page', async ({ bookmarksPage }) => {
 	const visible = await bookmarksPage.isCardVisible('Hacker News');
 	if (!visible) throw new Error('Expected Hacker News card to be visible');
 });
 
-Then('the bookmark should be saved with the URL {string}', async ({ bookmarksPage }, expectedUrl: string) => {
-	const actual = await bookmarksPage.getCardUrl('github.com');
-	if (actual !== expectedUrl) throw new Error(`Expected URL "${expectedUrl}" but got "${actual}"`);
-});
+Then(
+	'the bookmark should be saved with the URL {string}',
+	async ({ bookmarksPage }, expectedUrl: string) => {
+		const actual = await bookmarksPage.getCardUrl('github.com');
+		if (actual !== expectedUrl)
+			throw new Error(`Expected URL "${expectedUrl}" but got "${actual}"`);
+	}
+);
 
 Then('the card should reflect the updated values', async ({ bookmarksPage }) => {
 	const visible = await bookmarksPage.isCardVisible('GitHub (updated)');
