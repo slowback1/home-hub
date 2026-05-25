@@ -74,6 +74,19 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpDelete("bookmarks")]
+    public async Task<ActionResult> ClearBookmarks()
+    {
+        if (!IsAllowed) return NotFound();
+
+        var crud = crudFactory.GetCrud<Bookmark>();
+        var all = await crud.QueryAsync(_ => true);
+        foreach (var bookmark in all)
+            await crud.DeleteAsync(bookmark.Id);
+
+        return NoContent();
+    }
+
     [HttpDelete("tasks")]
     public async Task<ActionResult> ClearTasks()
     {

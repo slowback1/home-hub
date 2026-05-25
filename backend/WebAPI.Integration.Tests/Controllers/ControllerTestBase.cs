@@ -132,6 +132,38 @@ public abstract class ControllerTestBase : IDisposable
 		return await Client.SendAsync(request);
 	}
 
+	protected async Task<HttpResponseMessage> PatchRawAsync<TRequest>(string url,
+		TRequest body,
+		bool includeToken = true)
+	{
+		var request = new HttpRequestMessage(HttpMethod.Patch, url)
+		{
+			Content = JsonContent.Create(body)
+		};
+		if (includeToken)
+		{
+			var token = await GetLoginTokenAsync();
+			request.Headers.Add("X-User-Token", token);
+		}
+
+		return await Client.SendAsync(request);
+	}
+
+	protected async Task<HttpResponseMessage> PatchRawAsync(string url, bool includeToken = true)
+	{
+		var request = new HttpRequestMessage(HttpMethod.Patch, url)
+		{
+			Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json")
+		};
+		if (includeToken)
+		{
+			var token = await GetLoginTokenAsync();
+			request.Headers.Add("X-User-Token", token);
+		}
+
+		return await Client.SendAsync(request);
+	}
+
 	protected async Task<HttpResponseMessage> DeleteRawAsync(string url, bool includeToken = true)
 	{
 		var request = new HttpRequestMessage(HttpMethod.Delete, url);
