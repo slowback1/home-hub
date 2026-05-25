@@ -20,6 +20,7 @@ public class AppDbContext : DbContext
     public DbSet<ComfyUiWorkflow> ComfyUiWorkflows => Set<ComfyUiWorkflow>();
     public DbSet<ChoreTask> ChoreTasks => Set<ChoreTask>();
     public DbSet<TaskCompletion> TaskCompletions => Set<TaskCompletion>();
+    public DbSet<Bookmark> Bookmarks => Set<Bookmark>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
