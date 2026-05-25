@@ -10,20 +10,45 @@
 
 	// Done / undo state
 	let completingTaskId: string | null = null;
-	let lastCompletedTask: ChoreTask | null = null;
+	let undoTask: ChoreTask | null = null;
+	let undoTimer: ReturnType<typeof setTimeout> | null = null;
+
+	const UNDO_TIMEOUT_MS = 5000;
+
+	function clearUndoToast() {
+		undoTask = null;
+		if (undoTimer) {
+			clearTimeout(undoTimer);
+			undoTimer = null;
+		}
+	}
 
 	async function handleDone(task: ChoreTask) {
 		if (completingTaskId) return;
+		clearUndoToast();
 		completingTaskId = task.id;
-		lastCompletedTask = { ...task };
+		const snapshot = { ...task };
 		try {
 			const updated = await api.completeTask(task.id);
 			tasks = tasks.map((t) => (t.id === updated.id ? updated : t));
+			undoTask = snapshot;
+			undoTimer = setTimeout(clearUndoToast, UNDO_TIMEOUT_MS);
 		} catch {
-			lastCompletedTask = null;
-			completingTaskId = null;
+			// leave list unchanged on error
 		} finally {
-			if (completingTaskId === task.id) completingTaskId = null;
+			completingTaskId = null;
+		}
+	}
+
+	async function handleUndo() {
+		if (!undoTask) return;
+		const taskToUndo = undoTask;
+		clearUndoToast();
+		try {
+			const restored = await api.undoCompletion(taskToUndo.id);
+			tasks = tasks.map((t) => (t.id === restored.id ? restored : t));
+		} catch {
+			// undo failed silently — task remains in current state
 		}
 	}
 
@@ -251,6 +276,13 @@
 		</section>
 	{/if}
 </div>
+
+{#if undoTask}
+	<div class="undo-toast" data-testid="undo-toast" role="status">
+		<span>Task completed.</span>
+		<button class="undo-btn" data-testid="undo-button" on:click={handleUndo}>Undo</button>
+	</div>
+{/if}
 
 {#if modalOpen}
 	<div class="modal-backdrop" data-testid="modal-backdrop" on:click|self={closeModal} role="presentation">
@@ -599,5 +631,40 @@
 		display: flex;
 		gap: var(--space-2);
 		margin-left: auto;
+	}
+
+	/* Undo toast */
+	.undo-toast {
+		position: fixed;
+		bottom: var(--space-6);
+		left: 50%;
+		transform: translateX(-50%);
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+		padding: var(--space-3) var(--space-5);
+		background: var(--color-surface-overlay);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-md);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		z-index: 200;
+		font-size: var(--font-size-sm);
+		color: var(--color-text-primary);
+		white-space: nowrap;
+	}
+
+	.undo-btn {
+		background: none;
+		border: none;
+		color: var(--color-brand-lighter);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+		padding: 0;
+		text-decoration: underline;
+	}
+
+	.undo-btn:hover {
+		opacity: 0.8;
 	}
 </style>
