@@ -75,7 +75,7 @@
 	}
 
 	$: dueTasks = tasks
-		.filter(isDue)
+		.filter((t) => t.completedAt == null && isDue(t))
 		.sort((a, b) => {
 			const aHasDate = !!a.doDate;
 			const bHasDate = !!b.doDate;
@@ -86,7 +86,7 @@
 		});
 
 	$: upcomingTasks = tasks
-		.filter((t) => t.doDate && new Date(t.doDate) > today())
+		.filter((t) => t.completedAt == null && t.doDate && new Date(t.doDate) > today())
 		.sort((a, b) => new Date(a.doDate!).getTime() - new Date(b.doDate!).getTime());
 
 	function formatDate(iso: string): string {
