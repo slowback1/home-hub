@@ -8,6 +8,25 @@
 	let loadError: string | null = null;
 	let loading = true;
 
+	// Done / undo state
+	let completingTaskId: string | null = null;
+	let lastCompletedTask: ChoreTask | null = null;
+
+	async function handleDone(task: ChoreTask) {
+		if (completingTaskId) return;
+		completingTaskId = task.id;
+		lastCompletedTask = { ...task };
+		try {
+			const updated = await api.completeTask(task.id);
+			tasks = tasks.map((t) => (t.id === updated.id ? updated : t));
+		} catch {
+			lastCompletedTask = null;
+			completingTaskId = null;
+		} finally {
+			if (completingTaskId === task.id) completingTaskId = null;
+		}
+	}
+
 	// Modal state
 	let modalOpen = false;
 	let editingTask: ChoreTask | null = null;
@@ -190,8 +209,10 @@
 									class="btn btn--done btn--sm"
 									data-testid="done-task-button"
 									aria-label="Done {task.name}"
+									disabled={completingTaskId === task.id}
+									on:click={() => handleDone(task)}
 								>
-									Done
+									{completingTaskId === task.id ? '…' : 'Done'}
 								</button>
 							</div>
 						</li>
