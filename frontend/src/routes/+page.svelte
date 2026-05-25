@@ -11,6 +11,7 @@
 	let loading = true;
 	let editMode = false;
 	let pickerSlotIndex: number | null = null;
+	let undoToast: { widgetId: string; slotIndex: number; timer: ReturnType<typeof setTimeout> } | null = null;
 
 	$: allEmpty = slots.every((s) => !s);
 	$: placedCount = slots.filter(Boolean).length;
@@ -45,6 +46,26 @@
 
 	function widgetEntry(id: string) {
 		return WIDGET_REGISTRY.find((w) => w.id === id) ?? null;
+	}
+
+	async function removeWidget(slotIndex: number) {
+		const removed = slots[slotIndex];
+		if (!removed) return;
+		slots = slots.map((v, i) => (i === slotIndex ? null : v));
+		await saveLayout();
+		if (undoToast) clearTimeout(undoToast.timer);
+		const timer = setTimeout(() => {
+			undoToast = null;
+		}, 4000);
+		undoToast = { widgetId: removed, slotIndex, timer };
+	}
+
+	async function undoRemove() {
+		if (!undoToast) return;
+		clearTimeout(undoToast.timer);
+		slots = slots.map((v, i) => (i === undoToast!.slotIndex ? undoToast!.widgetId : v));
+		await saveLayout();
+		undoToast = null;
 	}
 </script>
 
@@ -119,10 +140,7 @@
 									class="slot-remove"
 									data-testid="remove-widget-button"
 									aria-label="Remove {entry.name}"
-									on:click={async () => {
-										slots = slots.map((v, idx) => (idx === i ? null : v));
-										await saveLayout();
-									}}
+									on:click={() => removeWidget(i)}
 								>
 									×
 								</button>
@@ -216,6 +234,14 @@
 					<button class="btn btn--text" on:click={() => (pickerSlotIndex = null)}>Cancel</button>
 				</div>
 			</div>
+		</div>
+	{/if}
+
+	{#if undoToast}
+		{@const removed = widgetEntry(undoToast.widgetId)}
+		<div class="toast" data-testid="undo-toast" role="status">
+			<span>Removed <strong>{removed?.name ?? undoToast.widgetId}</strong>.</span>
+			<button class="undo-btn" on:click={undoRemove}>Undo</button>
 		</div>
 	{/if}
 {/if}
@@ -609,5 +635,41 @@
 		.slot-grid {
 			grid-template-columns: 1fr;
 		}
+	}
+
+	/* Toast */
+	.toast {
+		position: fixed;
+		bottom: var(--space-6);
+		left: 50%;
+		transform: translateX(-50%);
+		background: var(--color-surface-overlay);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3) var(--space-4);
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+		color: var(--color-text-secondary);
+		font-size: var(--font-size-sm);
+		z-index: 200;
+		white-space: nowrap;
+	}
+	.toast strong {
+		color: var(--color-text-primary);
+		font-weight: var(--font-weight-semibold);
+	}
+	.undo-btn {
+		background: none;
+		border: none;
+		color: var(--color-brand-lighter);
+		cursor: pointer;
+		font-family: var(--font-family-primary);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-semibold);
+		padding: 0;
+	}
+	.undo-btn:hover {
+		text-decoration: underline;
 	}
 </style>
