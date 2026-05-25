@@ -8,6 +8,7 @@ using Logic.FeatureFlags;
 using Logic.ComfyUi;
 using Logic.Ollama;
 using Logic.SystemConfig;
+using Logic.Recurrence;
 using Logic.Audiobook;
 using Logic.Weather;
 using OpenTelemetry.Resources;
@@ -38,6 +39,7 @@ builder.Services.AddControllers()
             new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.SnakeCaseLower)));
 CrudFactoryConfigurator.ConfigureCrudFactory(builder.Services, builder.Configuration);
 builder.Services.AddScoped<ActivityPickerJob>();
+builder.Services.AddSingleton<IRecurrenceCalculator, IntervalDaysRecurrenceCalculator>();
 CorsConfigurator.ConfigureCors(builder.Services, builder.Configuration);
 HangfireConfigurator.ConfigureHangfire(builder.Services, builder.Configuration);
 
