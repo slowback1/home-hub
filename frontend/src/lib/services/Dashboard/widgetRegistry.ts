@@ -1,4 +1,13 @@
 import type { Component } from 'svelte';
+import {
+	CheckSquare,
+	Shuffle,
+	Gamepad2,
+	Cloud,
+	BookAudio,
+	Bookmark,
+	Image
+} from 'lucide-svelte';
 import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { FeatureFlags } from '$lib/services/FeatureFlag/FeatureFlags';
 import TasksWidget from './widgets/TasksWidget.svelte';
@@ -13,7 +22,7 @@ export type WidgetEntry = {
 	id: string;
 	name: string;
 	description: string;
-	icon: string;
+	icon: Component;
 	href: string;
 	featureFlag?: string;
 	component: Component;
@@ -24,7 +33,7 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		id: 'tasks',
 		name: 'Chore Tasks',
 		description: 'Track and complete your recurring chores.',
-		icon: 'check-square',
+		icon: CheckSquare as unknown as Component,
 		href: '/tasks',
 		featureFlag: FeatureFlags.CHORE_TASK_TRACKER_ENABLED,
 		component: TasksWidget as unknown as Component
@@ -33,7 +42,7 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		id: 'activity',
 		name: 'Activity Picker',
 		description: 'Get a random activity suggestion.',
-		icon: 'shuffle',
+		icon: Shuffle as unknown as Component,
 		href: '/activity',
 		featureFlag: FeatureFlags.ACTIVITY_PICKER_ENABLED,
 		component: ActivityWidget as unknown as Component
@@ -42,7 +51,7 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		id: 'retro',
 		name: 'RetroAchievements',
 		description: 'Track your retro gaming achievements.',
-		icon: 'gamepad-2',
+		icon: Gamepad2 as unknown as Component,
 		href: '/retro',
 		featureFlag: FeatureFlags.RETRO_ACHIEVEMENTS_ENABLED,
 		component: RetroWidget as unknown as Component
@@ -51,7 +60,7 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		id: 'weather',
 		name: 'Weather',
 		description: 'Current conditions and forecast.',
-		icon: 'cloud',
+		icon: Cloud as unknown as Component,
 		href: '/weather',
 		featureFlag: FeatureFlags.WEATHER_ENABLED,
 		component: WeatherWidget as unknown as Component
@@ -60,7 +69,7 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		id: 'audiobook',
 		name: 'Audiobook',
 		description: 'Monitor and manage audiobook conversions.',
-		icon: 'book-audio',
+		icon: BookAudio as unknown as Component,
 		href: '/audiobook',
 		featureFlag: FeatureFlags.AUDIOBOOK_ENABLED,
 		component: AudiobookWidget as unknown as Component
@@ -69,7 +78,7 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		id: 'bookmarks',
 		name: 'Bookmarks',
 		description: 'Quick access to your saved links.',
-		icon: 'bookmark',
+		icon: Bookmark as unknown as Component,
 		href: '/bookmarks',
 		featureFlag: FeatureFlags.BOOKMARKS_ENABLED,
 		component: BookmarksWidget as unknown as Component
@@ -78,7 +87,7 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		id: 'comfyui',
 		name: 'ComfyUI',
 		description: 'Generate images with your ComfyUI workflows.',
-		icon: 'image',
+		icon: Image as unknown as Component,
 		href: '/comfyui',
 		featureFlag: FeatureFlags.COMFYUI_ENABLED,
 		component: ComfyUiWidget as unknown as Component

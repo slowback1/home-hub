@@ -13,6 +13,10 @@ export type LayoutResponse = {
 const ACTIVE_FORMAT = '3x2';
 
 export default class DashboardApi extends BaseApi {
+	constructor() {
+		super();
+	}
+
 	async getLayout(): Promise<LayoutResponse> {
 		return this.Get<LayoutResponse>('/api/dashboard/layout');
 	}
