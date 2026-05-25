@@ -8,6 +8,10 @@ export class DashboardPage {
 		await this.page.waitForSelector('[data-testid="dashboard-page"]');
 	}
 
+	async isHeroVisible(): Promise<boolean> {
+		return await this.page.locator('[data-testid="first-run-hero"]').isVisible();
+	}
+
 	async emptySlotCount(): Promise<number> {
 		return await this.page.locator('[data-testid="empty-slot"]').count();
 	}
@@ -17,10 +21,7 @@ export class DashboardPage {
 	}
 
 	async clickAddWidget(slotIndex: number): Promise<void> {
-		await this.page
-			.locator('[data-testid="add-widget-button"]')
-			.nth(slotIndex)
-			.click();
+		await this.page.locator('[data-testid="add-widget-button"]').nth(slotIndex).click();
 	}
 
 	async isPickerModalOpen(): Promise<boolean> {
@@ -35,23 +36,29 @@ export class DashboardPage {
 	}
 
 	async isPickerModalClosed(): Promise<boolean> {
-		return await this.page
-			.locator('[data-testid="widget-picker-modal"]')
-			.isHidden();
+		return await this.page.locator('[data-testid="widget-picker-modal"]').isHidden();
 	}
 
 	async filledSlotWidgetId(slotIndex: number): Promise<string | null> {
-		const slot = this.page.locator('[data-testid="filled-slot"]').nth(slotIndex);
-		return await slot.getAttribute('data-widget-id');
+		return await this.page
+			.locator(`[data-testid="filled-slot"][data-slot-index="${slotIndex}"]`)
+			.getAttribute('data-widget-id');
 	}
 
 	async isSlotFilled(slotIndex: number): Promise<boolean> {
-		return (
-			(await this.page
-				.locator('[data-testid="filled-slot"]')
-				.nth(slotIndex)
-				.isVisible()) ?? false
-		);
+		return await this.page
+			.locator(`[data-testid="filled-slot"][data-slot-index="${slotIndex}"]`)
+			.isVisible();
+	}
+
+	async isSlotEmpty(slotIndex: number): Promise<boolean> {
+		return await this.page
+			.locator(`[data-testid="empty-slot"][data-slot-index="${slotIndex}"]`)
+			.isVisible();
+	}
+
+	async occupiedSlotCount(): Promise<number> {
+		return await this.page.locator('[data-testid="filled-slot"]').count();
 	}
 
 	async reload(): Promise<void> {
@@ -73,18 +80,10 @@ export class DashboardPage {
 
 	async clickRemoveWidget(slotIndex: number): Promise<void> {
 		await this.page
-			.locator('[data-testid="remove-widget-button"]')
-			.nth(slotIndex)
+			.locator(
+				`[data-testid="filled-slot"][data-slot-index="${slotIndex}"] [data-testid="remove-widget-button"]`
+			)
 			.click();
-	}
-
-	async isSlotEmpty(slotIndex: number): Promise<boolean> {
-		const empties = this.page.locator('[data-testid="empty-slot"]');
-		const filled = this.page.locator('[data-testid="filled-slot"]');
-		const emptyCount = await empties.count();
-		const filledCount = await filled.count();
-		// slot at index 0 is empty if there are no filled slots before it
-		return slotIndex >= filledCount && slotIndex < emptyCount + filledCount;
 	}
 
 	async clickDone(): Promise<void> {

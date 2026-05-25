@@ -2,10 +2,10 @@
 Feature: Dashboard
 
   @dashboard-empty-state
-  Scenario: Empty dashboard shows placeholder slots
+  Scenario: Empty dashboard shows first-run hero
     Given I am on the dashboard
-    Then I should see 6 empty slot placeholders
-    And each placeholder should have an add widget button
+    Then I should see the first-run hero panel
+    And the hero should have an add widget button
 
   @dashboard-add-widget
   Scenario: Add a widget to an empty slot

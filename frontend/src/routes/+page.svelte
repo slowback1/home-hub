@@ -150,7 +150,11 @@
 						else you actually look at every morning. Up to six at a time.
 					</p>
 					<div class="first-run__actions">
-						<button class="btn btn--primary" on:click={() => (pickerSlotIndex = 0)}>
+						<button
+							class="btn btn--primary"
+							data-testid="add-widget-button"
+							on:click={() => (pickerSlotIndex = 0)}
+						>
 							<Plus size={ICON_SM} strokeWidth={ICON_STROKE} /> Add your first widget
 						</button>
 					</div>
@@ -201,6 +205,7 @@
 								class:editing={editMode}
 								data-testid="filled-slot"
 								data-widget-id={entry.id}
+								data-slot-index={i}
 							>
 								<div class="widget-header">
 									<div class="widget-header__title">
@@ -234,6 +239,7 @@
 								class="slot slot--empty"
 								class:editing={editMode}
 								data-testid="empty-slot"
+								data-slot-index={i}
 								aria-label="Add a widget"
 								on:click={() => (pickerSlotIndex = i)}
 							>
