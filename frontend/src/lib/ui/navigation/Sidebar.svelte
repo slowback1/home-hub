@@ -9,6 +9,7 @@
 		Settings,
 		BookAudio,
 		Image,
+		Bookmark,
 		ChevronLeft,
 		ChevronRight
 	} from 'lucide-svelte';
@@ -60,6 +61,13 @@
 			icon: BookAudio,
 			flag: FeatureFlags.AUDIOBOOK_ENABLED,
 			activePath: '/audiobook'
+		},
+		{
+			testId: 'nav-item-bookmarks',
+			href: '/bookmarks',
+			label: 'Bookmarks',
+			icon: Bookmark,
+			flag: FeatureFlags.BOOKMARKS_ENABLED
 		},
 		{
 			testId: 'nav-item-comfyui',
