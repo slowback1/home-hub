@@ -49,7 +49,25 @@ Do not skip or cut short the interview. The PRD quality depends on it.
 Before writing the PRD file, consider whether the feature involves any user-facing behaviour (UI interactions, redirects, error states, form submissions, etc.).
 
 - **If yes**: draft Gherkin scenarios for the `E2E Scenarios` section. Follow the tag conventions in `e2e/AGENTS.md`: a domain tag on the `Feature` line (e.g. `@payments`) and a kebab-case slug tag on each `Scenario` line (e.g. `@create-payment-happy-path`). Present the scenarios to the user and ask them to review and confirm or revise before writing the PRD file.
-- **If no** (backend-only, infrastructure, data migration, etc.): omit the `E2E Scenarios` section entirely.
+- **If no** (backend-only, infrastructure, data migration, etc.): omit the `E2E Scenarios` section entirely and skip Step 2.5.
+
+### Step 2.5 — Design handoff (user-facing features only)
+
+If the feature is user-facing:
+
+1. Load the `design-brief` skill and run it. It will produce a short prompt for the user to paste into Claude Design (claude.ai/design) and then wait.
+2. The user will iterate in Claude Design and return with a URL (format: `https://api.anthropic.com/v1/design/h/...`).
+3. Once the URL is provided, fetch and extract the handoff bundle:
+   ```bash
+   curl -s "<URL>" | tar -xz -C /tmp/design-handoff --strip-components=1
+   ```
+   Then read:
+   - `/tmp/design-handoff/README.md` — agent instructions and bundle overview
+   - `/tmp/design-handoff/chats/chat1.md` — the design session conversation (captures intent and any design decisions/pivots)
+   - The primary screen file (whichever `.html` matches the feature)
+   - The main screen component (`.jsx` with the same name stem)
+4. Synthesize the key visual decisions from the handoff (layout choices, component structure, notable interactions, anything the user changed mid-session in the chat log). These feed the `## Design` section of the PRD.
+5. Store the design URL — it goes into the PRD's `## Design` section.
 
 ### Step 3 — Draft the PRD
 

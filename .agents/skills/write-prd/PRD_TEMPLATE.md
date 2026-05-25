@@ -48,6 +48,17 @@ Feature: <Feature Name>
 
 _High-level description of the solution. What will be built?_
 
+## Design
+
+<!-- Omit this section for non-user-facing features. -->
+
+**Handoff:** _[Claude Design URL]_
+
+_Key visual decisions from the design session (layout choices, component structure, notable interactions, anything that diverged from the initial brief):_
+
+- _Decision 1_
+- _Decision 2_
+
 ## Technical Approach
 
 _Key architectural decisions, technology choices, and design constraints. Reference any decisions reached during the planning session._
