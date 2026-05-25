@@ -11,6 +11,7 @@ import { AudiobookConvertPage } from './pages/AudiobookConvertPage';
 import { AudiobookVoiceSamplesPage } from './pages/AudiobookVoiceSamplesPage';
 import { ComfyUiPage } from './pages/ComfyUiPage';
 import { ComfyUiConfigPage } from './pages/ComfyUiConfigPage';
+import { TasksPage } from './pages/TasksPage';
 
 type Fixtures = {
 	examplePage: ExamplePage;
@@ -24,6 +25,7 @@ type Fixtures = {
 	audiobookVoiceSamplesPage: AudiobookVoiceSamplesPage;
 	comfyUiPage: ComfyUiPage;
 	comfyUiConfigPage: ComfyUiConfigPage;
+	tasksPage: TasksPage;
 };
 
 const test = base.extend<Fixtures>({
@@ -59,6 +61,9 @@ const test = base.extend<Fixtures>({
 	},
 	comfyUiConfigPage: async ({ page }, use) => {
 		await use(new ComfyUiConfigPage(page));
+	},
+	tasksPage: async ({ page }, use) => {
+		await use(new TasksPage(page));
 	}
 });
 
