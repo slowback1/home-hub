@@ -74,9 +74,70 @@
 	}
 
 	const TEXTAREA_ROWS = 3;
+	const UNDO_TIMEOUT_MS = 5000;
+
+	// Delete confirmation state
+	let confirmOpen = false;
+	let deletingBookmark: BookmarkItem | null = null;
+
+	// Undo toast state
+	let undoBookmark: BookmarkItem | null = null;
+	let undoTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function openDeleteConfirm(bm: BookmarkItem) {
+		deletingBookmark = bm;
+		confirmOpen = true;
+	}
+
+	function closeDeleteConfirm() {
+		confirmOpen = false;
+		deletingBookmark = null;
+	}
+
+	function clearUndoToast() {
+		undoBookmark = null;
+		if (undoTimer) {
+			clearTimeout(undoTimer);
+			undoTimer = null;
+		}
+	}
+
+	async function confirmDelete() {
+		if (!deletingBookmark) return;
+		const snapshot = { ...deletingBookmark };
+		bookmarks = bookmarks.filter((b) => b.id !== snapshot.id);
+		closeDeleteConfirm();
+		try {
+			await api.deleteBookmark(snapshot.id);
+			undoBookmark = snapshot;
+			undoTimer = setTimeout(clearUndoToast, UNDO_TIMEOUT_MS);
+		} catch {
+			bookmarks = [...bookmarks, snapshot];
+		}
+	}
+
+	async function handleUndo() {
+		if (!undoBookmark) return;
+		const snapshot = undoBookmark;
+		clearUndoToast();
+		try {
+			const restored = await api.createBookmark({
+				url: snapshot.url,
+				name: snapshot.name,
+				description: snapshot.description
+			});
+			bookmarks = [...bookmarks, restored];
+		} catch {
+			// undo failed silently
+		}
+	}
 
 	function handleModalKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') closeModal();
+	}
+
+	function handleConfirmKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') closeDeleteConfirm();
 	}
 
 	function validateBookmarkUrl(normalized: string): string | null {
@@ -226,7 +287,7 @@
 							class="icon-btn icon-btn--danger"
 							aria-label="Delete {bm.name}"
 							data-testid="delete-bookmark-button"
-							on:click|preventDefault={() => {}}
+							on:click|preventDefault={() => openDeleteConfirm(bm)}
 						>
 							<Trash2 size={ICON_ACTION} />
 						</button>
@@ -319,6 +380,54 @@
 				</div>
 			</form>
 		</div>
+	</div>
+{/if}
+
+{#if confirmOpen && deletingBookmark}
+	<div
+		class="modal-backdrop"
+		data-testid="delete-confirm-backdrop"
+		on:click|self={closeDeleteConfirm}
+		on:keydown={handleConfirmKeydown}
+		role="presentation"
+	>
+		<div
+			class="modal modal--compact"
+			role="dialog"
+			aria-modal="true"
+			data-testid="delete-confirm-dialog"
+		>
+			<div class="modal-header">
+				<h2 class="modal-title">Delete Bookmark?</h2>
+			</div>
+			<p class="confirm-text">
+				Delete <strong>{deletingBookmark.name}</strong>
+				({displayHost(deletingBookmark.url)})?
+			</p>
+			<div class="modal-actions">
+				<button
+					class="btn btn--secondary"
+					data-testid="cancel-delete-button"
+					on:click={closeDeleteConfirm}
+				>
+					Cancel
+				</button>
+				<button
+					class="btn btn--danger"
+					data-testid="confirm-delete-button"
+					on:click={confirmDelete}
+				>
+					Delete
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+{#if undoBookmark}
+	<div class="undo-toast" data-testid="undo-toast" role="status">
+		<span>Deleted "{undoBookmark.name}".</span>
+		<button class="undo-btn" data-testid="undo-button" on:click={handleUndo}>Undo</button>
 	</div>
 {/if}
 
@@ -541,6 +650,11 @@
 		color: var(--color-text-primary);
 	}
 
+	.btn--danger {
+		background: var(--color-error, #e53e3e);
+		color: white;
+	}
+
 	.btn:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
@@ -649,5 +763,50 @@
 		justify-content: flex-end;
 		gap: var(--space-3);
 		padding-top: var(--space-2);
+	}
+
+	.modal--compact {
+		max-width: 360px;
+	}
+
+	.confirm-text {
+		font-size: var(--font-size-sm);
+		color: var(--color-text-primary);
+		margin: 0;
+	}
+
+	/* Undo toast */
+	.undo-toast {
+		position: fixed;
+		bottom: var(--space-6);
+		left: 50%;
+		transform: translateX(-50%);
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+		padding: var(--space-3) var(--space-5);
+		background: var(--color-surface-overlay);
+		border: 1px solid var(--color-border-default);
+		border-radius: var(--radius-md);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		z-index: 200;
+		font-size: var(--font-size-sm);
+		color: var(--color-text-primary);
+		white-space: nowrap;
+	}
+
+	.undo-btn {
+		background: none;
+		border: none;
+		color: var(--color-brand-lighter);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+		padding: 0;
+		text-decoration: underline;
+	}
+
+	.undo-btn:hover {
+		opacity: 0.8;
 	}
 </style>
