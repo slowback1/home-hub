@@ -67,4 +67,32 @@ describe('ToastItem', () => {
 
 		expect(onCloseMock).toHaveBeenCalled();
 	});
+
+	it('does not render an action button when no action is provided', () => {
+		const actionButton = result.queryByTestId('toast-action');
+
+		expect(actionButton).not.toBeInTheDocument();
+	});
+
+	it('renders an action button when an action is provided', () => {
+		renderComponent({
+			message: 'with action',
+			action: { label: 'Undo', onClick: vi.fn() }
+		});
+
+		const actionButton = result.getByTestId('toast-action');
+
+		expect(actionButton).toBeInTheDocument();
+		expect(actionButton).toHaveTextContent('Undo');
+	});
+
+	it('clicking the action button calls action.onClick', () => {
+		const onClick = vi.fn();
+		renderComponent({ message: 'with action', action: { label: 'Undo', onClick } });
+
+		const actionButton = result.getByTestId('toast-action');
+		fireEvent.click(actionButton);
+
+		expect(onClick).toHaveBeenCalled();
+	});
 });

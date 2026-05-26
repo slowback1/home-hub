@@ -11,6 +11,8 @@ export enum ToastVariant {
 export type ToastConfig = {
 	message: string;
 	variant?: ToastVariant;
+	action?: { label: string; onClick: () => void };
+	durationMs?: number;
 };
 
 export default class ToastService {

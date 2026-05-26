@@ -3,28 +3,25 @@
 	import { ChevronRight, Plus } from 'lucide-svelte';
 	import DashboardApi from '$lib/api/DashboardApi';
 	import { WIDGET_REGISTRY, getVisibleWidgets } from '$lib/services/Dashboard/widgetRegistry';
+	import ToastService from '$lib/ui/containers/toast/ToastService';
 
 	const SLOT_COUNT = 6;
 	const HOUR_NOON = 12;
 	const HOUR_EVENING = 17;
 	const HOUR_NIGHT = 22;
-	const TOAST_DURATION_MS = 4000;
+	const WIDGET_REMOVAL_TOAST_MS = 4000;
 	const ICON_SM = 16;
 	const ICON_MD = 18;
 	const ICON_LG = 20;
 	const ICON_XL = 22;
 	const ICON_STROKE = 2.25;
 	const api = new DashboardApi();
+	const toastService = new ToastService();
 
 	let slots: (string | null)[] = Array(SLOT_COUNT).fill(null);
 	let loading = true;
 	let editMode = false;
 	let pickerSlotIndex: number | null = null;
-	let undoToast: {
-		widgetId: string;
-		slotIndex: number;
-		timer: ReturnType<typeof setTimeout>;
-	} | null = null;
 
 	$: allEmpty = slots.every((s) => !s);
 	$: placedCount = slots.filter(Boolean).length;
@@ -64,30 +61,31 @@
 	async function removeWidget(slotIndex: number) {
 		const removed = slots[slotIndex];
 		if (!removed) return;
+		const removedEntry = widgetEntry(removed);
 		slots = slots.map((v, i) => (i === slotIndex ? null : v));
 		await saveLayout();
-		if (undoToast) clearTimeout(undoToast.timer);
-		const timer = setTimeout(() => {
-			undoToast = null;
-		}, TOAST_DURATION_MS);
-		undoToast = { widgetId: removed, slotIndex, timer };
+		toastService.AddToast({
+			message: `Removed ${removedEntry?.name ?? removed}.`,
+			durationMs: WIDGET_REMOVAL_TOAST_MS,
+			action: {
+				label: 'Undo',
+				onClick: () => undoRemove(slotIndex, removed)
+			}
+		});
 	}
 
-	async function undoRemove() {
-		if (!undoToast) return;
-		clearTimeout(undoToast.timer);
-		slots = slots.map((v, i) => (i === undoToast!.slotIndex ? undoToast!.widgetId : v));
+	async function undoRemove(slotIndex: number, widgetId: string) {
+		slots = slots.map((v, i) => (i === slotIndex ? widgetId : v));
 		await saveLayout();
-		undoToast = null;
 	}
 
 	const PRESETS: { id: string; label: string; widgetIds: string[] }[] = [
 		{ id: 'daily', label: 'Daily essentials', widgetIds: ['tasks', 'weather', 'activity'] },
-		{ id: 'media', label: 'Media & generation', widgetIds: ['audiobook', 'comfyui', 'retro'] },
+		{ id: 'media', label: 'Media & generation', widgetIds: ['audiobook', 'bookmarks'] },
 		{
 			id: 'everything',
 			label: 'Everything',
-			widgetIds: ['tasks', 'weather', 'activity', 'audiobook', 'comfyui', 'retro']
+			widgetIds: ['tasks', 'weather', 'activity', 'audiobook', 'bookmarks']
 		}
 	];
 
@@ -327,13 +325,6 @@
 		</div>
 	{/if}
 
-	{#if undoToast}
-		{@const removed = widgetEntry(undoToast.widgetId)}
-		<div class="toast" data-testid="undo-toast" role="status">
-			<span>Removed <strong>{removed?.name ?? undoToast.widgetId}</strong>.</span>
-			<button class="undo-btn" on:click={undoRemove}>Undo</button>
-		</div>
-	{/if}
 {/if}
 
 <style>
@@ -853,39 +844,4 @@
 		}
 	}
 
-	/* Toast */
-	.toast {
-		position: fixed;
-		bottom: var(--space-6);
-		left: 50%;
-		transform: translateX(-50%);
-		background: var(--color-surface-overlay);
-		border: 1px solid var(--color-border-default);
-		border-radius: var(--radius-sm);
-		padding: var(--space-3) var(--space-4);
-		display: flex;
-		align-items: center;
-		gap: var(--space-4);
-		color: var(--color-text-secondary);
-		font-size: var(--font-size-sm);
-		z-index: 200;
-		white-space: nowrap;
-	}
-	.toast strong {
-		color: var(--color-text-primary);
-		font-weight: var(--font-weight-semibold);
-	}
-	.undo-btn {
-		background: none;
-		border: none;
-		color: var(--color-brand-lighter);
-		cursor: pointer;
-		font-family: var(--font-family-primary);
-		font-size: var(--font-size-sm);
-		font-weight: var(--font-weight-semibold);
-		padding: 0;
-	}
-	.undo-btn:hover {
-		text-decoration: underline;
-	}
 </style>

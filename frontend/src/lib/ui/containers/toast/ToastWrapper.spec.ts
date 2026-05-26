@@ -80,6 +80,26 @@ describe('ToastWrapper', () => {
 		});
 	});
 
+	it('auto-removes a toast after its durationMs has elapsed', async () => {
+		vi.useFakeTimers();
+		act(() => {
+			const service = new ToastService();
+			service.AddToast({ message: 'auto-dismiss', durationMs: 1000 });
+		});
+
+		await waitFor(() => {
+			expect(result.getByTestId('toast-item')).toBeInTheDocument();
+		});
+
+		act(() => vi.advanceTimersByTime(1100));
+
+		await waitFor(() => {
+			expect(result.queryByTestId('toast-item')).not.toBeInTheDocument();
+		});
+
+		vi.useRealTimers();
+	});
+
 	it('shows 3 toasts max', async () => {
 		addTestToast('hi');
 		addTestToast('hi 2');

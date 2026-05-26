@@ -93,4 +93,23 @@ describe('ToastService', () => {
 		expect(toasts.length).toEqual(1);
 		expect(toasts[0].message).toEqual('hello');
 	});
+
+	it('stores an action callback when provided', () => {
+		const onClick = vi.fn();
+		service.AddToast({ message: 'with action', action: { label: 'Undo', onClick } });
+
+		const toasts = getCurrentToasts();
+
+		expect(toasts[0].action).toBeDefined();
+		expect(toasts[0].action?.label).toEqual('Undo');
+		expect(toasts[0].action?.onClick).toBe(onClick);
+	});
+
+	it('action is undefined when not provided', () => {
+		service.AddToast({ message: 'no action' });
+
+		const toasts = getCurrentToasts();
+
+		expect(toasts[0].action).toBeUndefined();
+	});
 });

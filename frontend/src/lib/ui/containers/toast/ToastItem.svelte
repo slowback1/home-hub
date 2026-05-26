@@ -1,9 +1,16 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { type ToastConfig, ToastVariant } from '$lib/ui/containers/toast/ToastService';
 	import Button from '$lib/ui/buttons/Button/Button.svelte';
 
 	export let config: ToastConfig;
 	export let onClose: () => void;
+
+	onMount(() => {
+		if (!config.durationMs) return;
+		const timer = setTimeout(onClose, config.durationMs);
+		return () => clearTimeout(timer);
+	});
 </script>
 
 <div
@@ -17,6 +24,12 @@
 	<span class="toast-item__text">
 		{config.message}
 	</span>
+
+	{#if config.action}
+		<button class="toast-item__action" data-testid="toast-action" on:click={config.action.onClick}>
+			{config.action.label}
+		</button>
+	{/if}
 
 	<Button variant="text" size="small" onClick={onClose} testId="toast-item__close">X</Button>
 </div>
@@ -62,5 +75,21 @@
 		--toast-background: var(--color-info-surface);
 		--toast-color: var(--color-info-text);
 		--toast-border: var(--color-info);
+	}
+
+	.toast-item__action {
+		background: none;
+		border: none;
+		color: var(--color-brand-lighter);
+		cursor: pointer;
+		font-family: var(--font-family-primary);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-semibold);
+		padding: 0;
+		white-space: nowrap;
+	}
+
+	.toast-item__action:hover {
+		text-decoration: underline;
 	}
 </style>
