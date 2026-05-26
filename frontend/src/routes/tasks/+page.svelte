@@ -2,58 +2,26 @@
 	import { onMount } from 'svelte';
 	import { SvelteDate } from 'svelte/reactivity';
 	import TasksApi, { type ChoreTask } from '$lib/api/TasksApi';
+	import ToastService from '$lib/ui/containers/toast/ToastService';
+	import TaskCompletionService from '$lib/services/Tasks/TaskCompletionService';
 
 	const api = new TasksApi();
+	const toastService = new ToastService();
 
 	let tasks: ChoreTask[] = [];
 	let loadError: string | null = null;
 	let loading = true;
 
-	// Done / undo state
-	let completingTaskId: string | null = null;
-	let undoTask: ChoreTask | null = null;
-	let undoTimer: ReturnType<typeof setTimeout> | null = null;
-
-	const UNDO_TIMEOUT_MS = 5000;
 	const DEFAULT_INTERVAL_DAYS = 7;
 	const SORT_BEFORE = -1;
 	const SORT_AFTER = 1;
 
-	function clearUndoToast() {
-		undoTask = null;
-		if (undoTimer) {
-			clearTimeout(undoTimer);
-			undoTimer = null;
-		}
-	}
+	const completionService = new TaskCompletionService(api, toastService, (updater) => {
+		tasks = updater(tasks);
+	});
 
 	async function handleDone(task: ChoreTask) {
-		if (completingTaskId) return;
-		clearUndoToast();
-		completingTaskId = task.id;
-		const snapshot = { ...task };
-		try {
-			const updated = await api.completeTask(task.id);
-			tasks = tasks.map((t) => (t.id === updated.id ? updated : t));
-			undoTask = snapshot;
-			undoTimer = setTimeout(clearUndoToast, UNDO_TIMEOUT_MS);
-		} catch {
-			// leave list unchanged on error
-		} finally {
-			completingTaskId = null;
-		}
-	}
-
-	async function handleUndo() {
-		if (!undoTask) return;
-		const taskToUndo = undoTask;
-		clearUndoToast();
-		try {
-			const restored = await api.undoCompletion(taskToUndo.id);
-			tasks = tasks.map((t) => (t.id === restored.id ? restored : t));
-		} catch {
-			// undo failed silently — task remains in current state
-		}
+		await completionService.completeTask(task);
 	}
 
 	// Modal state
@@ -254,10 +222,9 @@
 									class="btn btn--done btn--sm"
 									data-testid="done-task-button"
 									aria-label="Done {task.name}"
-									disabled={completingTaskId === task.id}
 									on:click={() => handleDone(task)}
 								>
-									{completingTaskId === task.id ? '…' : 'Done'}
+									Done
 								</button>
 							</div>
 						</li>
@@ -297,12 +264,6 @@
 	{/if}
 </div>
 
-{#if undoTask}
-	<div class="undo-toast" data-testid="undo-toast" role="status">
-		<span>Task completed.</span>
-		<button class="undo-btn" data-testid="undo-button" on:click={handleUndo}>Undo</button>
-	</div>
-{/if}
 
 {#if modalOpen}
 	<div
@@ -663,38 +624,4 @@
 		margin-left: auto;
 	}
 
-	/* Undo toast */
-	.undo-toast {
-		position: fixed;
-		bottom: var(--space-6);
-		left: 50%;
-		transform: translateX(-50%);
-		display: flex;
-		align-items: center;
-		gap: var(--space-4);
-		padding: var(--space-3) var(--space-6);
-		background: var(--color-surface-overlay);
-		border: 1px solid var(--color-border-default);
-		border-radius: var(--radius-md);
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-		z-index: 200;
-		font-size: var(--font-size-sm);
-		color: var(--color-text-primary);
-		white-space: nowrap;
-	}
-
-	.undo-btn {
-		background: none;
-		border: none;
-		color: var(--color-brand-lighter);
-		font-size: var(--font-size-sm);
-		font-weight: var(--font-weight-medium);
-		cursor: pointer;
-		padding: 0;
-		text-decoration: underline;
-	}
-
-	.undo-btn:hover {
-		opacity: 0.8;
-	}
 </style>
