@@ -167,4 +167,10 @@ export class DashboardPage {
 	async bookmarkLinkCount(): Promise<number> {
 		return this.page.locator('[data-testid="bookmarks-widget-link"]').count();
 	}
+
+	async setupWeatherApiError(): Promise<void> {
+		await this.page.route('**/api/weather/current', (route) =>
+			route.fulfill({ status: 500, body: 'Internal Server Error' })
+		);
+	}
 }

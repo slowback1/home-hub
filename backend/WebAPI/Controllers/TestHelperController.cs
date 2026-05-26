@@ -61,6 +61,22 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpPost("audiobook-jobs")]
+    public async Task<ActionResult> SeedAudiobookJob([FromBody] SeedAudiobookJobRequest request)
+    {
+        if (!IsAllowed) return NotFound();
+        var job = await audiobookMock.SeedJobAsync(request.EpubFilename, request.Status);
+        return Ok(new { job.Id, job.Status });
+    }
+
+    [HttpDelete("audiobook-jobs")]
+    public async Task<ActionResult> ClearAudiobookJobs()
+    {
+        if (!IsAllowed) return NotFound();
+        await audiobookMock.ResetAsync();
+        return NoContent();
+    }
+
     [HttpDelete("comfyui")]
     public async Task<ActionResult> ClearComfyUiWorkflows()
     {
@@ -120,4 +136,5 @@ public class TestHelperController(
     }
 
     public record SeedPickRequest(string ActivityName, DateTime PickedAt);
+    public record SeedAudiobookJobRequest(string EpubFilename, AudiobookJobStatus Status);
 }

@@ -144,6 +144,22 @@ public class MockAudiobookService : IAudiobookService
         return Task.CompletedTask;
     }
 
+    // Directly seeds a job at a given status (bypasses the normal advance lifecycle)
+    public Task<AudiobookJob> SeedJobAsync(string epubFilename, AudiobookJobStatus status)
+    {
+        var job = new AudiobookJob
+        {
+            Id = Guid.NewGuid().ToString(),
+            Status = status,
+            EpubFilename = epubFilename,
+            VoiceSampleName = "default",
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+        _jobs[job.Id] = job;
+        return Task.FromResult(job);
+    }
+
     // Internal test helper — allows tests to force a job to a specific status
     public Task ForceStatusAsync(string id, AudiobookJobStatus status)
     {
