@@ -89,4 +89,82 @@ export class DashboardPage {
 	async clickDone(): Promise<void> {
 		await this.page.click('[data-testid="done-edit-button"]');
 	}
+
+	// --- Widget content helpers ---
+
+	async isWeatherTemperatureVisible(): Promise<boolean> {
+		return this.page.locator('[data-testid="weather-widget-temperature"]').isVisible();
+	}
+
+	async isWeatherConditionVisible(): Promise<boolean> {
+		return this.page.locator('[data-testid="weather-widget-condition"]').isVisible();
+	}
+
+	async isWeatherHumidityVisible(): Promise<boolean> {
+		return this.page.locator('[data-testid="weather-widget-humidity"]').isVisible();
+	}
+
+	async isWeatherWindSpeedVisible(): Promise<boolean> {
+		return this.page.locator('[data-testid="weather-widget-wind"]').isVisible();
+	}
+
+	async isWeatherErrorStateVisible(): Promise<boolean> {
+		return this.page.locator('[data-testid="weather-widget-error"]').isVisible();
+	}
+
+	async getTaskWidgetRowCount(): Promise<number> {
+		return this.page.locator('[data-testid="tasks-widget-row"]').count();
+	}
+
+	async isTaskWidgetRowVisible(name: string): Promise<boolean> {
+		return this.page
+			.locator(`[data-testid="tasks-widget-row"]:has-text("${name}")`)
+			.isVisible();
+	}
+
+	async clickTaskWidgetDone(name: string): Promise<void> {
+		await this.page
+			.locator(`[data-testid="tasks-widget-row"]:has-text("${name}") [data-testid="tasks-widget-done-btn"]`)
+			.click();
+	}
+
+	async isTaskWidgetOverflowVisible(text: string): Promise<boolean> {
+		return this.page
+			.locator(`[data-testid="tasks-widget-overflow"]:has-text("${text}")`)
+			.isVisible();
+	}
+
+	async isUndoToastVisible(): Promise<boolean> {
+		return this.page.locator('[data-testid="toast-action"]').isVisible();
+	}
+
+	async isActivityNameVisible(): Promise<boolean> {
+		return this.page.locator('[data-testid="activity-widget-name"]').isVisible();
+	}
+
+	async isAudiobookWidgetTextVisible(text: string): Promise<boolean> {
+		return this.page
+			.locator(`[data-testid="audiobook-widget-filename"]:has-text("${text}")`)
+			.isVisible();
+	}
+
+	async isAudiobookStatusBadgeVisible(status: string): Promise<boolean> {
+		return this.page
+			.locator(`[data-testid="audiobook-widget-status"]:has-text("${status.replace('_', ' ')}")`)
+			.isVisible();
+	}
+
+	async isAudiobookWidgetEmptyVisible(): Promise<boolean> {
+		return this.page.locator('[data-testid="audiobook-widget-empty"]').isVisible();
+	}
+
+	async isBookmarkLinkVisible(name: string): Promise<boolean> {
+		return this.page
+			.locator(`[data-testid="bookmarks-widget-link"]:has-text("${name}")`)
+			.isVisible();
+	}
+
+	async bookmarkLinkCount(): Promise<number> {
+		return this.page.locator('[data-testid="bookmarks-widget-link"]').count();
+	}
 }
