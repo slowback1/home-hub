@@ -1,14 +1,12 @@
 import type { Component } from 'svelte';
-import { CheckSquare, Shuffle, Gamepad2, Cloud, BookAudio, Bookmark, Image } from 'lucide-svelte';
+import { CheckSquare, Shuffle, Cloud, BookAudio, Bookmark } from 'lucide-svelte';
 import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { FeatureFlags } from '$lib/services/FeatureFlag/FeatureFlags';
 import TasksWidget from './widgets/TasksWidget.svelte';
 import ActivityWidget from './widgets/ActivityWidget.svelte';
-import RetroWidget from './widgets/RetroWidget.svelte';
 import WeatherWidget from './widgets/WeatherWidget.svelte';
 import AudiobookWidget from './widgets/AudiobookWidget.svelte';
 import BookmarksWidget from './widgets/BookmarksWidget.svelte';
-import ComfyUiWidget from './widgets/ComfyUiWidget.svelte';
 
 export type WidgetEntry = {
 	id: string;
@@ -40,15 +38,6 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		component: ActivityWidget as unknown as Component
 	},
 	{
-		id: 'retro',
-		name: 'RetroAchievements',
-		description: 'Track your retro gaming achievements.',
-		icon: Gamepad2 as unknown as Component,
-		href: '/retro',
-		featureFlag: FeatureFlags.RETRO_ACHIEVEMENTS_ENABLED,
-		component: RetroWidget as unknown as Component
-	},
-	{
 		id: 'weather',
 		name: 'Weather',
 		description: 'Current conditions and forecast.',
@@ -74,15 +63,6 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		href: '/bookmarks',
 		featureFlag: FeatureFlags.BOOKMARKS_ENABLED,
 		component: BookmarksWidget as unknown as Component
-	},
-	{
-		id: 'comfyui',
-		name: 'ComfyUI',
-		description: 'Generate images with your ComfyUI workflows.',
-		icon: Image as unknown as Component,
-		href: '/comfyui',
-		featureFlag: FeatureFlags.COMFYUI_ENABLED,
-		component: ComfyUiWidget as unknown as Component
 	}
 ];
 

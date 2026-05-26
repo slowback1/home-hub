@@ -3,15 +3,19 @@ import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { createTestFeatureFlag } from '$lib/testHelpers/testFeatureFlagProvider';
 
 describe('WIDGET_REGISTRY', () => {
-	it('contains entries for all 7 known widget types', () => {
+	it('contains entries for all 5 active widget types', () => {
 		const ids = WIDGET_REGISTRY.map((w) => w.id);
 		expect(ids).toContain('tasks');
 		expect(ids).toContain('activity');
-		expect(ids).toContain('retro');
 		expect(ids).toContain('weather');
 		expect(ids).toContain('audiobook');
 		expect(ids).toContain('bookmarks');
-		expect(ids).toContain('comfyui');
+	});
+
+	it('does not contain comfyui or retro (no query API exists for these)', () => {
+		const ids = WIDGET_REGISTRY.map((w) => w.id);
+		expect(ids).not.toContain('comfyui');
+		expect(ids).not.toContain('retro');
 	});
 
 	it('every entry has id, name, description, icon, href, and component', () => {
@@ -37,18 +41,15 @@ describe('getVisibleWidgets', () => {
 	});
 
 	it('excludes widgets whose feature flag is disabled', () => {
-		FeatureFlagService.featureFlags = [createTestFeatureFlag('TASKS_ENABLED', false)];
-		// tasks widget has no feature flag in the registry, so this tests the general principle
-		// Use comfyui which has COMFYUI_ENABLED flag
-		FeatureFlagService.featureFlags = [createTestFeatureFlag('COMFYUI_ENABLED', false)];
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('AUDIOBOOK_ENABLED', false)];
 		const visible = getVisibleWidgets();
-		expect(visible.map((v) => v.id)).not.toContain('comfyui');
+		expect(visible.map((v) => v.id)).not.toContain('audiobook');
 	});
 
 	it('includes widgets whose feature flag is enabled', () => {
-		FeatureFlagService.featureFlags = [createTestFeatureFlag('COMFYUI_ENABLED', true)];
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('AUDIOBOOK_ENABLED', true)];
 		const visible = getVisibleWidgets();
-		expect(visible.map((v) => v.id)).toContain('comfyui');
+		expect(visible.map((v) => v.id)).toContain('audiobook');
 	});
 
 	it('includes bookmarks when BOOKMARKS_ENABLED is on', () => {
