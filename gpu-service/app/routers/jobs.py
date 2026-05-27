@@ -4,7 +4,7 @@ import shutil
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, Form, status
 from fastapi.responses import FileResponse
 from app.auth import require_api_key
-from app.database import create_job, get_job, list_jobs, update_job_status
+from app.database import create_job, delete_job, get_job, list_jobs, update_job_status
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -57,13 +57,19 @@ _TERMINAL_STATUSES = {"completed", "failed", "cancelled"}
 
 
 @router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_api_key)])
-def cancel_job(job_id: str) -> None:
+def cancel_or_delete_job(job_id: str) -> None:
     db_path = get_db_path()
     job = get_job(db_path, job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
+
+    job_dir = os.path.join(os.getenv("JOBS_DIR", "/data/jobs"), job_id)
+
     if job["status"] in _TERMINAL_STATUSES:
-        raise HTTPException(status_code=409, detail=f"Cannot cancel a job with status '{job['status']}'")
+        delete_job(db_path, job_id)
+        if os.path.isdir(job_dir):
+            shutil.rmtree(job_dir)
+        return
 
     if job["status"] == "in_progress" and job["pid"]:
         try:
@@ -73,7 +79,6 @@ def cancel_job(job_id: str) -> None:
 
     update_job_status(db_path, job_id, "cancelled")
 
-    job_dir = os.path.join(os.getenv("JOBS_DIR", "/data/jobs"), job_id)
     if os.path.isdir(job_dir):
         shutil.rmtree(job_dir)
 

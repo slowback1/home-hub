@@ -29,6 +29,7 @@ export default abstract class BaseApi {
 		const res = await this.runRequest(apiRequest);
 
 		if (res.status === HTTP_NO_CONTENT) return undefined as T;
+		if (!res.ok) throw new Error(`HTTP ${res.status}`);
 		return res.json();
 	}
 

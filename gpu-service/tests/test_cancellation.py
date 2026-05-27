@@ -87,16 +87,48 @@ def test_cancel_unknown_job_returns_404(client, auth):
     assert client.delete("/jobs/no-such-id", headers=auth).status_code == 404
 
 
-def test_cancel_completed_job_returns_409(client, auth, tmp_path):
+def test_delete_completed_job_returns_204(client, auth, tmp_path):
     job, db_path, _ = _make_queued_job(tmp_path)
     update_job_status(db_path, job["id"], "completed")
-    assert client.delete(f"/jobs/{job['id']}", headers=auth).status_code == 409
+    assert client.delete(f"/jobs/{job['id']}", headers=auth).status_code == 204
 
 
-def test_cancel_already_cancelled_job_returns_409(client, auth, tmp_path):
+def test_delete_completed_job_removes_record(client, auth, tmp_path):
+    job, db_path, _ = _make_queued_job(tmp_path)
+    update_job_status(db_path, job["id"], "completed")
+    client.delete(f"/jobs/{job['id']}", headers=auth)
+    from app.database import get_job
+    assert get_job(db_path, job["id"]) is None
+
+
+def test_delete_cancelled_job_returns_204(client, auth, tmp_path):
     job, db_path, _ = _make_queued_job(tmp_path)
     update_job_status(db_path, job["id"], "cancelled")
-    assert client.delete(f"/jobs/{job['id']}", headers=auth).status_code == 409
+    assert client.delete(f"/jobs/{job['id']}", headers=auth).status_code == 204
+
+
+def test_delete_cancelled_job_removes_record(client, auth, tmp_path):
+    job, db_path, _ = _make_queued_job(tmp_path)
+    update_job_status(db_path, job["id"], "cancelled")
+    client.delete(f"/jobs/{job['id']}", headers=auth)
+    from app.database import get_job
+    assert get_job(db_path, job["id"]) is None
+
+
+def test_delete_failed_job_removes_record(client, auth, tmp_path):
+    job, db_path, _ = _make_queued_job(tmp_path)
+    update_job_status(db_path, job["id"], "failed")
+    client.delete(f"/jobs/{job['id']}", headers=auth)
+    from app.database import get_job
+    assert get_job(db_path, job["id"]) is None
+
+
+def test_delete_terminal_job_cleans_up_directory(client, auth, tmp_path):
+    job, db_path, job_dir = _make_queued_job(tmp_path)
+    update_job_status(db_path, job["id"], "completed")
+    open(os.path.join(job_dir, "output.m4b"), "w").close()
+    client.delete(f"/jobs/{job['id']}", headers=auth)
+    assert not os.path.exists(job_dir)
 
 
 def test_cancel_cleans_up_job_directory(client, auth, tmp_path, monkeypatch):

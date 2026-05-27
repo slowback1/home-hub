@@ -84,3 +84,8 @@ def update_job_error(db_path: str, job_id: str, error_message: str) -> None:
             "UPDATE jobs SET error_message = ?, updated_at = ? WHERE id = ?",
             (error_message, now, job_id),
         )
+
+
+def delete_job(db_path: str, job_id: str) -> None:
+    with _connect(db_path) as conn:
+        conn.execute("DELETE FROM jobs WHERE id = ?", (job_id,))

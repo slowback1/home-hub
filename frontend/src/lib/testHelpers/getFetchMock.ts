@@ -8,6 +8,7 @@ export function getFetchMock(response: any, status: number = 200) {
 			text(): Promise<string> {
 				return Promise.resolve(response);
 			},
+			ok: status >= 200 && status < 300,
 			status: status
 		} as never);
 	});
@@ -77,6 +78,7 @@ export function mockApi(map: MockApiMap) {
 			text(): Promise<string> {
 				return Promise.resolve(response);
 			},
+			ok: status >= 200 && status < 300,
 			status: status
 		});
 	});
