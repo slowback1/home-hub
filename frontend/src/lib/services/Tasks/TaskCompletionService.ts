@@ -21,7 +21,7 @@ export default class TaskCompletionService {
 			return;
 		}
 
-		this.updateTasks((tasks) => tasks.map((t) => (t.id === completed.id ? completed : t)));
+		this.updateTasks((tasks) => tasks.filter((t) => t.id !== completed.id));
 
 		this.toastService.AddToast({
 			message: `Marked "${task.name}" done.`,
@@ -36,7 +36,7 @@ export default class TaskCompletionService {
 	private async undo(task: ChoreTask): Promise<void> {
 		try {
 			const restored = await this.api.undoCompletion(task.id);
-			this.updateTasks((tasks) => tasks.map((t) => (t.id === restored.id ? restored : t)));
+			this.updateTasks((tasks) => [...tasks, restored]);
 		} catch {
 			// undo failed silently
 		}
