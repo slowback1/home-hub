@@ -1,9 +1,15 @@
 package com.slowwalk.app
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsWalk
@@ -17,8 +23,12 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -28,21 +38,41 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.slowwalk.app.data.local.SlowWalkDatabase
 import com.slowwalk.app.navigation.Route
+import com.slowwalk.app.service.StepCounterService
 import com.slowwalk.app.ui.HistoryScreen
-import com.slowwalk.app.ui.WalkScreen
 import com.slowwalk.app.ui.settings.SettingsScreen
-import com.slowwalk.app.ui.settings.SettingsViewModel
 import com.slowwalk.app.ui.settings.SettingsViewModelFactory
+import com.slowwalk.app.ui.settings.SettingsViewModel
+import com.slowwalk.app.ui.walk.PulsingDot
+import com.slowwalk.app.ui.walk.WalkScreen
 
 class MainActivity : ComponentActivity() {
+
+    private var stepService: StepCounterService? = null
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName, binder: IBinder) {
+            stepService = (binder as StepCounterService.LocalBinder).getService()
+        }
+        override fun onServiceDisconnected(name: ComponentName) {
+            stepService = null
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        bindService(
+            Intent(this, StepCounterService::class.java),
+            serviceConnection,
+            Context.BIND_AUTO_CREATE,
+        )
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
             val snackbarHostState = remember { SnackbarHostState() }
+
+            var isWalkActive by remember { mutableStateOf(false) }
 
             val tabs = listOf(
                 Triple(Route.Walk, "Walk", Icons.Default.DirectionsWalk),
@@ -66,7 +96,18 @@ class MainActivity : ComponentActivity() {
                                         restoreState = true
                                     }
                                 },
-                                icon = { Icon(icon, contentDescription = label) },
+                                icon = {
+                                    Box {
+                                        Icon(icon, contentDescription = label)
+                                        if (route == Route.Walk && isWalkActive) {
+                                            PulsingDot(
+                                                Modifier
+                                                    .align(Alignment.TopEnd)
+                                                    .padding(end = 2.dp)
+                                            )
+                                        }
+                                    }
+                                },
                                 label = { Text(label) },
                             )
                         }
@@ -78,7 +119,9 @@ class MainActivity : ComponentActivity() {
                     startDestination = Route.Walk.route,
                     modifier = Modifier.padding(innerPadding),
                 ) {
-                    composable(Route.Walk.route) { WalkScreen() }
+                    composable(Route.Walk.route) {
+                        WalkScreen(onActiveChanged = { isWalkActive = it })
+                    }
                     composable(Route.History.route) { HistoryScreen() }
                     composable(Route.Settings.route) {
                         val db = SlowWalkDatabase.getInstance(applicationContext)
@@ -90,5 +133,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(serviceConnection)
     }
 }
