@@ -22,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,9 +42,10 @@ import com.slowwalk.app.navigation.Route
 import com.slowwalk.app.service.StepCounterService
 import com.slowwalk.app.ui.HistoryScreen
 import com.slowwalk.app.ui.settings.SettingsScreen
-import com.slowwalk.app.ui.settings.SettingsViewModelFactory
 import com.slowwalk.app.ui.settings.SettingsViewModel
+import com.slowwalk.app.ui.settings.SettingsViewModelFactory
 import com.slowwalk.app.ui.walk.PulsingDot
+import com.slowwalk.app.ui.walk.RecoveryViewModel
 import com.slowwalk.app.ui.walk.WalkScreen
 
 class MainActivity : ComponentActivity() {
@@ -73,6 +75,12 @@ class MainActivity : ComponentActivity() {
             val snackbarHostState = remember { SnackbarHostState() }
 
             var isWalkActive by remember { mutableStateOf(false) }
+
+            val db = SlowWalkDatabase.getInstance(applicationContext)
+            val recoveryVm: RecoveryViewModel = viewModel(
+                factory = RecoveryViewModel.Factory(db.inProgressSessionDao())
+            )
+            val checkpoint by recoveryVm.checkpoint.collectAsState()
 
             val tabs = listOf(
                 Triple(Route.Walk, "Walk", Icons.Default.DirectionsWalk),
@@ -120,11 +128,14 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.padding(innerPadding),
                 ) {
                     composable(Route.Walk.route) {
-                        WalkScreen(onActiveChanged = { isWalkActive = it })
+                        WalkScreen(
+                            onActiveChanged = { isWalkActive = it },
+                            pendingCheckpoint = checkpoint,
+                            onRecoveryDismissed = { recoveryVm.discard() },
+                        )
                     }
                     composable(Route.History.route) { HistoryScreen() }
                     composable(Route.Settings.route) {
-                        val db = SlowWalkDatabase.getInstance(applicationContext)
                         val settingsVm: SettingsViewModel = viewModel(
                             factory = SettingsViewModelFactory(db.settingDao())
                         )

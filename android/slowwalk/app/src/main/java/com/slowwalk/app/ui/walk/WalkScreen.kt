@@ -20,9 +20,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -36,11 +38,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.slowwalk.app.data.local.entity.InProgressSessionEntity
 import com.slowwalk.app.service.StepCounterService
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
-fun WalkScreen(onActiveChanged: (Boolean) -> Unit = {}) {
+fun WalkScreen(
+    onActiveChanged: (Boolean) -> Unit = {},
+    pendingCheckpoint: InProgressSessionEntity? = null,
+    onRecoveryDismissed: () -> Unit = {},
+) {
     val context = LocalContext.current
     var service by remember { mutableStateOf<StepCounterService?>(null) }
     val fallbackState = remember { MutableStateFlow(WalkState()) }
@@ -64,6 +71,29 @@ fun WalkScreen(onActiveChanged: (Boolean) -> Unit = {}) {
         onDispose { context.unbindService(connection) }
     }
 
+    if (pendingCheckpoint != null) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text("Walk interrupted") },
+            text = { Text("A walk was interrupted. Resume or discard?") },
+            confirmButton = {
+                Button(onClick = {
+                    val intent = Intent(context, StepCounterService::class.java).apply {
+                        action = StepCounterService.ACTION_RESUME
+                        putExtra(StepCounterService.EXTRA_ACCUMULATED_STEPS, pendingCheckpoint.accumulatedSteps)
+                        putExtra(StepCounterService.EXTRA_ELAPSED_SECONDS, pendingCheckpoint.elapsedSeconds)
+                        putExtra(StepCounterService.EXTRA_CLIENT_ID, pendingCheckpoint.clientId)
+                    }
+                    context.startForegroundService(intent)
+                    onRecoveryDismissed()
+                }) { Text("Resume") }
+            },
+            dismissButton = {
+                TextButton(onClick = onRecoveryDismissed) { Text("Discard") }
+            },
+        )
+    }
+
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -72,6 +102,14 @@ fun WalkScreen(onActiveChanged: (Boolean) -> Unit = {}) {
         if (walkState.isActive) {
             Text("${walkState.steps}", style = MaterialTheme.typography.displayLarge)
             Text("steps", style = MaterialTheme.typography.bodyLarge)
+            if (walkState.isResumed) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Resumed from checkpoint",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Spacer(Modifier.height(8.dp))
             Text(walkState.formattedElapsed, style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(32.dp))

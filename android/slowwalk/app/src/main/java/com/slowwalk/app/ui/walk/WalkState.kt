@@ -4,6 +4,7 @@ data class WalkState(
     val isActive: Boolean = false,
     val steps: Int = 0,
     val elapsedSeconds: Long = 0L,
+    val isResumed: Boolean = false,
 ) {
     val formattedElapsed: String
         get() {
