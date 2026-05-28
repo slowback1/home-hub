@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Simple walking figure silhouette -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,20 a6,6 0 1,0 0.001,0 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M46,32 L54,28 L62,32 L58,50 L66,64 L58,64 L54,54 L50,64 L42,64 L50,50 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M42,36 L36,44 M66,36 L72,44" />
+</vector>
