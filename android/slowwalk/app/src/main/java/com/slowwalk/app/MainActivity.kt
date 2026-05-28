@@ -13,19 +13,26 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.slowwalk.app.data.local.SlowWalkDatabase
 import com.slowwalk.app.navigation.Route
 import com.slowwalk.app.ui.HistoryScreen
-import com.slowwalk.app.ui.SettingsScreen
 import com.slowwalk.app.ui.WalkScreen
+import com.slowwalk.app.ui.settings.SettingsScreen
+import com.slowwalk.app.ui.settings.SettingsViewModel
+import com.slowwalk.app.ui.settings.SettingsViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +42,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
+            val snackbarHostState = remember { SnackbarHostState() }
 
             val tabs = listOf(
                 Triple(Route.Walk, "Walk", Icons.Default.DirectionsWalk),
@@ -43,6 +51,7 @@ class MainActivity : ComponentActivity() {
             )
 
             Scaffold(
+                snackbarHost = { SnackbarHost(snackbarHostState) },
                 bottomBar = {
                     NavigationBar {
                         tabs.forEach { (route, label, icon) ->
@@ -71,7 +80,13 @@ class MainActivity : ComponentActivity() {
                 ) {
                     composable(Route.Walk.route) { WalkScreen() }
                     composable(Route.History.route) { HistoryScreen() }
-                    composable(Route.Settings.route) { SettingsScreen() }
+                    composable(Route.Settings.route) {
+                        val db = SlowWalkDatabase.getInstance(applicationContext)
+                        val settingsVm: SettingsViewModel = viewModel(
+                            factory = SettingsViewModelFactory(db.settingDao())
+                        )
+                        SettingsScreen(viewModel = settingsVm, snackbarHostState = snackbarHostState)
+                    }
                 }
             }
         }
