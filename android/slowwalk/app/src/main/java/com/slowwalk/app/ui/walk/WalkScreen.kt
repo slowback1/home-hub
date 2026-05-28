@@ -1,10 +1,13 @@
 package com.slowwalk.app.ui.walk
 
+import android.Manifest
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -52,6 +55,18 @@ fun WalkScreen(
     var service by remember { mutableStateOf<StepCounterService?>(null) }
     val fallbackState = remember { MutableStateFlow(WalkState()) }
     val walkState by (service?.state ?: fallbackState).collectAsState(initial = WalkState())
+
+    var permissionDenied by remember { mutableStateOf(false) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            context.startForegroundService(Intent(context, StepCounterService::class.java))
+        } else {
+            permissionDenied = true
+        }
+    }
 
     LaunchedEffect(walkState.isActive) {
         onActiveChanged(walkState.isActive)
@@ -118,10 +133,18 @@ fun WalkScreen(
             }
         } else {
             Button(onClick = {
-                val intent = Intent(context, StepCounterService::class.java)
-                context.startForegroundService(intent)
+                permissionDenied = false
+                permissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
             }) {
                 Text("Start Walk")
+            }
+            if (permissionDenied) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "Activity recognition permission is required to count steps.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
             }
         }
     }
