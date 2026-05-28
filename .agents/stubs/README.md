@@ -10,7 +10,6 @@ Ideas captured for future refinement. Run the `write-prd` skill to promote a stu
 | [audiobook-job-pause-resume](audiobook-job-pause-resume.md) | Audiobook Job Pause / Resume | Pause a running conversion to free the GPU via SIGSTOP/SIGCONT, resume it on demand | 2026-05-06 |
 | [ebook-library](ebook-library.md) | Ebook Library | Backend directory scanner + frontend browse view for discovering epub files on the server | 2026-05-07 |
 | [ebook-reader](ebook-reader.md) | Ebook Reader | In-app reader view that renders epub content chapter by chapter in the browser | 2026-05-07 |
-| [step-counter-sidecar](step-counter-sidecar.md) | Step Counter Sidecar | Native Android app (sideloaded APK) that records walk sessions via StepCounter sensor and syncs to HomeHub | 2026-05-25 |
 | [homehub-rpg-core](homehub-rpg-core.md) | HomeHub RPG Core | Web-based idle RPG with Dragon Quest-style combat and backend-persisted character progression | 2026-05-25 |
 | [chore-tracker-rpg-integration](chore-tracker-rpg-integration.md) | Chore Tracker → RPG Integration | Converts chore task completions into RPG XP and rewards | 2026-05-25 |
 | [step-counter-rpg-integration](step-counter-rpg-integration.md) | Step Counter → RPG Integration | Converts synced walk sessions into RPG progression events proportional to steps/duration | 2026-05-25 |
