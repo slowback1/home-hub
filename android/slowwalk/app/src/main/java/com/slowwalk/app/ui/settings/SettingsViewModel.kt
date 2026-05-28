@@ -58,7 +58,7 @@ class SettingsViewModel(private val dao: SettingDao) : ViewModel() {
         viewModelScope.launch {
             val result = withContext(Dispatchers.IO) {
                 runCatching {
-                    val connection = URL("$url/api/health").openConnection() as HttpURLConnection
+                    val connection = URL("$url/healthcheck").openConnection() as HttpURLConnection
                     connection.connectTimeout = CONNECT_TIMEOUT_MS
                     connection.readTimeout = READ_TIMEOUT_MS
                     val code = connection.responseCode
