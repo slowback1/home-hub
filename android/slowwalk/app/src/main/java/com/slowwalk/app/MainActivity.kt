@@ -40,7 +40,8 @@ import androidx.navigation.compose.rememberNavController
 import com.slowwalk.app.data.local.SlowWalkDatabase
 import com.slowwalk.app.navigation.Route
 import com.slowwalk.app.service.StepCounterService
-import com.slowwalk.app.ui.HistoryScreen
+import com.slowwalk.app.ui.history.HistoryScreen
+import com.slowwalk.app.ui.history.HistoryViewModel
 import com.slowwalk.app.ui.settings.SettingsScreen
 import com.slowwalk.app.ui.settings.SettingsViewModel
 import com.slowwalk.app.ui.settings.SettingsViewModelFactory
@@ -134,7 +135,12 @@ class MainActivity : ComponentActivity() {
                             onRecoveryDismissed = { recoveryVm.discard() },
                         )
                     }
-                    composable(Route.History.route) { HistoryScreen() }
+                    composable(Route.History.route) {
+                        val historyVm: HistoryViewModel = viewModel(
+                            factory = HistoryViewModel.Factory(db.walkSessionDao())
+                        )
+                        HistoryScreen(viewModel = historyVm)
+                    }
                     composable(Route.Settings.route) {
                         val settingsVm: SettingsViewModel = viewModel(
                             factory = SettingsViewModelFactory(db.settingDao())
