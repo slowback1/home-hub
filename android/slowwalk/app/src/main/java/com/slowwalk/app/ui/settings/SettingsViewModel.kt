@@ -1,5 +1,6 @@
 package com.slowwalk.app.ui.settings
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.slowwalk.app.data.local.dao.SettingDao
@@ -14,6 +15,7 @@ import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
 
+private const val TAG = "SettingsViewModel"
 private const val KEY_BACKEND_URL = "backend_url"
 private const val CONNECT_TIMEOUT_MS = 5_000
 private const val READ_TIMEOUT_MS = 5_000
@@ -54,22 +56,29 @@ class SettingsViewModel(private val dao: SettingDao) : ViewModel() {
             _state.update { it.copy(connectionStatus = ConnectionStatus.Failure("URL is required")) }
             return
         }
+        val testUrl = "$url/healthcheck"
+        Log.d(TAG, "Testing connection to: $testUrl")
         _state.update { it.copy(isTesting = true, connectionStatus = ConnectionStatus.Idle) }
         viewModelScope.launch {
             val result = withContext(Dispatchers.IO) {
                 runCatching {
-                    val connection = URL("$url/healthcheck").openConnection() as HttpURLConnection
+                    val connection = URL(testUrl).openConnection() as HttpURLConnection
                     connection.connectTimeout = CONNECT_TIMEOUT_MS
                     connection.readTimeout = READ_TIMEOUT_MS
                     val code = connection.responseCode
                     connection.disconnect()
+                    Log.d(TAG, "Response code: $code")
                     code in HTTP_OK_MIN until HTTP_OK_MAX
+                }.onFailure { e ->
+                    Log.e(TAG, "Connection error: ${e::class.simpleName}: ${e.message}", e)
                 }.getOrElse { false }
             }
+            Log.d(TAG, "Test result: $result")
             _state.update {
                 it.copy(
                     isTesting = false,
-                    connectionStatus = if (result) ConnectionStatus.Success else ConnectionStatus.Failure("Connection failed"),
+                    connectionStatus = if (result) ConnectionStatus.Success
+                    else ConnectionStatus.Failure("Connection failed"),
                 )
             }
         }
