@@ -264,7 +264,6 @@
 	{/if}
 </div>
 
-
 {#if modalOpen}
 	<div
 		class="modal-backdrop"
@@ -623,5 +622,4 @@
 		gap: var(--space-2);
 		margin-left: auto;
 	}
-
 </style>

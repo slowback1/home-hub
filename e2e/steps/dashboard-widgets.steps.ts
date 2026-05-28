@@ -25,7 +25,10 @@ After({ tags: '@dashboard-widgets' }, async ({ request }) => {
 
 // --- Slot setup helpers ---
 
-async function placeWidget(request: Parameters<Parameters<typeof Given>[1]>[0]['request'], widgetType: string) {
+async function placeWidget(
+	request: Parameters<Parameters<typeof Given>[1]>[0]['request'],
+	widgetType: string
+) {
 	await request.put(`${BACKEND_URL}/api/dashboard/layout`, {
 		data: {
 			layoutFormat: '3x2',
@@ -88,11 +91,14 @@ Given('there is a current activity pick', async ({ request }) => {
 	});
 });
 
-Given('there is an in-progress audiobook job for {string}', async ({ request }, filename: string) => {
-	await request.post(`${BACKEND_URL}/api/test/audiobook-jobs`, {
-		data: { epubFilename: filename, status: 1 } // 1 = InProgress enum value
-	});
-});
+Given(
+	'there is an in-progress audiobook job for {string}',
+	async ({ request }, filename: string) => {
+		await request.post(`${BACKEND_URL}/api/test/audiobook-jobs`, {
+			data: { epubFilename: filename, status: 1 } // 1 = InProgress enum value
+		});
+	}
+);
 
 Given('there are no audiobook jobs', async () => {
 	// cleared in Before hook
@@ -122,7 +128,9 @@ Given('the weather API is unavailable', async ({ dashboardPage }) => {
 // --- Weather widget assertions ---
 
 Then('I should see the temperature in the weather widget', async ({ dashboardPage }) => {
-	await dashboardPage.page.waitForSelector('[data-testid="weather-widget-temperature"]', { timeout: 5000 });
+	await dashboardPage.page.waitForSelector('[data-testid="weather-widget-temperature"]', {
+		timeout: 5000
+	});
 	expect(await dashboardPage.isWeatherTemperatureVisible()).toBe(true);
 });
 
@@ -139,7 +147,9 @@ Then('I should see the wind speed in the weather widget', async ({ dashboardPage
 });
 
 Then('I should see the error state in the weather widget', async ({ dashboardPage }) => {
-	await dashboardPage.page.waitForSelector('[data-testid="weather-widget-error"]', { timeout: 5000 });
+	await dashboardPage.page.waitForSelector('[data-testid="weather-widget-error"]', {
+		timeout: 5000
+	});
 	expect(await dashboardPage.isWeatherErrorStateVisible()).toBe(true);
 });
 
@@ -168,23 +178,28 @@ Then('I should see 5 task rows in the tasks widget', async ({ dashboardPage }) =
 });
 
 Then('I should see {string} in the tasks widget', async ({ dashboardPage }, text: string) => {
-	await dashboardPage.page.waitForSelector('[data-testid="tasks-widget-overflow"]', { timeout: 5000 });
+	await dashboardPage.page.waitForSelector('[data-testid="tasks-widget-overflow"]', {
+		timeout: 5000
+	});
 	expect(await dashboardPage.isTaskWidgetOverflowVisible(text)).toBe(true);
 });
 
 // --- Activity widget ---
 
 Then('I should see the activity name in the activity widget', async ({ dashboardPage }) => {
-	await dashboardPage.page.waitForSelector('[data-testid="activity-widget-name"]', { timeout: 5000 });
+	await dashboardPage.page.waitForSelector('[data-testid="activity-widget-name"]', {
+		timeout: 5000
+	});
 	expect(await dashboardPage.isActivityNameVisible()).toBe(true);
 });
 
 // --- Audiobook widget ---
 
 Then('I should see {string} in the audiobook widget', async ({ dashboardPage }, text: string) => {
-	const selector = text === 'No conversions yet'
-		? '[data-testid="audiobook-widget-empty"]'
-		: `[data-testid="audiobook-widget-filename"]:has-text("${text}")`;
+	const selector =
+		text === 'No conversions yet'
+			? '[data-testid="audiobook-widget-empty"]'
+			: `[data-testid="audiobook-widget-filename"]:has-text("${text}")`;
 	await dashboardPage.page.waitForSelector(selector, { timeout: 5000 });
 	if (text === 'No conversions yet') {
 		expect(await dashboardPage.isAudiobookWidgetEmptyVisible()).toBe(true);
@@ -196,7 +211,9 @@ Then('I should see {string} in the audiobook widget', async ({ dashboardPage }, 
 Then(
 	'I should see the {string} status badge in the audiobook widget',
 	async ({ dashboardPage }, status: string) => {
-		await dashboardPage.page.waitForSelector('[data-testid="audiobook-widget-status"]', { timeout: 5000 });
+		await dashboardPage.page.waitForSelector('[data-testid="audiobook-widget-status"]', {
+			timeout: 5000
+		});
 		expect(await dashboardPage.isAudiobookStatusBadgeVisible(status)).toBe(true);
 	}
 );
@@ -206,13 +223,17 @@ Then(
 Then(
 	'I should see {string} as a link in the bookmarks widget',
 	async ({ dashboardPage }, name: string) => {
-		await dashboardPage.page.waitForSelector('[data-testid="bookmarks-widget-link"]', { timeout: 5000 });
+		await dashboardPage.page.waitForSelector('[data-testid="bookmarks-widget-link"]', {
+			timeout: 5000
+		});
 		expect(await dashboardPage.isBookmarkLinkVisible(name)).toBe(true);
 	}
 );
 
 Then('I should see bookmark links in the bookmarks widget', async ({ dashboardPage }) => {
-	await dashboardPage.page.waitForSelector('[data-testid="bookmarks-widget-link"]', { timeout: 5000 });
+	await dashboardPage.page.waitForSelector('[data-testid="bookmarks-widget-link"]', {
+		timeout: 5000
+	});
 	const count = await dashboardPage.bookmarkLinkCount();
 	expect(count).toBeGreaterThan(0);
 });

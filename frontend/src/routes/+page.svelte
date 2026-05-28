@@ -324,7 +324,6 @@
 			</div>
 		</div>
 	{/if}
-
 {/if}
 
 <style>
@@ -843,5 +842,4 @@
 			grid-template-columns: 1fr;
 		}
 	}
-
 </style>

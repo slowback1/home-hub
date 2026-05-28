@@ -117,14 +117,14 @@ export class DashboardPage {
 	}
 
 	async isTaskWidgetRowVisible(name: string): Promise<boolean> {
-		return this.page
-			.locator(`[data-testid="tasks-widget-row"]:has-text("${name}")`)
-			.isVisible();
+		return this.page.locator(`[data-testid="tasks-widget-row"]:has-text("${name}")`).isVisible();
 	}
 
 	async clickTaskWidgetDone(name: string): Promise<void> {
 		await this.page
-			.locator(`[data-testid="tasks-widget-row"]:has-text("${name}") [data-testid="tasks-widget-done-btn"]`)
+			.locator(
+				`[data-testid="tasks-widget-row"]:has-text("${name}") [data-testid="tasks-widget-done-btn"]`
+			)
 			.click();
 	}
 

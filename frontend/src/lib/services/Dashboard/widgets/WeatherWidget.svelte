@@ -55,7 +55,10 @@
 			</div>
 			<div class="weather-stat">
 				<dt>Wind</dt>
-				<dd data-testid="weather-widget-wind">{conditions.windSpeed} {windUnit(conditions.units)}</dd>
+				<dd data-testid="weather-widget-wind">
+					{conditions.windSpeed}
+					{windUnit(conditions.units)}
+				</dd>
 			</div>
 		</dl>
 	{/if}
@@ -89,7 +92,9 @@
 	}
 
 	@keyframes spin {
-		to { transform: rotate(360deg); }
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.widget-state__dash {

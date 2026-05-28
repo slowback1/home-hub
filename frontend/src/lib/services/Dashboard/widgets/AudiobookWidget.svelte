@@ -67,15 +67,15 @@
 	{:else}
 		{@const status = STATUS_MAP[job.status] ?? STATUS_MAP.queued}
 		<div class="audiobook-body">
-			<span class="audiobook-filename" data-testid="audiobook-widget-filename" title={job.epubFilename}>
+			<span
+				class="audiobook-filename"
+				data-testid="audiobook-widget-filename"
+				title={job.epubFilename}
+			>
 				{job.epubFilename}
 			</span>
 			<div class="audiobook-meta">
-				<Badge
-					text={status.label}
-					variant={status.variant}
-					testId="audiobook-widget-status"
-				/>
+				<Badge text={status.label} variant={status.variant} testId="audiobook-widget-status" />
 			</div>
 		</div>
 	{/if}
@@ -108,7 +108,9 @@
 	}
 
 	@keyframes spin {
-		to { transform: rotate(360deg); }
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.widget-state__dash {
