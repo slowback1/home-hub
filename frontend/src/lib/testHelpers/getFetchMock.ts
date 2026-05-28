@@ -1,5 +1,8 @@
+const HTTP_OK_MIN = 200;
+const HTTP_OK_MAX = 300;
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export function getFetchMock(response: any, status: number = 200) {
+export function getFetchMock(response: any, status: number = HTTP_OK_MIN) {
 	const mock = vi.fn(() => {
 		return Promise.resolve({
 			json(): Promise<never> {
@@ -8,7 +11,7 @@ export function getFetchMock(response: any, status: number = 200) {
 			text(): Promise<string> {
 				return Promise.resolve(response);
 			},
-			ok: status >= 200 && status < 300,
+			ok: status >= HTTP_OK_MIN && status < HTTP_OK_MAX,
 			status: status
 		} as never);
 	});
@@ -78,7 +81,7 @@ export function mockApi(map: MockApiMap) {
 			text(): Promise<string> {
 				return Promise.resolve(response);
 			},
-			ok: status >= 200 && status < 300,
+			ok: status >= HTTP_OK_MIN && status < HTTP_OK_MAX,
 			status: status
 		});
 	});

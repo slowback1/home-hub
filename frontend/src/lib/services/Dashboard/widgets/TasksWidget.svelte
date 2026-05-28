@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { SvelteDate } from 'svelte/reactivity';
 	import TasksApi, { type ChoreTask } from '$lib/api/TasksApi';
 	import ToastService from '$lib/ui/containers/toast/ToastService';
 	import TaskCompletionService from '$lib/services/Tasks/TaskCompletionService';
@@ -19,7 +20,7 @@
 	});
 
 	function today(): Date {
-		const d = new Date();
+		const d = new SvelteDate();
 		d.setHours(0, 0, 0, 0);
 		return d;
 	}

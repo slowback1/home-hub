@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
     public DbSet<TaskCompletion> TaskCompletions => Set<TaskCompletion>();
     public DbSet<Bookmark> Bookmarks => Set<Bookmark>();
     public DbSet<DashboardSlot> DashboardSlots => Set<DashboardSlot>();
+    public DbSet<WalkSession> WalkSessions => Set<WalkSession>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
