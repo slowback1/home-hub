@@ -22,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +41,7 @@ import androidx.navigation.compose.rememberNavController
 import com.slowwalk.app.data.local.SlowWalkDatabase
 import com.slowwalk.app.navigation.Route
 import com.slowwalk.app.service.StepCounterService
+import com.slowwalk.app.sync.SyncService
 import com.slowwalk.app.ui.history.HistoryScreen
 import com.slowwalk.app.ui.history.HistoryViewModel
 import com.slowwalk.app.ui.settings.SettingsScreen
@@ -78,10 +80,16 @@ class MainActivity : ComponentActivity() {
             var isWalkActive by remember { mutableStateOf(false) }
 
             val db = SlowWalkDatabase.getInstance(applicationContext)
+            val syncService = remember { SyncService(db.walkSessionDao(), db.settingDao()) }
+
             val recoveryVm: RecoveryViewModel = viewModel(
                 factory = RecoveryViewModel.Factory(db.inProgressSessionDao())
             )
             val checkpoint by recoveryVm.checkpoint.collectAsState()
+
+            LaunchedEffect(Unit) {
+                syncService.sync()
+            }
 
             val tabs = listOf(
                 Triple(Route.Walk, "Walk", Icons.Default.DirectionsWalk),
@@ -137,9 +145,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(Route.History.route) {
                         val historyVm: HistoryViewModel = viewModel(
-                            factory = HistoryViewModel.Factory(db.walkSessionDao())
+                            factory = HistoryViewModel.Factory(db.walkSessionDao(), syncService)
                         )
-                        HistoryScreen(viewModel = historyVm)
+                        HistoryScreen(viewModel = historyVm, snackbarHostState = snackbarHostState)
                     }
                     composable(Route.Settings.route) {
                         val settingsVm: SettingsViewModel = viewModel(

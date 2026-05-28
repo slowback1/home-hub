@@ -6,23 +6,28 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.slowwalk.app.data.local.entity.WalkSessionEntity
+import com.slowwalk.app.sync.SyncState
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -32,9 +37,18 @@ private val DATE_FORMAT = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault())
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
-    onSyncNow: () -> Unit = {},
+    snackbarHostState: SnackbarHostState? = null,
 ) {
     val sessions by viewModel.sessions.collectAsState()
+    val syncState by viewModel.syncState.collectAsState()
+
+    LaunchedEffect(syncState) {
+        when (val s = syncState) {
+            is SyncState.Done -> snackbarHostState?.showSnackbar("Synced ${s.synced} session${if (s.synced == 1) "" else "s"}")
+            SyncState.Error -> snackbarHostState?.showSnackbar("Sync failed — will retry next time")
+            else -> Unit
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -45,7 +59,16 @@ fun HistoryScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("Pending Sessions", style = MaterialTheme.typography.titleMedium)
-            Button(onClick = onSyncNow) { Text("Sync Now") }
+            Button(
+                onClick = viewModel::syncNow,
+                enabled = syncState !is SyncState.Syncing,
+            ) {
+                if (syncState is SyncState.Syncing) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                } else {
+                    Text("Sync Now")
+                }
+            }
         }
 
         HorizontalDivider()
