@@ -1,5 +1,5 @@
 import type { Component } from 'svelte';
-import { CheckSquare, Shuffle, Cloud, BookAudio, Bookmark } from 'lucide-svelte';
+import { CheckSquare, Shuffle, Cloud, BookAudio, Bookmark, Footprints } from 'lucide-svelte';
 import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { FeatureFlags } from '$lib/services/FeatureFlag/FeatureFlags';
 import TasksWidget from './widgets/TasksWidget.svelte';
@@ -7,6 +7,7 @@ import ActivityWidget from './widgets/ActivityWidget.svelte';
 import WeatherWidget from './widgets/WeatherWidget.svelte';
 import AudiobookWidget from './widgets/AudiobookWidget.svelte';
 import BookmarksWidget from './widgets/BookmarksWidget.svelte';
+import WalkHistoryWidget from './widgets/WalkHistoryWidget.svelte';
 
 export type WidgetEntry = {
 	id: string;
@@ -63,6 +64,15 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		href: '/bookmarks',
 		featureFlag: FeatureFlags.BOOKMARKS_ENABLED,
 		component: BookmarksWidget as unknown as Component
+	},
+	{
+		id: 'walk-history',
+		name: 'Walk History',
+		description: 'Recent walk sessions synced from your phone.',
+		icon: Footprints as unknown as Component,
+		href: '/walk-history',
+		featureFlag: FeatureFlags.WALK_SESSION_HISTORY_ENABLED,
+		component: WalkHistoryWidget as unknown as Component
 	}
 ];
 

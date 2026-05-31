@@ -10,6 +10,7 @@
 		BookAudio,
 		Image,
 		Bookmark,
+		Footprints,
 		ChevronLeft,
 		ChevronRight
 	} from 'lucide-svelte';
@@ -68,6 +69,13 @@
 			label: 'Bookmarks',
 			icon: Bookmark,
 			flag: FeatureFlags.BOOKMARKS_ENABLED
+		},
+		{
+			testId: 'nav-item-walk-history',
+			href: '/walk-history',
+			label: 'Walk History',
+			icon: Footprints,
+			flag: FeatureFlags.WALK_SESSION_HISTORY_ENABLED
 		},
 		{
 			testId: 'nav-item-comfyui',

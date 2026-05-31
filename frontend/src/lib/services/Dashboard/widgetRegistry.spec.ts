@@ -3,13 +3,14 @@ import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { createTestFeatureFlag } from '$lib/testHelpers/testFeatureFlagProvider';
 
 describe('WIDGET_REGISTRY', () => {
-	it('contains entries for all 5 active widget types', () => {
+	it('contains entries for all 6 active widget types', () => {
 		const ids = WIDGET_REGISTRY.map((w) => w.id);
 		expect(ids).toContain('tasks');
 		expect(ids).toContain('activity');
 		expect(ids).toContain('weather');
 		expect(ids).toContain('audiobook');
 		expect(ids).toContain('bookmarks');
+		expect(ids).toContain('walk-history');
 	});
 
 	it('does not contain comfyui or retro (no query API exists for these)', () => {
@@ -62,5 +63,19 @@ describe('getVisibleWidgets', () => {
 		FeatureFlagService.featureFlags = [createTestFeatureFlag('BOOKMARKS_ENABLED', false)];
 		const visible = getVisibleWidgets();
 		expect(visible.map((v) => v.id)).not.toContain('bookmarks');
+	});
+
+	it('includes walk-history when WALK_SESSION_HISTORY_ENABLED is on', () => {
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('WALK_SESSION_HISTORY_ENABLED', true)];
+		const visible = getVisibleWidgets();
+		expect(visible.map((v) => v.id)).toContain('walk-history');
+	});
+
+	it('excludes walk-history when WALK_SESSION_HISTORY_ENABLED is off', () => {
+		FeatureFlagService.featureFlags = [
+			createTestFeatureFlag('WALK_SESSION_HISTORY_ENABLED', false)
+		];
+		const visible = getVisibleWidgets();
+		expect(visible.map((v) => v.id)).not.toContain('walk-history');
 	});
 });
