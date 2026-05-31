@@ -1,6 +1,8 @@
 using Common.Interfaces;
 using Common.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace WebAPI.Controllers;
 
@@ -12,6 +14,13 @@ public class WalkSessionController : ApplicationController
     public WalkSessionController(ICrudFactory factory) : base(factory)
     {
         _sessions = Factory.GetCrud<WalkSession>();
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<WalkSession>>> List()
+    {
+        var sessions = await _sessions.QueryAsync(_ => true);
+        return Ok(sessions.OrderByDescending(s => s.StartedAt));
     }
 
     [HttpPost]

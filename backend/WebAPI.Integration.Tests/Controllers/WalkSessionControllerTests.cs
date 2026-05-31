@@ -131,4 +131,40 @@ public class WalkSessionControllerTests : ControllerTestBase
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }
+
+    [Test]
+    public async Task Get_NoSessions_ReturnsEmptyArray()
+    {
+        var response = await GetRawAsync("/api/walk-sessions", includeToken: false);
+        var sessions = await response.Content.ReadFromJsonAsync<WalkSession[]>();
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(sessions, Is.Empty);
+    }
+
+    [Test]
+    public async Task Get_MultipleSessions_ReturnsSortedByStartedAtDescending()
+    {
+        var older = new CreateRequest(
+            ClientId: Guid.NewGuid().ToString(),
+            StartedAt: new DateTime(2026, 5, 20, 8, 0, 0, DateTimeKind.Utc),
+            DurationSeconds: 600,
+            StepCount: 1000);
+
+        var newer = new CreateRequest(
+            ClientId: Guid.NewGuid().ToString(),
+            StartedAt: new DateTime(2026, 5, 25, 9, 0, 0, DateTimeKind.Utc),
+            DurationSeconds: 900,
+            StepCount: 2000);
+
+        await PostRawAsync("/api/walk-sessions", older, includeToken: false);
+        await PostRawAsync("/api/walk-sessions", newer, includeToken: false);
+
+        var response = await GetRawAsync("/api/walk-sessions", includeToken: false);
+        var sessions = await response.Content.ReadFromJsonAsync<WalkSession[]>();
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(sessions, Has.Length.EqualTo(2));
+        Assert.That(sessions![0].StartedAt, Is.GreaterThan(sessions[1].StartedAt));
+    }
 }
