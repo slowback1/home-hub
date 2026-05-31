@@ -14,8 +14,10 @@ import { ComfyUiConfigPage } from './pages/ComfyUiConfigPage';
 import { TasksPage } from './pages/TasksPage';
 import { BookmarksPage } from './pages/BookmarksPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { WalkHistoryPage } from './pages/WalkHistoryPage';
 
 type Fixtures = {
+	walkHistoryPage: WalkHistoryPage;
 	examplePage: ExamplePage;
 	designSystemPage: DesignSystemPage;
 	systemConfigPage: SystemConfigPage;
@@ -33,6 +35,9 @@ type Fixtures = {
 };
 
 const test = base.extend<Fixtures>({
+	walkHistoryPage: async ({ page }, use) => {
+		await use(new WalkHistoryPage(page));
+	},
 	examplePage: async ({ page }, use) => {
 		await use(new ExamplePage(page));
 	},

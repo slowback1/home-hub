@@ -4,26 +4,32 @@ export class WalkHistoryPage {
 	constructor(readonly page: Page) {}
 
 	async goto(): Promise<void> {
-		throw new Error('not implemented');
+		await this.page.goto('/walk-history');
+		await this.page.waitForSelector('[data-testid="walk-history-page"]', { state: 'visible' });
 	}
 
 	async getSessionRowCount(): Promise<number> {
-		throw new Error('not implemented');
+		return this.page.locator('[data-testid="walk-session-row"]').count();
 	}
 
 	async isEmptyStateVisible(): Promise<boolean> {
-		throw new Error('not implemented');
+		return this.page.locator('[data-testid="walk-empty-state"]').isVisible();
 	}
 
-	async getSessionDates(): Promise<string[]> {
-		throw new Error('not implemented');
+	async getFirstRowRelativeTime(): Promise<string> {
+		const text = await this.page
+			.locator('[data-testid="walk-session-row"]')
+			.first()
+			.locator('.when-primary')
+			.textContent();
+		return text?.trim() ?? '';
 	}
 
 	async isStepCountVisible(): Promise<boolean> {
-		throw new Error('not implemented');
+		return this.page.locator('[data-testid="walk-session-steps"]').first().isVisible();
 	}
 
 	async isDurationVisible(): Promise<boolean> {
-		throw new Error('not implemented');
+		return this.page.locator('[data-testid="walk-session-duration"]').first().isVisible();
 	}
 }

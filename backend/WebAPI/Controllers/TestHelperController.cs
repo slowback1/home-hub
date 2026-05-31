@@ -116,6 +116,19 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpDelete("walk-sessions")]
+    public async Task<ActionResult> ClearWalkSessions()
+    {
+        if (!IsAllowed) return NotFound();
+
+        var crud = crudFactory.GetCrud<WalkSession>();
+        var all = await crud.QueryAsync(_ => true);
+        foreach (var session in all)
+            await crud.DeleteAsync(session.Id);
+
+        return NoContent();
+    }
+
     [HttpDelete("tasks")]
     public async Task<ActionResult> ClearTasks()
     {
