@@ -15,9 +15,11 @@ import { TasksPage } from './pages/TasksPage';
 import { BookmarksPage } from './pages/BookmarksPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { WalkHistoryPage } from './pages/WalkHistoryPage';
+import { WheelsPage } from './pages/WheelsPage';
 
 type Fixtures = {
 	walkHistoryPage: WalkHistoryPage;
+	wheelsPage: WheelsPage;
 	examplePage: ExamplePage;
 	designSystemPage: DesignSystemPage;
 	systemConfigPage: SystemConfigPage;
@@ -37,6 +39,9 @@ type Fixtures = {
 const test = base.extend<Fixtures>({
 	walkHistoryPage: async ({ page }, use) => {
 		await use(new WalkHistoryPage(page));
+	},
+	wheelsPage: async ({ page }, use) => {
+		await use(new WheelsPage(page));
 	},
 	examplePage: async ({ page }, use) => {
 		await use(new ExamplePage(page));
