@@ -1,5 +1,5 @@
 import type { Component } from 'svelte';
-import { CheckSquare, Shuffle, Cloud, BookAudio, Bookmark, Footprints } from 'lucide-svelte';
+import { CheckSquare, Shuffle, Cloud, BookAudio, Bookmark, Footprints, Disc3 } from 'lucide-svelte';
 import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { FeatureFlags } from '$lib/services/FeatureFlag/FeatureFlags';
 import TasksWidget from './widgets/TasksWidget.svelte';
@@ -8,6 +8,7 @@ import WeatherWidget from './widgets/WeatherWidget.svelte';
 import AudiobookWidget from './widgets/AudiobookWidget.svelte';
 import BookmarksWidget from './widgets/BookmarksWidget.svelte';
 import WalkHistoryWidget from './widgets/WalkHistoryWidget.svelte';
+import WheelsWidget from './widgets/WheelsWidget.svelte';
 
 export type WidgetEntry = {
 	id: string;
@@ -73,6 +74,15 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		href: '/walk-history',
 		featureFlag: FeatureFlags.WALK_SESSION_HISTORY_ENABLED,
 		component: WalkHistoryWidget as unknown as Component
+	},
+	{
+		id: 'wheels',
+		name: 'Wheels',
+		description: 'Spin a saved wheel to pick a random item.',
+		icon: Disc3 as unknown as Component,
+		href: '/wheels',
+		featureFlag: FeatureFlags.WHEEL_PICKER_ENABLED,
+		component: WheelsWidget as unknown as Component
 	}
 ];
 

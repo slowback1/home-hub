@@ -11,6 +11,7 @@
 		Image,
 		Bookmark,
 		Footprints,
+		Disc3,
 		ChevronLeft,
 		ChevronRight
 	} from 'lucide-svelte';
@@ -76,6 +77,13 @@
 			label: 'Walk History',
 			icon: Footprints,
 			flag: FeatureFlags.WALK_SESSION_HISTORY_ENABLED
+		},
+		{
+			testId: 'nav-item-wheels',
+			href: '/wheels',
+			label: 'Wheels',
+			icon: Disc3,
+			flag: FeatureFlags.WHEEL_PICKER_ENABLED
 		},
 		{
 			testId: 'nav-item-comfyui',

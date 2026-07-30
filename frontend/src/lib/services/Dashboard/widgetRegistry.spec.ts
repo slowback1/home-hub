@@ -3,7 +3,7 @@ import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { createTestFeatureFlag } from '$lib/testHelpers/testFeatureFlagProvider';
 
 describe('WIDGET_REGISTRY', () => {
-	it('contains entries for all 6 active widget types', () => {
+	it('contains entries for all 7 active widget types', () => {
 		const ids = WIDGET_REGISTRY.map((w) => w.id);
 		expect(ids).toContain('tasks');
 		expect(ids).toContain('activity');
@@ -11,6 +11,7 @@ describe('WIDGET_REGISTRY', () => {
 		expect(ids).toContain('audiobook');
 		expect(ids).toContain('bookmarks');
 		expect(ids).toContain('walk-history');
+		expect(ids).toContain('wheels');
 	});
 
 	it('does not contain comfyui or retro (no query API exists for these)', () => {
@@ -77,5 +78,17 @@ describe('getVisibleWidgets', () => {
 		];
 		const visible = getVisibleWidgets();
 		expect(visible.map((v) => v.id)).not.toContain('walk-history');
+	});
+
+	it('includes wheels when WHEEL_PICKER_ENABLED is on', () => {
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('WHEEL_PICKER_ENABLED', true)];
+		const visible = getVisibleWidgets();
+		expect(visible.map((v) => v.id)).toContain('wheels');
+	});
+
+	it('excludes wheels when WHEEL_PICKER_ENABLED is off', () => {
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('WHEEL_PICKER_ENABLED', false)];
+		const visible = getVisibleWidgets();
+		expect(visible.map((v) => v.id)).not.toContain('wheels');
 	});
 });
