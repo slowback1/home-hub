@@ -129,6 +129,19 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpDelete("wheels")]
+    public async Task<ActionResult> ClearWheels()
+    {
+        if (!IsAllowed) return NotFound();
+
+        var crud = crudFactory.GetCrud<Wheel>();
+        var all = await crud.QueryAsync(_ => true);
+        foreach (var wheel in all)
+            await crud.DeleteAsync(wheel.Id);
+
+        return NoContent();
+    }
+
     [HttpDelete("tasks")]
     public async Task<ActionResult> ClearTasks()
     {
