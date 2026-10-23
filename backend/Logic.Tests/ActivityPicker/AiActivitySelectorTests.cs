@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Common.Interfaces;
 using Common.Models;
 using Logic.ActivityPicker;
