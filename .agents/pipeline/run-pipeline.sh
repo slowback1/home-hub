@@ -7,8 +7,8 @@
 # prevents overlapping runs. Logs land in .agents/pipeline/logs/ (gitignored).
 set -uo pipefail
 
-# cron's PATH is only /usr/bin:/bin — make opencode resolvable
-export PATH="/home/projector-room/.opencode/bin:/home/projector-room/.local/bin:/usr/local/bin:$PATH"
+# cron's PATH is only /usr/bin:/bin — make opencode, dotnet 10, and node/npm resolvable
+export PATH="/home/projector-room/.opencode/bin:/home/projector-room/.local/bin:/home/projector-room/.dotnet:/home/projector-room/.dotnet/tools:/home/projector-room/.nvm/versions/node/v22.17.1/bin:/usr/local/bin:$PATH"
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 DIR="$REPO/.agents/pipeline"
