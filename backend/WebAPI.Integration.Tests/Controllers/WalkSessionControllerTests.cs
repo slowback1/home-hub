@@ -7,11 +7,13 @@ namespace WebAPI.Integration.Tests.Controllers;
 
 public class WalkSessionControllerTests : ControllerTestBase
 {
-    private record CreateRequest(
-        string? ClientId,
-        DateTime StartedAt,
-        int DurationSeconds,
-        int StepCount);
+    private record CreateRequest
+    {
+        public string? ClientId { get; init; }
+        public required DateTime StartedAt { get; init; }
+        public required int DurationSeconds { get; init; }
+        public required int StepCount { get; init; }
+    }
 
     [SetUp]
     public void ClearState()
@@ -22,11 +24,11 @@ public class WalkSessionControllerTests : ControllerTestBase
     [Test]
     public async Task Post_CreatesSession_AndReturns200()
     {
-        var request = new CreateRequest(
-            ClientId: Guid.NewGuid().ToString(),
-            StartedAt: new DateTime(2026, 5, 28, 10, 0, 0, DateTimeKind.Utc),
-            DurationSeconds: 600,
-            StepCount: 1000);
+        var request = new CreateRequest {
+            ClientId = Guid.NewGuid().ToString(),
+            StartedAt = new DateTime(2026, 5, 28, 10, 0, 0, DateTimeKind.Utc),
+            DurationSeconds = 600,
+            StepCount = 1000 };
 
         var response = await PostRawAsync("/api/walk-sessions", request, includeToken: false);
         var created = await response.Content.ReadFromJsonAsync<WalkSession>();
@@ -41,11 +43,11 @@ public class WalkSessionControllerTests : ControllerTestBase
     [Test]
     public async Task Post_SetsIdAndSyncedAt_Ignoring_ClientSupplied()
     {
-        var request = new CreateRequest(
-            ClientId: Guid.NewGuid().ToString(),
-            StartedAt: new DateTime(2026, 5, 28, 10, 0, 0, DateTimeKind.Utc),
-            DurationSeconds: 300,
-            StepCount: 500);
+        var request = new CreateRequest {
+            ClientId = Guid.NewGuid().ToString(),
+            StartedAt = new DateTime(2026, 5, 28, 10, 0, 0, DateTimeKind.Utc),
+            DurationSeconds = 300,
+            StepCount = 500 };
 
         var before = DateTime.UtcNow;
         var response = await PostRawAsync("/api/walk-sessions", request, includeToken: false);
@@ -60,11 +62,11 @@ public class WalkSessionControllerTests : ControllerTestBase
     public async Task Post_SameClientId_Returns200_WithOriginalRecord()
     {
         var clientId = Guid.NewGuid().ToString();
-        var request = new CreateRequest(
-            ClientId: clientId,
-            StartedAt: new DateTime(2026, 5, 28, 10, 0, 0, DateTimeKind.Utc),
-            DurationSeconds: 600,
-            StepCount: 1000);
+        var request = new CreateRequest {
+            ClientId = clientId,
+            StartedAt = new DateTime(2026, 5, 28, 10, 0, 0, DateTimeKind.Utc),
+            DurationSeconds = 600,
+            StepCount = 1000 };
 
         var first = await PostRawAsync("/api/walk-sessions", request, includeToken: false);
         var firstRecord = await first.Content.ReadFromJsonAsync<WalkSession>();
@@ -79,11 +81,11 @@ public class WalkSessionControllerTests : ControllerTestBase
     [Test]
     public async Task Post_MissingClientId_Returns400()
     {
-        var request = new CreateRequest(
-            ClientId: "",
-            StartedAt: new DateTime(2026, 5, 28, 10, 0, 0, DateTimeKind.Utc),
-            DurationSeconds: 600,
-            StepCount: 1000);
+        var request = new CreateRequest {
+            ClientId = "",
+            StartedAt = new DateTime(2026, 5, 28, 10, 0, 0, DateTimeKind.Utc),
+            DurationSeconds = 600,
+            StepCount = 1000 };
 
         var response = await PostRawAsync("/api/walk-sessions", request, includeToken: false);
 
@@ -93,11 +95,11 @@ public class WalkSessionControllerTests : ControllerTestBase
     [Test]
     public async Task Post_NegativeDuration_Returns400()
     {
-        var request = new CreateRequest(
-            ClientId: Guid.NewGuid().ToString(),
-            StartedAt: new DateTime(2026, 5, 28, 10, 0, 0, DateTimeKind.Utc),
-            DurationSeconds: -1,
-            StepCount: 500);
+        var request = new CreateRequest {
+            ClientId = Guid.NewGuid().ToString(),
+            StartedAt = new DateTime(2026, 5, 28, 10, 0, 0, DateTimeKind.Utc),
+            DurationSeconds = -1,
+            StepCount = 500 };
 
         var response = await PostRawAsync("/api/walk-sessions", request, includeToken: false);
 
@@ -107,11 +109,11 @@ public class WalkSessionControllerTests : ControllerTestBase
     [Test]
     public async Task Post_NegativeStepCount_Returns400()
     {
-        var request = new CreateRequest(
-            ClientId: Guid.NewGuid().ToString(),
-            StartedAt: new DateTime(2026, 5, 28, 10, 0, 0, DateTimeKind.Utc),
-            DurationSeconds: 600,
-            StepCount: -1);
+        var request = new CreateRequest {
+            ClientId = Guid.NewGuid().ToString(),
+            StartedAt = new DateTime(2026, 5, 28, 10, 0, 0, DateTimeKind.Utc),
+            DurationSeconds = 600,
+            StepCount = -1 };
 
         var response = await PostRawAsync("/api/walk-sessions", request, includeToken: false);
 
@@ -121,11 +123,11 @@ public class WalkSessionControllerTests : ControllerTestBase
     [Test]
     public async Task Post_MinDateStartedAt_Returns400()
     {
-        var request = new CreateRequest(
-            ClientId: Guid.NewGuid().ToString(),
-            StartedAt: default,
-            DurationSeconds: 600,
-            StepCount: 500);
+        var request = new CreateRequest {
+            ClientId = Guid.NewGuid().ToString(),
+            StartedAt = default,
+            DurationSeconds = 600,
+            StepCount = 500 };
 
         var response = await PostRawAsync("/api/walk-sessions", request, includeToken: false);
 
@@ -145,17 +147,17 @@ public class WalkSessionControllerTests : ControllerTestBase
     [Test]
     public async Task Get_MultipleSessions_ReturnsSortedByStartedAtDescending()
     {
-        var older = new CreateRequest(
-            ClientId: Guid.NewGuid().ToString(),
-            StartedAt: new DateTime(2026, 5, 20, 8, 0, 0, DateTimeKind.Utc),
-            DurationSeconds: 600,
-            StepCount: 1000);
+        var older = new CreateRequest {
+            ClientId = Guid.NewGuid().ToString(),
+            StartedAt = new DateTime(2026, 5, 20, 8, 0, 0, DateTimeKind.Utc),
+            DurationSeconds = 600,
+            StepCount = 1000 };
 
-        var newer = new CreateRequest(
-            ClientId: Guid.NewGuid().ToString(),
-            StartedAt: new DateTime(2026, 5, 25, 9, 0, 0, DateTimeKind.Utc),
-            DurationSeconds: 900,
-            StepCount: 2000);
+        var newer = new CreateRequest {
+            ClientId = Guid.NewGuid().ToString(),
+            StartedAt = new DateTime(2026, 5, 25, 9, 0, 0, DateTimeKind.Utc),
+            DurationSeconds = 900,
+            StepCount = 2000 };
 
         await PostRawAsync("/api/walk-sessions", older, includeToken: false);
         await PostRawAsync("/api/walk-sessions", newer, includeToken: false);
