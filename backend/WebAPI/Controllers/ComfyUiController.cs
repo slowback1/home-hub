@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Common.Interfaces;
 using Common.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +20,7 @@ public class ComfyUiController : ApplicationController
     public async Task<ActionResult<IEnumerable<WorkflowListItem>>> GetWorkflows()
     {
         var workflows = await _workflows.QueryAsync(_ => true);
-        return Ok(workflows.Select(w => new WorkflowListItem(w.Id, w.Name)));
+        return Ok(workflows.Select(w => new WorkflowListItem { Id = w.Id, Name = w.Name }));
     }
 
     [HttpPost("workflows")]
@@ -35,7 +33,7 @@ public class ComfyUiController : ApplicationController
             WorkflowJson = request.WorkflowJson
         };
         var created = await _workflows.CreateAsync(workflow);
-        return Ok(new WorkflowListItem(created.Id, created.Name));
+        return Ok(new WorkflowListItem { Id = created.Id, Name = created.Name });
     }
 
     [HttpDelete("workflows/{id}")]
@@ -63,7 +61,7 @@ public class ComfyUiController : ApplicationController
             var promptId = await _comfyUiClient.SubmitPromptAsync(workflowJson);
             var imageBytes = await _comfyUiClient.PollForImageAsync(promptId);
             var base64 = Convert.ToBase64String(imageBytes);
-            return Ok(new GenerateResponse($"data:image/png;base64,{base64}"));
+            return Ok(new GenerateResponse { ImageBase64 = $"data:image/png;base64,{base64}" });
         }
         catch (Exception ex)
         {
@@ -71,8 +69,15 @@ public class ComfyUiController : ApplicationController
         }
     }
 
-    public record WorkflowListItem(string Id, string Name);
+    public record WorkflowListItem
+    {
+        public required string Id { get; init; }
+        public required string Name { get; init; }
+    }
     public record CreateWorkflowRequest(string Name, string WorkflowJson);
     public record GenerateRequest(string WorkflowId, string Prompt, string? NegativePrompt = null);
-    public record GenerateResponse(string ImageBase64);
+    public record GenerateResponse
+    {
+        public required string ImageBase64 { get; init; }
+    }
 }
