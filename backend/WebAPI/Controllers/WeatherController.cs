@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Logic.Weather;
 using Microsoft.AspNetCore.Mvc;
 
