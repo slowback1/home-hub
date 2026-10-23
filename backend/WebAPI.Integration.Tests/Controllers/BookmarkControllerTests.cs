@@ -7,8 +7,6 @@ namespace WebAPI.Integration.Tests.Controllers;
 
 public class BookmarkControllerTests : ControllerTestBase
 {
-    private record CreateRequest(string? Url, string? Name, string? Description);
-    private record UpdateRequest(string? Url, string? Name, string? Description);
 
     [SetUp]
     public void ClearState()
@@ -31,8 +29,8 @@ public class BookmarkControllerTests : ControllerTestBase
     [Test]
     public async Task List_ReturnsAllBookmarks()
     {
-        await PostRawAsync("/api/bookmarks", new CreateRequest("https://github.com", "GitHub", null));
-        await PostRawAsync("/api/bookmarks", new CreateRequest("https://example.com", "Example", null));
+        await PostRawAsync("/api/bookmarks", new { Url = "https://github.com", Name = "GitHub", Description = (string?)null });
+        await PostRawAsync("/api/bookmarks", new { Url = "https://example.com", Name = "Example", Description = (string?)null });
 
         var response = await GetRawAsync("/api/bookmarks", includeToken: false);
         var items = await response.Content.ReadFromJsonAsync<List<Bookmark>>();
@@ -47,7 +45,7 @@ public class BookmarkControllerTests : ControllerTestBase
     public async Task Create_ReturnsBookmark_WithCorrectFields()
     {
         var response = await PostRawAsync("/api/bookmarks",
-            new CreateRequest("https://github.com", "GitHub", "Code hosting."));
+            new { Url = "https://github.com", Name = "GitHub", Description = "Code hosting." });
         var created = await response.Content.ReadFromJsonAsync<Bookmark>();
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -62,7 +60,7 @@ public class BookmarkControllerTests : ControllerTestBase
     public async Task Create_Returns400_WhenUrlIsEmpty()
     {
         var response = await PostRawAsync("/api/bookmarks",
-            new CreateRequest("", "GitHub", null));
+            new { Url = "", Name = "GitHub", Description = (string?)null });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }
@@ -71,7 +69,7 @@ public class BookmarkControllerTests : ControllerTestBase
     public async Task Create_Returns400_WhenUrlIsNull()
     {
         var response = await PostRawAsync("/api/bookmarks",
-            new CreateRequest(null, "GitHub", null));
+            new { Url = (string?)null, Name = "GitHub", Description = (string?)null });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }
@@ -80,7 +78,7 @@ public class BookmarkControllerTests : ControllerTestBase
     public async Task Create_AcceptsNullDescription()
     {
         var response = await PostRawAsync("/api/bookmarks",
-            new CreateRequest("https://example.com", "Example", null));
+            new { Url = "https://example.com", Name = "Example", Description = (string?)null });
         var created = await response.Content.ReadFromJsonAsync<Bookmark>();
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -92,11 +90,11 @@ public class BookmarkControllerTests : ControllerTestBase
     [Test]
     public async Task Update_ChangesNameUrlAndDescription()
     {
-        var created = await PostAsync<CreateRequest, Bookmark>("/api/bookmarks",
-            new CreateRequest("https://github.com", "GitHub", null));
+        var created = await PostAsync<object, Bookmark>("/api/bookmarks",
+            new { Url = "https://github.com", Name = "GitHub", Description = (string?)null });
 
         var response = await PutRawAsync($"/api/bookmarks/{created!.Id}",
-            new UpdateRequest("https://gitlab.com", "GitLab", "Alternative."));
+            new { Url = "https://gitlab.com", Name = "GitLab", Description = "Alternative." });
         var updated = await response.Content.ReadFromJsonAsync<Bookmark>();
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -109,7 +107,7 @@ public class BookmarkControllerTests : ControllerTestBase
     public async Task Update_Returns404_WhenNotFound()
     {
         var response = await PutRawAsync("/api/bookmarks/nonexistent",
-            new UpdateRequest("https://example.com", "Example", null));
+            new { Url = "https://example.com", Name = "Example", Description = (string?)null });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
     }
@@ -119,8 +117,8 @@ public class BookmarkControllerTests : ControllerTestBase
     [Test]
     public async Task Delete_Returns204_AndBookmarkNoLongerReturned()
     {
-        var created = await PostAsync<CreateRequest, Bookmark>("/api/bookmarks",
-            new CreateRequest("https://github.com", "GitHub", null));
+        var created = await PostAsync<object, Bookmark>("/api/bookmarks",
+            new { Url = "https://github.com", Name = "GitHub", Description = (string?)null });
 
         var deleteResponse = await DeleteRawAsync($"/api/bookmarks/{created!.Id}");
         Assert.That(deleteResponse.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
@@ -143,8 +141,8 @@ public class BookmarkControllerTests : ControllerTestBase
     [Test]
     public async Task ToggleStar_TogglesStarredFromFalseToTrue()
     {
-        var created = await PostAsync<CreateRequest, Bookmark>("/api/bookmarks",
-            new CreateRequest("https://github.com", "GitHub", null));
+        var created = await PostAsync<object, Bookmark>("/api/bookmarks",
+            new { Url = "https://github.com", Name = "GitHub", Description = (string?)null });
         Assert.That(created!.Starred, Is.False);
 
         var response = await PatchRawAsync($"/api/bookmarks/{created.Id}/star");
@@ -157,8 +155,8 @@ public class BookmarkControllerTests : ControllerTestBase
     [Test]
     public async Task ToggleStar_TogglesStarredFromTrueToFalse()
     {
-        var created = await PostAsync<CreateRequest, Bookmark>("/api/bookmarks",
-            new CreateRequest("https://github.com", "GitHub", null));
+        var created = await PostAsync<object, Bookmark>("/api/bookmarks",
+            new { Url = "https://github.com", Name = "GitHub", Description = (string?)null });
 
         await PatchRawAsync($"/api/bookmarks/{created!.Id}/star");
         var response = await PatchRawAsync($"/api/bookmarks/{created.Id}/star");
@@ -180,8 +178,8 @@ public class BookmarkControllerTests : ControllerTestBase
     [Test]
     public async Task TestHelper_ClearBookmarks_DeletesAll()
     {
-        await PostRawAsync("/api/bookmarks", new CreateRequest("https://github.com", "GitHub", null));
-        await PostRawAsync("/api/bookmarks", new CreateRequest("https://example.com", "Example", null));
+        await PostRawAsync("/api/bookmarks", new { Url = "https://github.com", Name = "GitHub", Description = (string?)null });
+        await PostRawAsync("/api/bookmarks", new { Url = "https://example.com", Name = "Example", Description = (string?)null });
 
         var clearResponse = await DeleteRawAsync("/api/test/bookmarks");
         Assert.That(clearResponse.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
