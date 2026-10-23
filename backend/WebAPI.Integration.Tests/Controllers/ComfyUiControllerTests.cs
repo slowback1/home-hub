@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 using Common.Interfaces;
 using Common.Models;
 using InMemory;
@@ -12,7 +11,6 @@ namespace WebAPI.Integration.Tests.Controllers;
 
 public class ComfyUiControllerTests
 {
-    private record CreateWorkflowRequest(string Name, string WorkflowJson);
     private record WorkflowListItem(string Id, string Name);
 
     private HttpClient _client = null!;
@@ -59,7 +57,7 @@ public class ComfyUiControllerTests
     public async Task CreateWorkflow_ReturnsCreatedWorkflow()
     {
         var response = await _client.PostAsJsonAsync("/api/comfyui/workflows",
-            new CreateWorkflowRequest("My Workflow", """{"1":{}}"""));
+            new { Name = "My Workflow", WorkflowJson = """{"1":{}}""" });
         var created = await response.Content.ReadFromJsonAsync<WorkflowListItem>();
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -71,7 +69,7 @@ public class ComfyUiControllerTests
     public async Task CreateWorkflow_AppearsInGetAll()
     {
         await _client.PostAsJsonAsync("/api/comfyui/workflows",
-            new CreateWorkflowRequest("Test Workflow", """{"1":{}}"""));
+            new { Name = "Test Workflow", WorkflowJson = """{"1":{}}""" });
 
         var response = await _client.GetAsync("/api/comfyui/workflows");
         var items = await response.Content.ReadFromJsonAsync<List<WorkflowListItem>>();
@@ -83,7 +81,7 @@ public class ComfyUiControllerTests
     public async Task GetWorkflows_DoesNotReturnWorkflowJson()
     {
         await _client.PostAsJsonAsync("/api/comfyui/workflows",
-            new CreateWorkflowRequest("Test", """{"secret":"data"}"""));
+            new { Name = "Test", WorkflowJson = """{"secret":"data"}""" });
 
         var response = await _client.GetAsync("/api/comfyui/workflows");
         var body = await response.Content.ReadAsStringAsync();
@@ -95,7 +93,7 @@ public class ComfyUiControllerTests
     public async Task DeleteWorkflow_RemovesItFromList()
     {
         var createResp = await _client.PostAsJsonAsync("/api/comfyui/workflows",
-            new CreateWorkflowRequest("To Delete", """{"1":{}}"""));
+            new { Name = "To Delete", WorkflowJson = """{"1":{}}""" });
         var created = await createResp.Content.ReadFromJsonAsync<WorkflowListItem>();
 
         var deleteResp = await _client.DeleteAsync($"/api/comfyui/workflows/{created!.Id}");
