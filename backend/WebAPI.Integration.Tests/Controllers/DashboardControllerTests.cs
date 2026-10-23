@@ -9,7 +9,11 @@ public class DashboardControllerTests : ControllerTestBase
 {
     private record SlotDto(int SlotIndex, string? WidgetType);
     private record LayoutResponse(string LayoutFormat, List<SlotDto> Slots);
-    private record SaveLayoutRequest(string LayoutFormat, List<SlotDto> Slots);
+    private record SaveLayoutRequest
+    {
+        public required string LayoutFormat { get; init; }
+        public required List<SlotDto> Slots { get; init; }
+    }
 
     [SetUp]
     public void ClearState()
@@ -35,11 +39,10 @@ public class DashboardControllerTests : ControllerTestBase
     [Test]
     public async Task GetLayout_ReturnsAssignedWidgets_InCorrectSlots()
     {
-        var saveRequest = new SaveLayoutRequest("3x2",
-        [
+        var saveRequest = new SaveLayoutRequest { LayoutFormat = "3x2", Slots = [
             new SlotDto(0, "tasks"),
             new SlotDto(2, "weather")
-        ]);
+        ] };
         await PutRawAsync("/api/dashboard/layout", saveRequest);
 
         var response = await GetRawAsync("/api/dashboard/layout", includeToken: false);
@@ -55,7 +58,7 @@ public class DashboardControllerTests : ControllerTestBase
     [Test]
     public async Task SaveLayout_Returns204()
     {
-        var request = new SaveLayoutRequest("3x2", [new SlotDto(0, "tasks")]);
+        var request = new SaveLayoutRequest { LayoutFormat = "3x2", Slots = [new SlotDto(0, "tasks")] };
         var response = await PutRawAsync("/api/dashboard/layout", request);
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
@@ -65,17 +68,15 @@ public class DashboardControllerTests : ControllerTestBase
     public async Task SaveLayout_FullReplace_RemovesSlotNotInPayload()
     {
         // First, assign tasks to slot 0 and weather to slot 1
-        await PutRawAsync("/api/dashboard/layout", new SaveLayoutRequest("3x2",
-        [
+        await PutRawAsync("/api/dashboard/layout", new SaveLayoutRequest { LayoutFormat = "3x2", Slots = [
             new SlotDto(0, "tasks"),
             new SlotDto(1, "weather")
-        ]));
+        ] });
 
         // Now PUT with only slot 0 — slot 1 should be cleared
-        await PutRawAsync("/api/dashboard/layout", new SaveLayoutRequest("3x2",
-        [
+        await PutRawAsync("/api/dashboard/layout", new SaveLayoutRequest { LayoutFormat = "3x2", Slots = [
             new SlotDto(0, "tasks")
-        ]));
+        ] });
 
         var response = await GetRawAsync("/api/dashboard/layout", includeToken: false);
         var layout = await response.Content.ReadFromJsonAsync<LayoutResponse>();
@@ -96,7 +97,7 @@ public class DashboardControllerTests : ControllerTestBase
             new(5, "bookmarks")
         };
 
-        await PutRawAsync("/api/dashboard/layout", new SaveLayoutRequest("3x2", slots));
+        await PutRawAsync("/api/dashboard/layout", new SaveLayoutRequest { LayoutFormat = "3x2", Slots = slots });
 
         var response = await GetRawAsync("/api/dashboard/layout", includeToken: false);
         var layout = await response.Content.ReadFromJsonAsync<LayoutResponse>();
@@ -113,8 +114,7 @@ public class DashboardControllerTests : ControllerTestBase
     [Test]
     public async Task TestHelper_ClearDashboard_ClearsAllSlots()
     {
-        await PutRawAsync("/api/dashboard/layout", new SaveLayoutRequest("3x2",
-            [new SlotDto(0, "tasks")]));
+        await PutRawAsync("/api/dashboard/layout", new SaveLayoutRequest { LayoutFormat = "3x2", Slots = [new SlotDto(0, "tasks")] });
 
         var clearResponse = await DeleteRawAsync("/api/test/dashboard");
         Assert.That(clearResponse.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
