@@ -1,11 +1,6 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Common.Interfaces;
 using Common.Models;
 using Microsoft.EntityFrameworkCore;
-using NUnit.Framework;
-using EntityFramework;
 
 namespace EntityFramework.Tests;
 
