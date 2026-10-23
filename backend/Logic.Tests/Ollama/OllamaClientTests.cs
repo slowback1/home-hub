@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using Logic.Ollama;
 using Logic.SystemConfig;
@@ -55,7 +54,7 @@ public class OllamaClientTests
     public async Task ChatAsync_SendsPostToCorrectEndpoint()
     {
         var handler = new FakeHandler(HttpStatusCode.OK, SuccessJson);
-        var client = new OllamaClient(new HttpClient(handler), MakeConfig("http://ollama:11434"));
+        var client = new OllamaClient(new HttpClient(handler), MakeConfig());
 
         await client.ChatAsync("llama3.2", "hello");
 
