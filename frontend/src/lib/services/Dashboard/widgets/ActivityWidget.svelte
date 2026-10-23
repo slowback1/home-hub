@@ -9,10 +9,6 @@
 	let loading = true;
 	let error = false;
 
-	function formatDate(iso: string): string {
-		return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-	}
-
 	async function fetchData() {
 		try {
 			pick = await api.getCurrent();
@@ -43,7 +39,6 @@
 	{:else}
 		<div class="activity-body">
 			<span class="activity-name" data-testid="activity-widget-name">{pick.activityName}</span>
-			<span class="activity-date">picked {formatDate(pick.pickedAt)}</span>
 		</div>
 	{/if}
 </div>
@@ -104,11 +99,5 @@
 		font-weight: var(--font-weight-bold);
 		color: var(--color-text-primary);
 		line-height: var(--line-height-tight);
-	}
-
-	.activity-date {
-		font-size: var(--font-size-xs);
-		font-family: var(--font-family-mono, monospace);
-		color: var(--color-text-secondary);
 	}
 </style>
