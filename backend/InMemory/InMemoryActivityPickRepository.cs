@@ -21,7 +21,7 @@ public class InMemoryActivityPickRepository : IActivityPickRepository
     public Task<ActivityPick?> GetCurrentAsync()
     {
         var current = Picks.OrderByDescending(p => p.PickedAt).FirstOrDefault();
-        return Task.FromResult(current);
+        return Task.FromResult<ActivityPick?>(current);
     }
 
     public Task<IEnumerable<ActivityPick>> GetRangeAsync(DateTime from, DateTime to)
