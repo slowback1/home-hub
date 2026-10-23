@@ -26,13 +26,13 @@ public class DashboardController : ApplicationController
             .Select(i => new SlotDto(i, slotMap.TryGetValue(i, out var s) ? s.WidgetType : null))
             .ToList();
 
-        return Ok(new LayoutResponse(ActiveFormat, slots));
+        return Ok(new LayoutResponse { LayoutFormat = ActiveFormat, Slots = slots });
     }
 
     [HttpPut("layout")]
     public async Task<ActionResult> SaveLayout([FromBody] SaveLayoutRequest request)
     {
-        var existing = await _slots.QueryAsync(s => s.LayoutFormat == ActiveFormat);
+        var existing = (await _slots.QueryAsync(s => s.LayoutFormat == ActiveFormat)).ToList();
         var existingByIndex = existing.ToDictionary(s => s.SlotIndex);
         var incomingByIndex = request.Slots.ToDictionary(s => s.SlotIndex);
 
@@ -61,7 +61,14 @@ public class DashboardController : ApplicationController
         return NoContent();
     }
 
-    public record LayoutResponse(string LayoutFormat, List<SlotDto> Slots);
+    public record LayoutResponse
+    {
+        public required string LayoutFormat { get; init; }
+        public required List<SlotDto> Slots { get; init; }
+    }
     public record SlotDto(int SlotIndex, string? WidgetType);
-    public record SaveLayoutRequest(string LayoutFormat, List<SlotDto> Slots);
+    public record SaveLayoutRequest(List<SlotDto> Slots)
+    {
+        public required string LayoutFormat { get; init; }
+    }
 }
