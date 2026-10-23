@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Common.Interfaces;
 using Logic.FeatureFlags;
 using Microsoft.AspNetCore.Mvc;
