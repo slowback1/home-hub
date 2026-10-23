@@ -17,7 +17,7 @@ public class MockAudiobookService : IAudiobookService
     private readonly object _voiceSamplesLock = new();
 
     // Minimal valid M4B/MP4 byte sequence (ftyp box)
-    private static readonly byte[] FakeM4bBytes =
+    private static readonly byte[] FakeM4BBytes =
     [
         0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70,
         0x4d, 0x34, 0x42, 0x20, 0x00, 0x00, 0x00, 0x00,
@@ -90,7 +90,7 @@ public class MockAudiobookService : IAudiobookService
         if (_deletedFiles.Contains(id))
             throw new FileNotFoundException($"File for job {id} has been deleted");
 
-        return Task.FromResult<Stream>(new MemoryStream(FakeM4bBytes));
+        return Task.FromResult<Stream>(new MemoryStream(FakeM4BBytes));
     }
 
     public Task DeleteFileAsync(string id)
