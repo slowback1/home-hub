@@ -48,7 +48,6 @@ public class ComfyUiGenerateTests
     }
 
     private record WorkflowListItem(string Id, string Name);
-    private record GenerateRequest(string WorkflowId, string Prompt, string? NegativePrompt = null);
     private record GenerateResponse(string ImageBase64);
 
     [Test]
@@ -58,7 +57,7 @@ public class ComfyUiGenerateTests
         _comfyUiClient.ImageBytes = [0x89, 0x50, 0x4E, 0x47];
 
         var response = await _client.PostAsJsonAsync("/api/comfyui/generate",
-            new GenerateRequest(id, "a cat"));
+            new { WorkflowId = id, Prompt = "a cat" });
         var result = await response.Content.ReadFromJsonAsync<GenerateResponse>();
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -71,7 +70,7 @@ public class ComfyUiGenerateTests
         var id = await CreateWorkflowAsync("""{"text":"{{prompt}}"}""");
 
         await _client.PostAsJsonAsync("/api/comfyui/generate",
-            new GenerateRequest(id, "a dog"));
+            new { WorkflowId = id, Prompt = "a dog" });
 
         Assert.That(_comfyUiClient.LastWorkflowJson, Does.Contain("a dog"));
         Assert.That(_comfyUiClient.LastWorkflowJson, Does.Not.Contain("{{prompt}}"));
@@ -83,7 +82,7 @@ public class ComfyUiGenerateTests
         var id = await CreateWorkflowAsync("""{"pos":"{{prompt}}","neg":"{{negative_prompt}}"}""");
 
         await _client.PostAsJsonAsync("/api/comfyui/generate",
-            new GenerateRequest(id, "a cat", "blurry"));
+            new { WorkflowId = id, Prompt = "a cat", NegativePrompt = "blurry" });
 
         Assert.That(_comfyUiClient.LastWorkflowJson, Does.Contain("blurry"));
         Assert.That(_comfyUiClient.LastWorkflowJson, Does.Not.Contain("{{negative_prompt}}"));
@@ -95,7 +94,7 @@ public class ComfyUiGenerateTests
         var id = await CreateWorkflowAsync("""{"neg":"{{negative_prompt}}"}""");
 
         await _client.PostAsJsonAsync("/api/comfyui/generate",
-            new GenerateRequest(id, "a cat"));
+            new { WorkflowId = id, Prompt = "a cat" });
 
         Assert.That(_comfyUiClient.LastWorkflowJson, Does.Not.Contain("{{negative_prompt}}"));
     }
@@ -104,7 +103,7 @@ public class ComfyUiGenerateTests
     public async Task Generate_Returns404_WhenWorkflowNotFound()
     {
         var response = await _client.PostAsJsonAsync("/api/comfyui/generate",
-            new GenerateRequest("nonexistent-id", "a cat"));
+            new { WorkflowId = "nonexistent-id", Prompt = "a cat" });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
     }
@@ -116,7 +115,7 @@ public class ComfyUiGenerateTests
         _comfyUiClient.ShouldThrow = true;
 
         var response = await _client.PostAsJsonAsync("/api/comfyui/generate",
-            new GenerateRequest(id, "a cat"));
+            new { WorkflowId = id, Prompt = "a cat" });
         var body = await response.Content.ReadAsStringAsync();
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
