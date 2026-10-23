@@ -15,7 +15,6 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using WebAPI.Configuration;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,7 +59,7 @@ if (crudImpl == "entityframework")
 else
 {
     builder.Services.AddSingleton<IActivityPickRepository, InMemoryActivityPickRepository>();
-    var inMemoryFlagStore = new DictionaryFeatureFlagProvider(new System.Collections.Generic.Dictionary<string, bool>
+    var inMemoryFlagStore = new DictionaryFeatureFlagProvider(new Dictionary<string, bool>
     {
         ["DEMO_FEATURE_FLAG"] = false,
         ["CHORE_TASK_TRACKER_ENABLED"] = true,
@@ -77,7 +76,7 @@ else
 
 if (builder.Environment.IsEnvironment("E2E"))
 {
-    var e2eEntries = new List<SystemConfig>
+    var e2EEntries = new List<SystemConfig>
     {
         new() { Id = "weather::zip_code", Namespace = "weather", Key = "zip_code", Value = "10001", Type = "text", IsSecret = false },
         new() { Id = "weather::api_key",  Namespace = "weather", Key = "api_key",  Value = "test-api-key-1", Type = "secret", IsSecret = true },
@@ -115,7 +114,7 @@ if (builder.Environment.IsEnvironment("E2E"))
         new() { Id = "activity::ai_model",     Namespace = "activity",  Key = "ai_model",  Value = "llama3.2", Type = "string", IsSecret = false },
         new() { Id = "comfyui::base_url",       Namespace = "comfyui",   Key = "base_url",  Value = "http://localhost:8199", Type = "string", IsSecret = false }
     };
-    builder.Services.AddSingleton<ISystemConfigProvider>(new DictionarySystemConfigProvider(e2eEntries));
+    builder.Services.AddSingleton<ISystemConfigProvider>(new DictionarySystemConfigProvider(e2EEntries));
 }
 
 // Audiobook service — singleton mock or scoped GPU client based on audiobook::provider config value
