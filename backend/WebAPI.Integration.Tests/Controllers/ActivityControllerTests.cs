@@ -7,8 +7,6 @@ namespace WebAPI.Integration.Tests.Controllers;
 
 public class ActivityControllerTests : ControllerTestBase
 {
-    private record CreateActivityRequest(string Name, int Weight);
-    private record UpdateActivityRequest(string Name, int Weight);
 
     [SetUp]
     public void ClearActivityState() => InMemoryCrud<Activity>.ClearStaticState();
@@ -27,7 +25,7 @@ public class ActivityControllerTests : ControllerTestBase
     public async Task Create_ReturnsCreatedActivity_WithCorrectFields()
     {
         var response = await PostRawAsync("/api/activities",
-            new CreateActivityRequest("Play Chess", 3));
+            new { Name = "Play Chess", Weight = 3 });
         var created = await response.Content.ReadFromJsonAsync<Activity>();
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -39,7 +37,7 @@ public class ActivityControllerTests : ControllerTestBase
     [Test]
     public async Task Create_AppearsInGetAll_AfterCreation()
     {
-        await PostRawAsync("/api/activities", new CreateActivityRequest("Read a Book", 2));
+        await PostRawAsync("/api/activities", new { Name = "Read a Book", Weight = 2 });
 
         var response = await GetRawAsync("/api/activities", includeToken: false);
         var items = await response.Content.ReadFromJsonAsync<List<Activity>>();
@@ -51,7 +49,7 @@ public class ActivityControllerTests : ControllerTestBase
     public async Task Create_Returns400_WhenWeightBelowRange()
     {
         var response = await PostRawAsync("/api/activities",
-            new CreateActivityRequest("Bad Activity", 0));
+            new { Name = "Bad Activity", Weight = 0 });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }
@@ -60,7 +58,7 @@ public class ActivityControllerTests : ControllerTestBase
     public async Task Create_Returns400_WhenWeightAboveRange()
     {
         var response = await PostRawAsync("/api/activities",
-            new CreateActivityRequest("Bad Activity", 6));
+            new { Name = "Bad Activity", Weight = 6 });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
     }
@@ -69,11 +67,11 @@ public class ActivityControllerTests : ControllerTestBase
     public async Task Update_ChangesNameAndWeight()
     {
         var createResp = await PostRawAsync("/api/activities",
-            new CreateActivityRequest("Old Name", 1));
+            new { Name = "Old Name", Weight = 1 });
         var created = await createResp.Content.ReadFromJsonAsync<Activity>();
 
         var updateResp = await PutRawAsync($"/api/activities/{created!.Id}",
-            new UpdateActivityRequest("New Name", 5));
+            new { Name = "New Name", Weight = 5 });
         var updated = await updateResp.Content.ReadFromJsonAsync<Activity>();
 
         Assert.That(updateResp.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -85,7 +83,7 @@ public class ActivityControllerTests : ControllerTestBase
     public async Task Update_Returns404_WhenIdNotFound()
     {
         var response = await PutRawAsync("/api/activities/nonexistent-id",
-            new UpdateActivityRequest("X", 1));
+            new { Name = "X", Weight = 1 });
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
     }
@@ -94,7 +92,7 @@ public class ActivityControllerTests : ControllerTestBase
     public async Task Delete_RemovesActivity_FromGetAll()
     {
         var createResp = await PostRawAsync("/api/activities",
-            new CreateActivityRequest("To Delete", 2));
+            new { Name = "To Delete", Weight = 2 });
         var created = await createResp.Content.ReadFromJsonAsync<Activity>();
 
         var deleteResp = await DeleteRawAsync($"/api/activities/{created!.Id}");
