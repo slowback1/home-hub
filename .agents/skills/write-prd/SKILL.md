@@ -1,37 +1,40 @@
 ---
 name: write-prd
-description: Conducts a structured Q&A interview (via the refine-feature skill) and then writes a PRD as a markdown file inside the current repository. Use when the user wants to write a PRD, create a product requirements document, document a plan or design, write up the spec, or produce a feature brief.
+description: Conducts a structured Q&A interview (via the refine-feature skill) and then writes a PRD into a Kanboard task. Use when the user wants to write a PRD, create a product requirements document, document a plan or design, write up the spec, or produce a feature brief.
 ---
 
 # Write PRD
 
+Promote a rough stub into a full PRD. The PRD lives in the **description of a task
+in the Features swimlane**; writing it fills that description and moves the task
+from **Backlog** (stub, open questions) to **Ready to implement** (specified,
+ready to break down). All Kanboard access goes through `../../kanboard/kb.py`.
+
+This is the interactive refinement path. The unattended equivalent is the
+`refine-ticket` pipeline stage (Backlog → To refine → Review refinement, with a
+human approval gate before Ready to implement).
+
 ## Quick start
 
-1. Check `.agents/stubs/README.md` for an existing stub that matches this feature.
-   - If a matching stub is found, tell the user and offer to use it as starting context for the interview.
-   - Note the stub slug so it can be cleaned up after the PRD is written.
-2. Check if a `refine-feature` session has already been completed in this conversation.
-   - If **not**: load the `refine-feature` skill and run the full interview first. Do not proceed to writing until the Q&A is complete. If a stub was found, use its content to pre-seed the interview (treat filled fields as already answered).
-   - If **yes**: proceed directly to the next step.
-3. If the feature is user-facing, draft Gherkin E2E scenarios and have the user review them before writing the PRD file.
-4. Synthesize the Q&A into a PRD using [PRD_TEMPLATE.md](PRD_TEMPLATE.md).
-5. Determine the output path:
-   - Derive a kebab-case slug from the feature or plan name (e.g., `user-auth`).
-   - The output path is always `.agents/prds/[prd-slug]/[prd-slug].md` (e.g., `.agents/prds/user-auth/user-auth.md`).
-   - Create the directory if it does not exist.
-6. Write the PRD file to the repo.
-7. If a stub was used: delete `.agents/stubs/[slug].md` and remove its row from `.agents/stubs/README.md`. If the README table is now empty, leave the file in place with just the header rows intact.
-8. Tell the user the PRD file path and ask if any section needs revision.
+1. Look for an existing stub matching this feature with `.agents/kanboard/kb.py prd list` (Backlog items are stubs). If one matches, note its **task id** — that task will be promoted in place.
+2. If a `refine-feature` session hasn't already run in this conversation, load the `refine-feature` skill and run the full interview first. Seed it with the stub's current description (`kb.py prd show <id>`) if a stub was found.
+3. Synthesize the Q&A into a PRD using [PRD_TEMPLATE.md](PRD_TEMPLATE.md).
+4. Write the PRD into the task (Step 3) — promoting the stub, or creating a fresh PRD task if there was no stub.
+5. Work through the PRD's Open Questions with the user (Step 3.5), folding each answer back into the description.
+6. Tell the user the task URL and ask if any section needs revision.
 
 ## Workflow
 
-### Step 0 — Stub Check
+### Step 0 — Stub check
 
-Before starting the interview, check whether `.agents/stubs/README.md` exists. If it does, scan it for a stub whose title or summary matches the feature being PRD'd.
+```bash
+.agents/kanboard/kb.py prd list
+```
 
-- If a match is found, tell the user: "I found a stub for this: `[slug]` — [title]. I'll use it as a starting point for the interview."
-- Record the stub slug. It will be deleted after the PRD is written.
-- If no match is found, proceed normally.
+Scan the Backlog items for one whose title/summary matches the feature.
+
+- **Match found**: tell the user "I found a stub for this: **[title]** (task #[id]). I'll promote it in place." Record the id; read its body with `kb.py prd show <id>` to seed the interview.
+- **No match**: proceed; you'll create a fresh PRD task in Step 3.
 
 ### Step 1 — Interview (if needed)
 
@@ -44,59 +47,58 @@ Load the `refine-feature` skill. The interview must cover:
 
 Do not skip or cut short the interview. The PRD quality depends on it.
 
-### Step 2 — Draft E2E scenarios (if applicable)
+### Step 2 — Draft the PRD
 
-Before writing the PRD file, consider whether the feature involves any user-facing behaviour (UI interactions, redirects, error states, form submissions, etc.).
-
-- **If yes**: draft Gherkin scenarios for the `E2E Scenarios` section. Follow the tag conventions in `e2e/AGENTS.md`: a domain tag on the `Feature` line (e.g. `@payments`) and a kebab-case slug tag on each `Scenario` line (e.g. `@create-payment-happy-path`). Present the scenarios to the user and ask them to review and confirm or revise before writing the PRD file.
-- **If no** (backend-only, infrastructure, data migration, etc.): omit the `E2E Scenarios` section entirely and skip Step 2.5.
-
-### Step 2.5 — Design handoff (user-facing features only)
-
-If the feature is user-facing:
-
-1. Load the `design-brief` skill and run it. It will produce a short prompt for the user to paste into Claude Design (claude.ai/design) and then wait.
-2. The user will iterate in Claude Design and return with a URL (format: `https://api.anthropic.com/v1/design/h/...`).
-3. Once the URL is provided, fetch and extract the handoff bundle:
-   ```bash
-   curl -s "<URL>" | tar -xz -C /tmp/design-handoff --strip-components=1
-   ```
-   Then read:
-   - `/tmp/design-handoff/README.md` — agent instructions and bundle overview
-   - `/tmp/design-handoff/chats/chat1.md` — the design session conversation (captures intent and any design decisions/pivots)
-   - The primary screen file (whichever `.html` matches the feature)
-   - The main screen component (`.jsx` with the same name stem)
-4. Synthesize the key visual decisions from the handoff (layout choices, component structure, notable interactions, anything the user changed mid-session in the chat log). These feed the `## Design` section of the PRD.
-5. Store the design URL — it goes into the PRD's `## Design` section.
-
-### Step 3 — Draft the PRD
-
-Map interview answers to the template sections. Follow these rules:
+Map interview answers to [PRD_TEMPLATE.md](PRD_TEMPLATE.md). Follow these rules:
 - **Status** starts as `Draft` unless the user says otherwise.
 - **Open Questions** should include anything unresolved from the interview — do not hide uncertainty.
 - **Technical Approach** should capture key decisions made during the interview, not re-ask them.
-- Leave optional sections (Timeline, Success Metrics) blank with a `_TBD_` placeholder if not covered.
-- Do not pad sections. If a section has nothing meaningful, write `_N/A_`.
+- Leave optional sections (Timeline, Success Metrics) with a `_TBD_` placeholder if not covered; write `_N/A_` for a section with nothing meaningful. Do not pad.
 
-### Step 4 — Write and confirm
+The PRD title/name is the task title — keep the drafted body free of a redundant top-level title line if you like, but a `# PRD: …` heading inside the description is fine (Kanboard renders it).
 
-- Write the file using the Write tool.
-- Output the relative file path to the user.
-- Ask: "Does this look right, or should I revise any section?"
+### Step 3 — Write into the task
 
-### Step 5 — Clean up the stub (if applicable)
+Write the drafted PRD to a temp file, then:
 
-If a stub was identified in Step 0:
+- **Promoting a stub** (Step 0 found one): this fills the description and moves it Backlog → Ready to implement.
 
-1. Delete `.agents/stubs/[slug].md` using the file deletion tool.
-2. Remove the stub's row from `.agents/stubs/README.md`. If the table is now empty (no data rows remain), leave the file in place with the header and column row intact — do not delete the README.
-3. Confirm to the user: "Stub `[slug]` has been removed from `.agents/stubs/`."
+  ```bash
+  .agents/kanboard/kb.py prd write <id> --desc-file /path/to/prd.md
+  ```
 
-## Scaling across a project
+  If the feature's title changed materially during refinement, that's fine — the task keeps its id; mention the rename to the user (renaming the card itself is a manual tweak in the UI if they want it).
 
-When a project accumulates multiple PRDs:
-- Each PRD lives in its own folder under `.agents/prds/[prd-slug]/[prd-slug].md`.
-- This folder is the home for all artifacts related to that PRD (e.g. subtask breakdowns generated by other skills).
-- Use the **Status** field to track lifecycle: `Draft → Review → Approved → Superseded`.
-- Superseded PRDs should be kept (not deleted) and have their status updated.
-- A `.agents/prds/README.md` index can be created if the user asks, listing all PRDs and their statuses.
+- **No stub** (fresh PRD): create the task straight into Ready to implement.
+
+  ```bash
+  .agents/kanboard/kb.py prd create --title "Feature Name" --desc-file /path/to/prd.md
+  ```
+
+Give the user the task `url` from the output.
+
+### Step 3.5 — Resolve open questions
+
+Immediately after writing, work through the PRD's **Open Questions** with the user — do not wait to be prompted. This is required.
+
+- If there are none, say so and skip ahead.
+- Otherwise ask them one at a time (or in small related groups), in priority order — the questions that most affect scope or technical approach first. Prefer `AskUserQuestion` for discrete choices; prose for open-ended ones.
+- The user may defer a question ("leave that one open"). That's fine — leave it unchecked and move on.
+- As each is answered, fold it back into the drafted PRD body: check off the Open Questions item and record the decision in the right section (usually **Technical Approach → Key Decisions**). Re-save the temp file and re-write the task description with `kb.py prd write <id> --desc-file …` (idempotent — the task stays in Ready to implement).
+- After the pass, briefly summarize what resolved and what remains open.
+
+Note on columns: the normal end state is **Ready to implement**. If the user deliberately leaves a *blocking* question open (something that must be answered before any work can start), say so and offer to leave/return the card to Backlog instead — Backlog is precisely "has an open question."
+
+### Step 4 — Confirm
+
+Tell the user the task URL and that the stub is now a Ready-to-implement PRD (no separate stub
+to clean up — it was promoted in place). Ask if any section needs revision.
+
+## Notes
+
+- One task per feature carries the whole lifecycle: Backlog (stub) → Ready to
+  implement (PRD) → In progress (implementing) → Ready for review → Done.
+  `breakdown-prd` then hangs child tasks off this one; `tdd-task` works those
+  children.
+- Superseding a PRD is a manual call — update the description and, if you want it
+  off the active board, move the card to Done in the UI.

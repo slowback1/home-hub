@@ -2,15 +2,14 @@
 
 Mock at **system boundaries** only:
 
-- External APIs (payment, email, etc.)
-- Databases (sometimes - prefer test DB)
-- Time/randomness
-- File system (sometimes)
+- External I/O (save files, network, platform APIs)
+- Time/randomness (e.g. `IRandom`, `IClock`)
+- Platform services (OS, analytics, achievements)
 
 Don't mock:
 
-- Your own classes/modules
-- Internal collaborators
+- Your own game logic classes
+- Internal collaborators (e.g. `InventorySystem` talking to `ItemDatabase`)
 - Anything you control
 
 ## Designing for Mockability
@@ -21,39 +20,44 @@ At system boundaries, design interfaces that are easy to mock:
 
 Pass external dependencies in rather than creating them internally:
 
-```typescript
+```csharp
 // Easy to mock
-function processPayment(order, paymentClient) {
-  return paymentClient.charge(order.total);
+public class LootTable
+{
+    private readonly IRandom _rng;
+    public LootTable(IRandom rng) { _rng = rng; }
+    public Item Roll() => _items[_rng.Next(_items.Count)];
 }
 
 // Hard to mock
-function processPayment(order) {
-  const client = new StripeClient(process.env.STRIPE_KEY);
-  return client.charge(order.total);
+public class LootTable
+{
+    public Item Roll() => _items[GD.Randi() % _items.Count]; // static global, untestable
 }
 ```
 
-**2. Prefer SDK-style interfaces over generic fetchers**
+**2. Prefer specific interfaces over generic ones**
 
-Create specific functions for each external operation instead of one generic function with conditional logic:
+Create specific methods for each external operation:
 
-```typescript
-// GOOD: Each function is independently mockable
-const api = {
-  getUser: (id) => fetch(`/users/${id}`),
-  getOrders: (userId) => fetch(`/users/${userId}/orders`),
-  createOrder: (data) => fetch('/orders', { method: 'POST', body: data }),
-};
+```csharp
+// GOOD: Each operation is independently mockable
+public interface ISaveSystem
+{
+    void Save(GameState state);
+    GameState Load();
+    bool HasSave();
+}
 
-// BAD: Mocking requires conditional logic inside the mock
-const api = {
-  fetch: (endpoint, options) => fetch(endpoint, options),
-};
+// BAD: One generic method forces conditional logic in test setup
+public interface IStorage
+{
+    object Execute(string operation, object payload);
+}
 ```
 
-The SDK approach means:
-- Each mock returns one specific shape
+The specific interface approach means:
+- Each mock returns one clear shape
 - No conditional logic in test setup
-- Easier to see which endpoints a test exercises
-- Type safety per endpoint
+- Easier to see which operations a test exercises
+- Strong typing per operation

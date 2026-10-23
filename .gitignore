@@ -1,3 +1,4 @@
 .idea
 .claude
 .agents/design
+.agents/kanboard.local.json

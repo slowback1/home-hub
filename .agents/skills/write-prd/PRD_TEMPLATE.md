@@ -28,36 +28,9 @@ _Describe the key scenarios from the user's perspective._
 
 - **As a** [user type], **I want to** [action], **so that** [outcome].
 
-## E2E Scenarios
-
-<!-- If this feature has user-visible behaviour, draft Gherkin scenarios here.
-     Leave this section empty or omit it for backend-only / infrastructure PRDs. -->
-
-```gherkin
-@<domain-tag>
-Feature: <Feature Name>
-
-  @<scenario-slug>
-  Scenario: <Scenario title>
-    Given ...
-    When ...
-    Then ...
-```
-
 ## Proposed Solution
 
 _High-level description of the solution. What will be built?_
-
-## Design
-
-<!-- Omit this section for non-user-facing features. -->
-
-**Handoff:** _[Claude Design URL]_
-
-_Key visual decisions from the design session (layout choices, component structure, notable interactions, anything that diverged from the initial brief):_
-
-- _Decision 1_
-- _Decision 2_
 
 ## Technical Approach
 
@@ -88,8 +61,8 @@ _Anything explicitly deferred to a future iteration._
 
 _How will we know this is working?_
 
-- _Metric 1 (e.g. p95 latency < 200ms)_
-- _Metric 2 (e.g. error rate < 0.1%)_
+- _Metric 1 (e.g. combat feels responsive — attack feedback within 1 frame)_
+- _Metric 2 (e.g. all acceptance criteria pass in GdUnit4 test suite)_
 
 ## Timeline / Milestones
 

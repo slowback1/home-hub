@@ -4,19 +4,24 @@
 
 **Integration-style**: Test through real interfaces, not mocks of internal parts.
 
-```typescript
+```csharp
 // GOOD: Tests observable behavior
-test("user can checkout with valid cart", async () => {
-  const cart = createCart();
-  cart.add(product);
-  const result = await checkout(cart, paymentMethod);
-  expect(result.status).toBe("confirmed");
-});
+[Test]
+public void PlayerCanPickUpHealthPotion()
+{
+    var player = new Player();
+    var potion = new HealthPotion(heal: 20);
+    player.Inventory.Add(potion);
+
+    player.UseItem(potion);
+
+    Assert.That(player.Health, Is.EqualTo(player.MaxHealth));
+}
 ```
 
 Characteristics:
 
-- Tests behavior users/callers care about
+- Tests behavior players/callers care about
 - Uses public API only
 - Survives internal refactors
 - Describes WHAT, not HOW
@@ -26,13 +31,16 @@ Characteristics:
 
 **Implementation-detail tests**: Coupled to internal structure.
 
-```typescript
+```csharp
 // BAD: Tests implementation details
-test("checkout calls paymentService.process", async () => {
-  const mockPayment = jest.mock(paymentService);
-  await checkout(cart, payment);
-  expect(mockPayment.process).toHaveBeenCalledWith(cart.total);
-});
+[Test]
+public void UseItemCallsHealMethod()
+{
+    var mockHealer = Substitute.For<IHealer>();
+    var player = new Player(mockHealer);
+    player.UseItem(new HealthPotion(heal: 20));
+    mockHealer.Received().Heal(20); // asserting on call, not on outcome
+}
 ```
 
 Red flags:
@@ -42,20 +50,24 @@ Red flags:
 - Asserting on call counts/order
 - Test breaks when refactoring without behavior change
 - Test name describes HOW not WHAT
-- Verifying through external means instead of interface
 
-```typescript
+```csharp
 // BAD: Bypasses interface to verify
-test("createUser saves to database", async () => {
-  await createUser({ name: "Alice" });
-  const row = await db.query("SELECT * FROM users WHERE name = ?", ["Alice"]);
-  expect(row).toBeDefined();
-});
+[Test]
+public void SaveGameWritesToDisk()
+{
+    var save = new SaveSystem();
+    save.Save(gameState);
+    Assert.That(File.Exists("save.dat")); // reaches past the interface
+}
 
 // GOOD: Verifies through interface
-test("createUser makes user retrievable", async () => {
-  const user = await createUser({ name: "Alice" });
-  const retrieved = await getUser(user.id);
-  expect(retrieved.name).toBe("Alice");
-});
+[Test]
+public void SavedGameCanBeLoaded()
+{
+    var save = new SaveSystem();
+    save.Save(gameState);
+    var loaded = save.Load();
+    Assert.That(loaded.PlayerLevel, Is.EqualTo(gameState.PlayerLevel));
+}
 ```

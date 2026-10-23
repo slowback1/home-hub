@@ -1,119 +1,151 @@
 ---
 name: tdd-task
-description: Implements tasks from a PRD task list one at a time using TDD. Reads the task list, picks the next pending task, implements it with the red-green-refactor loop, runs precommit checks, then auto-commits and continues to the next task without human input. Use when the user wants to implement a PRD, work through a task list, or start coding from a breakdown.
+description: Implements a PRD's breakdown tasks one at a time using TDD. Reads the PRD's child tasks from Kanboard, picks the next one, implements it with the red-green-refactor loop, runs precommit checks, then auto-commits and continues without human input. Use when the user wants to implement a PRD, work through a task list, or start coding from a breakdown.
 ---
 
 # TDD Task
 
-Implement PRD tasks one at a time using TDD. Each iteration: pick the next task → implement with red-green-refactor → run precommit → auto-commit → mark done → repeat. No human input is required between tasks.
+Implement a PRD's breakdown tasks one at a time using TDD. Each iteration: pick the
+next child task → implement with red-green-refactor → run precommit → auto-commit →
+mark it Done → repeat. No human input is required between tasks.
 
-Load the `tdd` skill now and keep its principles active for the full session. All implementation work follows the TDD workflow defined there.
+The PRD is a task in the **Features swimlane**; its breakdown items are **child
+tasks** (`{parentId}-{NN} name`, linked "is a child of" the PRD). All Kanboard
+access goes through `../../kanboard/kb.py`. Column = status: **Ready to
+implement** (not started), **In progress**, **Ready for review** (implemented,
+awaiting the `review-ready` gate), **Done** (approved).
+
+Load the `tdd` skill now and keep its principles active for the full session.
 
 ---
 
 ## Workflow
 
-### Step 1 — Locate the PRD and task list
+### Step 1 — Locate the PRD and its tasks
 
-Scan `.agents/prds/` for subdirectories.
+```bash
+.agents/kanboard/kb.py prd list
+```
 
-- **One PRD found**: use it automatically.
-- **Multiple PRDs found**: list them and ask the user which to work from.
-- **No PRDs found**: stop. Tell the user no PRDs exist yet and suggest running `write-prd` followed by `breakdown-prd`.
+- **User named a PRD**: use that task id.
+- **A PRD is in In progress**: an interrupted run — resume it.
+- **Otherwise the highest-priority Ready to implement PRD that has children** (`children > 0`): use it.
+- **No PRD has children**: stop. Tell the user to run `breakdown-prd` first (or `write-prd` then `breakdown-prd` if only stubs exist in Backlog).
 
-Once the PRD is identified, list all `NN-*.md` files in the PRD folder — these are the task files. Note the PRD slug (the folder name under `.agents/prds/`) — it is used in commit messages.
+Then read the child list:
 
-- **No task files found**: stop. Tell the user no tasks exist yet and suggest running `breakdown-prd`.
+```bash
+.agents/kanboard/kb.py task list <parent-id>
+```
+
+Rows come back ordered by `seq`, each with `id`, `column`, `done`, `title`.
 
 ---
 
-### Step 2 — Select the next task
+### Step 2 — Select the next child task
 
-Determine the current task using this priority order:
+Priority order:
 
-1. **Any task with status `in-progress`**: an earlier session was interrupted. Resume it.
-2. **Lowest-numbered task with status `pending`**: this is the next task to implement.
-3. **All tasks are `done`**: proceed to **Step 6 — E2E final gate** (if applicable), otherwise print "All tasks complete." and stop.
+1. **Any child in In progress** — an interrupted session; resume it.
+2. **Lowest-`seq` child not yet Done or in review** (i.e. in Ready to implement) — the next task.
+3. **All children Done or in Ready for review** — go to **Step 6**.
 
-Before starting, announce to the user:
+Before starting the first task of a run, put the PRD itself into In progress
+(no-op if already there):
+
+```bash
+.agents/kanboard/kb.py feature start <parent-id>
+```
+
+Announce:
 
 ```
-Starting task NN: [task title]
-[one-line description from task file]
+Starting task [title]  (#[child-id])
+[one-line description from the task body]
 ```
 
-Update the task file's status field from `pending` to `in-progress`.
+Move the child to In progress and read its full body:
+
+```bash
+.agents/kanboard/kb.py task start <child-id>
+.agents/kanboard/kb.py task show <child-id>
+```
 
 ---
 
 ### Step 3 — Implement using TDD
 
-Follow the `tdd` skill's full workflow for this task:
+Follow the `tdd` skill's full workflow:
 
-1. **Plan** — read the task's description, acceptance criteria, and notes. Identify the behaviors to test and the public interfaces involved. If anything is ambiguous, ask the user before writing code.
-2. **Tracer bullet** — write one test for the first behavior → make it pass with minimal code.
+1. **Plan** — read the task's Description, Acceptance Criteria, and Notes (from `task show`). Identify the behaviors to test and the public interfaces. If anything is ambiguous in a blocking way, ask the user before writing code.
+2. **Tracer bullet** — one test for the first behavior → minimal code to pass.
 3. **Incremental loop** — for each remaining acceptance criterion: write test → make it pass.
-4. **Refactor** — once all criteria are green, clean up. Run tests after each refactor step.
+4. **Refactor** — once green, clean up; run tests after each step.
 
-Stay within the scope of this task. Do not implement anything belonging to a later task, even if it seems convenient.
+Stay within this task's scope. Do not implement anything belonging to a later
+task, even if convenient. Some tasks are Godot-side and not unit-testable — say so
+plainly and rely on a green build plus a stated manual check rather than a
+fabricated test.
 
 ---
 
 ### Step 4 — Run precommit
 
-When the TDD cycle is complete and all tests are green, run:
-
-```
+```bash
 task precommit
 ```
 
-**If it passes**: proceed to Step 5.
-
-**If it fails**: fix the failures autonomously and re-run. Repeat up to **3 attempts** total.
-
-- After each fix, re-run `task precommit`.
-- If it passes within 3 attempts: proceed to Step 5, noting what was fixed.
-- If it still fails after 3 attempts: stop, show the user the remaining failures, and ask how to proceed. Do not mark the task done.
+- **Pass** → Step 5.
+- **Fail** → fix autonomously and re-run, up to **3 attempts**. If still failing, stop, show the user the failures, and ask how to proceed. Leave the child in In progress — do not park it for review.
 
 ---
 
-### Step 5 — Auto-commit and continue
+### Step 5 — Commit, park for review, and continue
 
-Once precommit passes:
+1. Park the child for the review gate:
 
-1. Update the task file's status from `in-progress` to `done`.
-2. Commit all changes using the following message format:
+   ```bash
+   .agents/kanboard/kb.py task review <child-id>
+   ```
+
+2. Commit all changes:
 
    ```
    {short summary of changes made}
 
-   {optional: longer description explaining why — only include this paragraph when the changes are non-obvious or have potential hidden side effects}
+   {optional longer description — only when the change is non-obvious}
 
-   Addresses {prd-slug}-{NN}
+   Addresses {child-title}          # e.g. "Addresses 11-03 Implement listing endpoint"
+   {child url}
    ```
 
-   Where `{prd-slug}` is the PRD folder name (e.g. `user-auth`) and `{NN}` is the zero-padded task number (e.g. `01`, `02`). Omit the optional body paragraph entirely when the changes are self-explanatory.
-
-3. Return to **Step 2** immediately and pick the next task. Do not pause for human input.
+   End with the project's required commit trailer if it has one.
+3. Return to **Step 2** immediately and pick the next child. Do not pause for human input.
 
 ---
 
-### Step 6 — E2E final gate
+### Step 6 — Finish the PRD
 
-Run this step after all implementation tasks are `done`, but only if the PRD contained an `E2E Scenarios` section (i.e. task 01 was the "Write & verify E2E scenarios" task).
+Triggered when Step 2 finds all children Done or in Ready for review.
 
-1. Run `task e2e`.
-2. **If all pass**: report success to the user. The feature is complete.
-3. **If any fail**: diagnose and fix (up to **3 attempts**), running `task e2e` after each fix.
-   - If green within 3 attempts: commit the fix using the same commit message format (use `Addresses {prd-slug}-e2e` as the footer line), then report success.
-   - If still failing after 3 attempts: stop. Surface the full test failure output to the user and ask for guidance. Do not mark anything further as done.
+1. Park the PRD for its whole-feature review:
+
+   ```bash
+   .agents/kanboard/kb.py feature review <parent-id>
+   ```
+
+2. Print a short summary of the tasks completed this run (with their `#id`s),
+   flag any that left a manual verification step (Godot-side visual changes),
+   and tell the user to run `review-ready` (or wait for the hourly pipeline) to
+   approve the parked work to Done.
 
 ---
 
 ## Rules
 
-- **One task at a time.** Never begin the next task until the current one is committed and marked done.
+- **One task at a time.** Never begin the next child until the current one is committed and moved to Ready for review.
 - **Stay in scope.** Do not implement behaviors belonging to future tasks.
 - **Never skip precommit.** Every task must pass `task precommit` before being committed.
-- **No human input between tasks.** Commit and continue automatically until all tasks are done or a failure requires human guidance.
-- **Resume gracefully.** If a task is `in-progress` on startup, treat it as an interrupted session and pick up the TDD loop from context.
+- **No human input between tasks.** Commit and continue automatically until every child is Done or parked in Ready for review, or a failure needs human guidance.
+- **Resume gracefully.** A child (or the PRD) already in In progress on startup is an interrupted session — pick up the TDD loop from context.
+- **Be honest about verification.** Don't fabricate tests for inherently visual/Godot-side tasks; use build + a stated manual check.

@@ -5,7 +5,12 @@ description: Capture a rough feature idea as one or more PRD Stubs without going
 
 # Ideate Feature
 
-Turn a rough idea into one or more lightweight PRD Stubs that can be refined into full PRDs later.
+Turn a rough idea into one or more lightweight PRD Stubs that can be refined into
+full PRDs later. Stubs live as tasks in the **Features swimlane** of the Kanboard
+project, in the **Backlog** column (Backlog = still has open questions, not ready
+to pick up — exactly what a stub is). The hourly `triage-backlog` pipeline stage
+picks Backlog cards up, splits them if needed, and queues them for refinement.
+All Kanboard access goes through the shared helper `../../kanboard/kb.py`.
 
 ## Workflow
 
@@ -33,44 +38,32 @@ If a split makes sense, propose it explicitly:
 
 > "This looks like it might need two stubs: one for [infra/prerequisite], and one for [the feature itself]. Does that split make sense, or would you prefer to keep it as one?"
 
-Wait for the user to confirm the split (or collapse it back to one) before proceeding. Each confirmed stub gets its own slug and file.
+Wait for the user to confirm the split (or collapse it back to one) before proceeding. Each confirmed stub becomes its own task.
 
 ### Step 3 — Write the Stub(s)
 
-For each stub:
+For each stub, write the description body using
+[STUB_TEMPLATE.md](STUB_TEMPLATE.md) (Summary / Problem / Success Looks Like /
+Notes & Open Questions — Markdown; Kanboard renders it). Do not repeat the title
+or a status/date line in the body — the task title and Backlog column carry those.
 
-1. Derive a kebab-case slug from the title (e.g. `notification-preferences`).
-2. Write the file to `.agents/stubs/[slug].md` using [STUB_TEMPLATE.md](STUB_TEMPLATE.md).
-   - Fill **Title**, **Summary**, **Problem / Opportunity**, **Success Looks Like**, and **Notes & Open Questions** from the conversation.
-   - Set **Created** to today's date.
-   - Leave any genuinely unknown fields as their placeholder text — do not invent content.
-   - Create the `.agents/stubs/` directory if it does not exist.
+Write the body to a temp file, then create the task:
 
-### Step 4 — Update the Stub Index
-
-Update `.agents/stubs/README.md` to include a row for each new stub.
-
-- If the file does not exist, create it with this structure:
-
-```markdown
-# PRD Stubs
-
-Ideas captured for future refinement. Run the `write-prd` skill to promote a stub to a full PRD.
-
-| Stub | Title | Summary | Created |
-|------|-------|---------|---------|
+```bash
+.agents/kanboard/kb.py stub create --title "Feature Name" --desc-file /path/to/body.md
 ```
 
-- Append one row per new stub:
+`stub create` lands the task in **Backlog** by default. If the command errors
+(connection/config), show the user the message — do not fall back to files.
 
+### Step 4 — Confirm
+
+Tell the user, for each stub: the title and the Kanboard `url` from the command
+output. Then report how many stubs/PRDs are now open in the Features lane:
+
+```bash
+.agents/kanboard/kb.py prd list
 ```
-| [slug](slug.md) | Title | One-sentence summary | YYYY-MM-DD |
-```
 
-### Step 5 — Confirm
-
-Tell the user:
-- The file path(s) written
-- How many stubs are now in `.agents/stubs/README.md`
-
-Example: "Written to `.agents/stubs/notification-preferences.md`. You now have 3 stubs awaiting refinement."
+Example: "Captured **Notification Preferences** → [task #27]. You now have 14
+items in the Features lane awaiting refinement."
