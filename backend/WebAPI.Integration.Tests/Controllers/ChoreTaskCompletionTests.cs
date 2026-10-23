@@ -7,7 +7,6 @@ namespace WebAPI.Integration.Tests.Controllers;
 
 public class ChoreTaskCompletionTests : ControllerTestBase
 {
-    private record CreateRequest(string Name, bool IsRecurring, int? IntervalDays, DateTime? DoDate);
 
     [SetUp]
     public void ClearState()
@@ -21,8 +20,8 @@ public class ChoreTaskCompletionTests : ControllerTestBase
     [Test]
     public async Task Complete_OneOffTask_StampsCompletedAt_AndDisappearsFromActive()
     {
-        var created = await PostAsync<CreateRequest, ChoreTask>("/api/tasks",
-            new CreateRequest("Plan vacation", false, null, null));
+        var created = await PostAsync<object, ChoreTask>("/api/tasks",
+            new { Name = "Plan vacation", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null });
 
         var response = await PostRawAsync($"/api/tasks/{created!.Id}/complete", new { });
         var completed = await response.Content.ReadFromJsonAsync<ChoreTask>();
@@ -38,8 +37,8 @@ public class ChoreTaskCompletionTests : ControllerTestBase
     public async Task Complete_RecurringTask_AdvancesDoDate_AndRemainsActive()
     {
         var today = DateTime.UtcNow.Date;
-        var created = await PostAsync<CreateRequest, ChoreTask>("/api/tasks",
-            new CreateRequest("Sweep floors", true, 7, today));
+        var created = await PostAsync<object, ChoreTask>("/api/tasks",
+            new { Name = "Sweep floors", IsRecurring = true, IntervalDays = 7, DoDate = today });
 
         var response = await PostRawAsync($"/api/tasks/{created!.Id}/complete", new { });
         var completed = await response.Content.ReadFromJsonAsync<ChoreTask>();
@@ -66,8 +65,8 @@ public class ChoreTaskCompletionTests : ControllerTestBase
     [Test]
     public async Task Undo_OneOffTask_ClearsCompletedAt_AndReappearsInActive()
     {
-        var created = await PostAsync<CreateRequest, ChoreTask>("/api/tasks",
-            new CreateRequest("Plan vacation", false, null, null));
+        var created = await PostAsync<object, ChoreTask>("/api/tasks",
+            new { Name = "Plan vacation", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null });
         await PostRawAsync($"/api/tasks/{created!.Id}/complete", new { });
 
         var response = await DeleteRawAsync($"/api/tasks/{created.Id}/completions/latest");
@@ -84,8 +83,8 @@ public class ChoreTaskCompletionTests : ControllerTestBase
     public async Task Undo_RecurringTask_RestoresPreviousDoDate()
     {
         var originalDoDate = new DateTime(2026, 5, 20, 0, 0, 0, DateTimeKind.Utc);
-        var created = await PostAsync<CreateRequest, ChoreTask>("/api/tasks",
-            new CreateRequest("Sweep floors", true, 7, originalDoDate));
+        var created = await PostAsync<object, ChoreTask>("/api/tasks",
+            new { Name = "Sweep floors", IsRecurring = true, IntervalDays = 7, DoDate = originalDoDate });
         await PostRawAsync($"/api/tasks/{created!.Id}/complete", new { });
 
         var response = await DeleteRawAsync($"/api/tasks/{created.Id}/completions/latest");
@@ -106,8 +105,8 @@ public class ChoreTaskCompletionTests : ControllerTestBase
     [Test]
     public async Task Undo_Returns404_WhenNoCompletionsExist()
     {
-        var created = await PostAsync<CreateRequest, ChoreTask>("/api/tasks",
-            new CreateRequest("Plan vacation", false, null, null));
+        var created = await PostAsync<object, ChoreTask>("/api/tasks",
+            new { Name = "Plan vacation", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null });
 
         var response = await DeleteRawAsync($"/api/tasks/{created!.Id}/completions/latest");
 
@@ -117,8 +116,8 @@ public class ChoreTaskCompletionTests : ControllerTestBase
     [Test]
     public async Task GetActive_ExcludesCompletedOneOffTasks()
     {
-        var created = await PostAsync<CreateRequest, ChoreTask>("/api/tasks",
-            new CreateRequest("Done task", false, null, null));
+        var created = await PostAsync<object, ChoreTask>("/api/tasks",
+            new { Name = "Done task", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null });
         await PostRawAsync($"/api/tasks/{created!.Id}/complete", new { });
 
         var active = await GetAsync<List<ChoreTask>>("/api/tasks", includeToken: false);
@@ -128,8 +127,8 @@ public class ChoreTaskCompletionTests : ControllerTestBase
     [Test]
     public async Task GetHistory_ReturnsCompletedOneOffTasks()
     {
-        var created = await PostAsync<CreateRequest, ChoreTask>("/api/tasks",
-            new CreateRequest("Finished task", false, null, null));
+        var created = await PostAsync<object, ChoreTask>("/api/tasks",
+            new { Name = "Finished task", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null });
         await PostRawAsync($"/api/tasks/{created!.Id}/complete", new { });
 
         var history = await GetAsync<List<ChoreTask>>("/api/tasks/history", includeToken: false);
