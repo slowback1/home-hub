@@ -25,8 +25,9 @@ through `../../kanboard/kb.py`.
 - **Be skeptical.** A self-written implementation is not automatically
   correct. Check the diff, re-run the gate, look for scope creep and
   fabricated tests.
-- **Commit locally only** — this repo has no git remote. Never push. The
-  review stage commits nothing; it only reads history and moves cards.
+- The review stage commits nothing; it only reads history and moves cards.
+- **Push approved work**: once every review check and the gate pass for a card,
+  push main to origin. Never push when any check or gate fails.
 
 ## Project gate
 

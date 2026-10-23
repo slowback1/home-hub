@@ -23,7 +23,8 @@ Load the `tdd` skill now and keep its principles active for the full session.
 
 - **Never ask questions.** Ambiguity that blocks implementation → comment on
   the card explaining the blocker and leave it In progress.
-- **Commit locally only** — this repo has no git remote. Never push.
+- **Commit locally; never push** — only the review stage pushes to origin, and
+  only when its checks and gates pass.
 - Stop retrying a failing gate after **3 attempts**; comment the failure on the
   card, leave it In progress, and move on to the next chore.
 

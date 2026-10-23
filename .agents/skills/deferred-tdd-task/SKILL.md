@@ -78,7 +78,7 @@ Unattended overnight run — no human will be present. Apply this guidance:
 - For inherently visual or UI-side changes (Svelte rendering, styling, asset
   changes), a green build is the gate. Flag each such change in the final
   summary as needing a manual check in the browser/app.
-- Do NOT push — this repo has no git remote. Commit locally only, and park each
+- Commit locally; do not push (only the review stage pushes, and only when its gates pass). Park each
   finished child task in Ready for review (`.agents/kanboard/kb.py task review
   <id>`); move the PRD itself to Ready for review (`feature review <id>`) when
   all its children are Done or awaiting review. The `review-ready` stage approves

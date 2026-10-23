@@ -25,7 +25,7 @@ fi
 
 cd "$REPO"
 
-GUIDE='Unattended pipeline run (cron) — no human present. Never ask questions; work autonomously until the stage is complete or every remaining item is blocked. Stay strictly inside this repo: never read, list, or stat paths outside the workspace (no ~ paths, no system directories) — an out-of-workspace permission prompt is auto-rejected and kills the session. If any permission is rejected, treat that information as unavailable and continue; never stop. Commit locally only (this repo has no git remote); never push. If a gate fails 3 times on an item, comment the failure on the Kanboard card and move on. If Kanboard is unreachable, report the error and stop this stage.'
+GUIDE='Unattended pipeline run (cron) — no human present. Never ask questions; work autonomously until the stage is complete or every remaining item is blocked. Stay strictly inside this repo: never read, list, or stat paths outside the workspace (no ~ paths, no system directories) — an out-of-workspace permission prompt is auto-rejected and kills the session. If any permission is rejected, treat that information as unavailable and continue; never stop. Commit locally; triage and implement stages never push — only the review stage pushes to origin, and only after all its checks and gates pass. If a gate fails 3 times on an item, comment the failure on the Kanboard card and move on. If Kanboard is unreachable, report the error and stop this stage.'
 
 run_stage() {
   local name="$1" skill="$2"

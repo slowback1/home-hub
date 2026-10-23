@@ -16,6 +16,8 @@ explanatory comment. All Kanboard access goes through `../../kanboard/kb.py`.
   criteria / PRD goals — not personal taste.
 - **Be skeptical.** A self-written implementation is not automatically correct.
   Check the diff, re-run the tests, look for scope creep and fabricated tests.
+- **Push approved work**: once every review check and the gate pass for a card,
+  push main to origin. Never push when any check or gate fails.
 
 ## Workflow
 

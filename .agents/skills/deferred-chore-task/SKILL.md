@@ -99,7 +99,7 @@ Unattended run — no human will be present. Apply this guidance:
   open, note it in the summary, and move on — do not let it grow into feature work.
 - If a chore is genuinely ambiguous in a blocking way, skip it and note why rather
   than guessing; a human will resolve it later.
-- Do NOT push — this repo has no git remote. Commit locally only, and move each
+- Commit locally; do not push (only the review stage pushes, and only when its gates pass). Move each
   finished chore to the Done column (`.agents/kanboard/kb.py chore done <id>`).
 - In the final summary, list completed chores, any skipped/left-open chores with
   the reason, and anything needing manual verification.
