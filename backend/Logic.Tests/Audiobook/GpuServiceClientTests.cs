@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using Common.Models;
 using Logic.Audiobook;
@@ -92,7 +91,7 @@ public class GpuServiceClientTests
     [Test]
     public async Task GetJobAsync_MapsAllStatusValues()
     {
-        foreach (var (json, expected) in new (string, AudiobookJobStatus)[]
+        foreach (var (json, expected) in new[]
         {
             (SingleJobJson.Replace("\"queued\"", "\"in_progress\""), AudiobookJobStatus.InProgress),
             (CompletedJobJson, AudiobookJobStatus.Completed),
