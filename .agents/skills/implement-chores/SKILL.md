@@ -32,8 +32,8 @@ Load the `tdd` skill now and keep its principles active for the full session.
 Run the repo's checks before committing. Detect in order:
 
 1. `Taskfile.yml` with a `precommit` task → `task precommit`
-2. `*.sln` present → `dotnet build` + `dotnet test` (this repo: `BoardRpg.sln`;
-   when Godot-side files changed, additionally `dotnet build game/Game.sln`)
+2. `*.sln` present → `dotnet build` + `dotnet test` (this repo:
+   `backend/HomeHubBackend.sln`)
 3. `package.json` with a test script → `npm test`
 4. pytest config or a `tests/` dir → `pytest`
 5. None of the above → syntax-check every changed file and note in the card
@@ -130,8 +130,8 @@ If both lists are empty, print "no chores to implement" and stop.
    - If a blocking detail is ambiguous, do **not** ask: comment on the card
      explaining the ambiguity and leave it In progress. Move on.
 
-   **Not everything is unit-testable** (Godot-side rendering, visual tweaks,
-   asset changes). When a red-green test genuinely isn't possible, say so
+   **Not everything is unit-testable** (UI rendering, visual tweaks, asset
+   changes). When a red-green test genuinely isn't possible, say so
    plainly, make the change, and rely on a successful build plus a
    clearly-stated manual verification step written into the card comment. Do
    **not** fabricate a test that doesn't really exercise the behavior.
@@ -179,5 +179,5 @@ and anything left with a stated manual check for the review stage.
   into feature work.
 - **Never skip the project checks.**
 - **Be honest about verification.** Don't fabricate tests for inherently
-  visual or Godot-side changes; use build + a stated manual check instead.
+  visual or UI-side changes; use build + a stated manual check instead.
 - **Ready for review, never Done.** The review stage (#349) owns approval.

@@ -75,9 +75,9 @@ Unattended overnight run — no human will be present. Apply this guidance:
   defines it, else `dotnet build` + `dotnet test` for a .sln, else `npm test`,
   else `pytest`; if the repo defines no gate yet, syntax-check every changed
   file and note that in the final summary.
-- For Godot-side changes (scenes, rendering, scripts touching the Godot API), a
-  green build is the gate. Flag each such change in the final summary as needing a
-  manual `/run` or `/verify` pass in the editor.
+- For inherently visual or UI-side changes (Svelte rendering, styling, asset
+  changes), a green build is the gate. Flag each such change in the final
+  summary as needing a manual check in the browser/app.
 - Do NOT push — this repo has no git remote. Commit locally only, and park each
   finished child task in Ready for review (`.agents/kanboard/kb.py task review
   <id>`); move the PRD itself to Ready for review (`feature review <id>`) when
@@ -90,8 +90,6 @@ Unattended overnight run — no human will be present. Apply this guidance:
 
 ## Notes
 
-- Reference implementation: the ad-hoc `CronCreate` flow used on 2026-06-14 to
-  schedule an overnight run of the `attack-flow-forecast` PRD.
-- This repo does not define a gate yet (no `Taskfile.yml`); use the gate
-  detection order from the `implement-ready` skill.
+- This repo defines `task precommit` (`Taskfile.yml`): it runs the backend,
+  frontend, and gpu-service checks.
 - Use `CronList` to see scheduled jobs and `CronDelete <id>` to cancel one.

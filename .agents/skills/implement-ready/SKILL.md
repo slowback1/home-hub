@@ -28,7 +28,7 @@ Run the repo's checks before committing. Detect in order:
 2. `*.sln` present → `dotnet build` + `dotnet test`
 3. `package.json` with a test script → `npm test`
 4. pytest config or a `tests/` dir → `pytest`
-5. None of the above (the repo has no code gate yet) → syntax-check every
+5. None of the above → syntax-check every
    changed file (e.g. `python -m py_compile`, `node --check`) and note in the
    card comment that no test gate exists yet.
 
@@ -126,8 +126,8 @@ misclassification — stop and handle the card through its parent in Step 3.
 6. When **all children are Done or in Ready for review**, move the PRD:
    `kb.py feature review <parent-id>` (→ Ready for review).
 
-Godot-side / non-unit-testable work: green build plus a stated manual check
-(the child's `Manual check:` criterion) — never a fabricated test.
+Non-unit-testable work (UI, visual, operational): green build plus a stated
+manual check (the child's `Manual check:` criterion) — never a fabricated test.
 
 ### Step 4 — Auto-breakdown a childless PRD
 
@@ -136,7 +136,7 @@ This is `breakdown-prd` **without the approval step**:
 1. `kb.py prd show <parent-id>` — read the approved PRD.
 2. Decompose per breakdown-prd's granularity/ordering rules: commit-sized
    units, tests bundled with their implementation, dependency order.
-   Children whose criteria require running the game (Godot-side /
+   Children whose criteria require running the app (UI /
    non-unit-testable work) must state an explicit `Manual check:` acceptance
    criterion — concrete steps + expected observations — so the review stage
    can detect it and park the finished child in "Needs manual review" for a

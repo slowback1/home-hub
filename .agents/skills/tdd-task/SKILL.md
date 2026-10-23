@@ -83,7 +83,8 @@ Follow the `tdd` skill's full workflow:
 4. **Refactor** — once green, clean up; run tests after each step.
 
 Stay within this task's scope. Do not implement anything belonging to a later
-task, even if convenient. Some tasks are Godot-side and not unit-testable — say so
+task, even if convenient. Some tasks are inherently visual or UI-side (e.g.
+Svelte rendering) and not unit-testable — say so
 plainly and rely on a green build plus a stated manual check rather than a
 fabricated test.
 
@@ -135,7 +136,7 @@ Triggered when Step 2 finds all children Done or in Ready for review.
    ```
 
 2. Print a short summary of the tasks completed this run (with their `#id`s),
-   flag any that left a manual verification step (Godot-side visual changes),
+   flag any that left a manual verification step (UI/visual changes),
    and tell the user to run `review-ready` (or wait for the hourly pipeline) to
    approve the parked work to Done.
 
@@ -148,4 +149,4 @@ Triggered when Step 2 finds all children Done or in Ready for review.
 - **Never skip precommit.** Every task must pass `task precommit` before being committed.
 - **No human input between tasks.** Commit and continue automatically until every child is Done or parked in Ready for review, or a failure needs human guidance.
 - **Resume gracefully.** A child (or the PRD) already in In progress on startup is an interrupted session — pick up the TDD loop from context.
-- **Be honest about verification.** Don't fabricate tests for inherently visual/Godot-side tasks; use build + a stated manual check.
+- **Be honest about verification.** Don't fabricate tests for inherently visual/UI tasks; use build + a stated manual check.

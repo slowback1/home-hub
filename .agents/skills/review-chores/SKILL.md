@@ -35,8 +35,7 @@ Re-run the repo's checks for every reviewed chore. Detect in order (same as
 
 1. `Taskfile.yml` with a `precommit` task → `task precommit`
 2. `*.sln` present → `dotnet build` + `dotnet test` (this repo:
-   `BoardRpg.sln`; when Godot-side files changed, additionally
-   `dotnet build game/Game.sln`)
+   `backend/HomeHubBackend.sln`)
 3. `package.json` with a test script → `npm test`
 4. pytest config or a `tests/` dir → `pytest`
 5. None of the above → syntax-check every changed file and note in the card
@@ -85,7 +84,7 @@ refinement, In progress, Done, or Needs manual review.
 
 4. **Manual-check routing.** If every automatable check passes **and** the
    chore's plan or implement-stage comment states a manual check
-   (non-unit-testable work: Godot-side, visual, operational), do **not**
+   (non-unit-testable work: UI-side, visual, operational), do **not**
    approve to Done. Comment a concrete playtest script — the stated manual
    check steps plus expected observations, expanded so a human can follow
    them verbatim — then park the chore:

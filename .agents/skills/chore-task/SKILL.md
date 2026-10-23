@@ -78,7 +78,7 @@ Follow the `tdd` workflow:
   for the new behavior, then implement it.
 - Stay strictly within this one chore's scope — a chore is a single small change.
 
-**Not everything is unit-testable** (e.g. Godot rendering, a visual tweak, an
+**Not everything is unit-testable** (e.g. UI rendering, a visual tweak, an
 asset change). When a red-green test genuinely isn't possible, say so plainly,
 make the change, and rely on a successful build plus a clearly-stated manual
 verification step instead. Do **not** fabricate a test that doesn't really
@@ -87,9 +87,9 @@ exercise the behavior.
 ### Step 4 — Run the project checks
 
 Run the project's precommit/test gate — `task precommit` if the project defines
-it, otherwise the project's build-and-test (for this repo: `dotnet build` +
-`dotnet test` against `BoardRpg.sln`, plus `dotnet build game/Game.sln` when
-Godot-side files changed).
+it (this repo defines it: backend + frontend + gpu-service checks), otherwise
+the project's build-and-test (`dotnet build` + `dotnet test` against
+`backend/HomeHubBackend.sln` for the C# backend, `npm test` for the frontend).
 
 - **Pass** → Step 5.
 - **Fail** → fix autonomously and re-run, up to **3 attempts**. If still failing,
@@ -135,4 +135,4 @@ note any Backlog chores that were skipped for open questions, then stop.
   feature work. If it turns out to be large, stop and suggest `write-prd`.
 - **Never skip the project checks.**
 - **Be honest about verification.** Don't fabricate tests for inherently visual or
-  Godot-side changes; use build + a stated manual check instead.
+  UI-side changes; use build + a stated manual check instead.

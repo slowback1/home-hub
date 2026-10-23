@@ -7,21 +7,21 @@
 ```csharp
 // GOOD: Tests observable behavior
 [Test]
-public void PlayerCanPickUpHealthPotion()
+public void PickedActivityIsAddedToSessionHistory()
 {
-    var player = new Player();
-    var potion = new HealthPotion(heal: 20);
-    player.Inventory.Add(potion);
+    var picker = new ActivityPicker();
+    var activity = new Activity("Walk");
+    picker.AddActivity(activity);
 
-    player.UseItem(potion);
+    picker.Pick(activity);
 
-    Assert.That(player.Health, Is.EqualTo(player.MaxHealth));
+    Assert.That(picker.History, Contains.Item(activity));
 }
 ```
 
 Characteristics:
 
-- Tests behavior players/callers care about
+- Tests behavior users/callers care about
 - Uses public API only
 - Survives internal refactors
 - Describes WHAT, not HOW
@@ -34,12 +34,12 @@ Characteristics:
 ```csharp
 // BAD: Tests implementation details
 [Test]
-public void UseItemCallsHealMethod()
+public void PickCallsHistoryRecorderMethod()
 {
-    var mockHealer = Substitute.For<IHealer>();
-    var player = new Player(mockHealer);
-    player.UseItem(new HealthPotion(heal: 20));
-    mockHealer.Received().Heal(20); // asserting on call, not on outcome
+    var mockRecorder = Substitute.For<IHistoryRecorder>();
+    var picker = new ActivityPicker(mockRecorder);
+    picker.Pick(new Activity("Walk"));
+    mockRecorder.Received().Record(Arg.Any<Activity>()); // asserting on call, not on outcome
 }
 ```
 
@@ -54,20 +54,20 @@ Red flags:
 ```csharp
 // BAD: Bypasses interface to verify
 [Test]
-public void SaveGameWritesToDisk()
+public void AudiobookConversionWritesFileToDisk()
 {
-    var save = new SaveSystem();
-    save.Save(gameState);
-    Assert.That(File.Exists("save.dat")); // reaches past the interface
+    var converter = new AudiobookConverter();
+    converter.Convert(epub);
+    Assert.That(File.Exists("output.m4b")); // reaches past the interface
 }
 
 // GOOD: Verifies through interface
 [Test]
-public void SavedGameCanBeLoaded()
+public void ConvertedAudiobookIsRetrievableFromTheJob()
 {
-    var save = new SaveSystem();
-    save.Save(gameState);
-    var loaded = save.Load();
-    Assert.That(loaded.PlayerLevel, Is.EqualTo(gameState.PlayerLevel));
+    var converter = new AudiobookConverter();
+    var job = converter.Convert(epub);
+    var stored = converter.GetJob(job.Id);
+    Assert.That(stored.OutputFormat, Is.EqualTo("m4b"));
 }
 ```

@@ -92,10 +92,9 @@ Unattended run — no human will be present. Apply this guidance:
   defines it, else `dotnet build` + `dotnet test` for a .sln, else `npm test`,
   else `pytest`; if the repo defines no gate yet, syntax-check every changed
   file and note that in the final summary.
-- For inherently visual or Godot-side changes (scenes, rendering, scripts touching
-  the Godot API), do NOT fabricate a test — a green build is the gate. Flag each
-  such chore in the final summary as needing a manual `/run` or `/verify` pass in
-  the editor.
+- For inherently visual or UI-side changes (Svelte rendering, styling, asset
+  changes), do NOT fabricate a test — a green build is the gate. Flag each such
+  chore in the final summary as needing a manual check in the browser/app.
 - If a chore turns out to be larger than a small single change, skip it, leave it
   open, note it in the summary, and move on — do not let it grow into feature work.
 - If a chore is genuinely ambiguous in a blocking way, skip it and note why rather
@@ -110,8 +109,8 @@ Unattended run — no human will be present. Apply this guidance:
 
 - Sibling skill: `deferred-tdd-task` (same mechanism, but targets a PRD's task
   list via `/tdd-task`). This one targets the chore queue via `/chore-task`.
-- This repo does not define a gate yet (no `Taskfile.yml`); use the gate
-  detection order from the `implement-ready` skill.
+- This repo defines `task precommit` (`Taskfile.yml`): it runs the backend,
+  frontend, and gpu-service checks.
 - Use `CronList` to see scheduled jobs and `CronDelete <id>` to cancel one.
 - Because `/chore-task` re-queries the Kanboard Chores lane when it fires, you can
   keep logging chores right up until the fire time and they'll be included.

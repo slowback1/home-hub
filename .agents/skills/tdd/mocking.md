@@ -2,14 +2,14 @@
 
 Mock at **system boundaries** only:
 
-- External I/O (save files, network, platform APIs)
+- External I/O (databases, network, platform APIs)
 - Time/randomness (e.g. `IRandom`, `IClock`)
-- Platform services (OS, analytics, achievements)
+- Platform services (OS, analytics, notifications)
 
 Don't mock:
 
-- Your own game logic classes
-- Internal collaborators (e.g. `InventorySystem` talking to `ItemDatabase`)
+- Your own domain logic classes
+- Internal collaborators (e.g. `ActivityService` talking to `ActivityRepository`)
 - Anything you control
 
 ## Designing for Mockability
@@ -22,17 +22,17 @@ Pass external dependencies in rather than creating them internally:
 
 ```csharp
 // Easy to mock
-public class LootTable
+public class WheelPicker
 {
     private readonly IRandom _rng;
-    public LootTable(IRandom rng) { _rng = rng; }
-    public Item Roll() => _items[_rng.Next(_items.Count)];
+    public WheelPicker(IRandom rng) { _rng = rng; }
+    public Activity Pick(IReadOnlyList<Activity> activities) => activities[_rng.Next(activities.Count)];
 }
 
 // Hard to mock
-public class LootTable
+public class WheelPicker
 {
-    public Item Roll() => _items[GD.Randi() % _items.Count]; // static global, untestable
+    public Activity Pick(IReadOnlyList<Activity> activities) => activities[new Random().Next(activities.Count)]; // creates its own dependency, untestable
 }
 ```
 
@@ -42,11 +42,11 @@ Create specific methods for each external operation:
 
 ```csharp
 // GOOD: Each operation is independently mockable
-public interface ISaveSystem
+public interface IAudiobookJobRepository
 {
-    void Save(GameState state);
-    GameState Load();
-    bool HasSave();
+    void Save(AudiobookJob job);
+    AudiobookJob Get(Guid id);
+    bool Exists(Guid id);
 }
 
 // BAD: One generic method forces conditional logic in test setup

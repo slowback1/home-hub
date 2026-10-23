@@ -14,8 +14,8 @@ _What needs to be done and why. One short paragraph._
 - [ ] _Concrete, verifiable condition derived from PRD goals/user stories_
 - [ ] _Another verifiable condition_
 
-For work that cannot be verified by unit tests (e.g. Godot-side rendering or
-input), state an explicit `Manual check:` criterion — steps + expected
+For work that cannot be verified by unit tests (e.g. UI rendering or
+interaction), state an explicit `Manual check:` criterion — steps + expected
 observations. The review stage reads it and parks the finished card in
 "Needs manual review" for a human playtest instead of approving it to Done.
 
