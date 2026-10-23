@@ -41,7 +41,7 @@ public class ActivityPickControllerTests : ControllerTestBase
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         Assert.That(picks!.Any(p => p.ActivityName == "Recent Pick"), Is.True);
-        Assert.That(picks.Any(p => p.ActivityName == "Old Pick"), Is.False);
+        Assert.That(picks!.Any(p => p.ActivityName == "Old Pick"), Is.False);
     }
 
     [Test]
