@@ -16,6 +16,7 @@ import { BookmarksPage } from './pages/BookmarksPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { WalkHistoryPage } from './pages/WalkHistoryPage';
 import { WheelsPage } from './pages/WheelsPage';
+import { UserSwitchingPage } from './pages/UserSwitchingPage';
 
 type Fixtures = {
 	walkHistoryPage: WalkHistoryPage;
@@ -34,6 +35,7 @@ type Fixtures = {
 	tasksPage: TasksPage;
 	bookmarksPage: BookmarksPage;
 	dashboardPage: DashboardPage;
+	userSwitchingPage: UserSwitchingPage;
 };
 
 const test = base.extend<Fixtures>({
@@ -84,6 +86,9 @@ const test = base.extend<Fixtures>({
 	},
 	dashboardPage: async ({ page }, use) => {
 		await use(new DashboardPage(page));
+	},
+	userSwitchingPage: async ({ page }, use) => {
+		await use(new UserSwitchingPage(page));
 	}
 });
 

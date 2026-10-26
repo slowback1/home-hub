@@ -10,9 +10,10 @@ export default class UserService {
 		this.users = await new UsersApi().getUsers();
 
 		MessageBus.subscribe<string>(Messages.CurrentUser, (value) => {
-			const isValid = !!value && this.users.some((user) => user.id === value);
+			const normalized = value === null || value === undefined ? null : String(value);
+			const isValid = !!normalized && this.users.some((user) => user.id === normalized);
 
-			this.currentUserId = isValid ? value : null;
+			this.currentUserId = isValid ? normalized : null;
 		});
 	}
 

@@ -58,4 +58,16 @@ describe('UserService', () => {
 		const service = new UserService();
 		expect(service.getCurrentUserId()).toEqual('u1');
 	});
+
+	it('validates a numeric-string id rehydrated from storage as a number', async () => {
+		const storage = getLocalStorageMock();
+		storage.setItem(Messages.CurrentUser, '2');
+		MessageBus.initialize(storage);
+		mockApi({ '/api/users': [{ id: '2', name: 'Sam' }] });
+
+		await UserService.initialize();
+
+		const service = new UserService();
+		expect(service.getCurrentUserId()).toEqual('2');
+	});
 });
