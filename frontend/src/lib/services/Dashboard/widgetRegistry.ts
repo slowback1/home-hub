@@ -23,7 +23,7 @@ export type WidgetEntry = {
 export const WIDGET_REGISTRY: WidgetEntry[] = [
 	{
 		id: 'tasks',
-		name: 'Chore Tasks',
+		name: 'Tasks',
 		description: 'Track and complete your recurring chores.',
 		icon: CheckSquare as unknown as Component,
 		href: '/tasks',

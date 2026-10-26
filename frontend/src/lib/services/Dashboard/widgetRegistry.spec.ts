@@ -20,6 +20,11 @@ describe('WIDGET_REGISTRY', () => {
 		expect(ids).not.toContain('retro');
 	});
 
+	it('names the tasks widget "Tasks" for UI consistency', () => {
+		const tasks = WIDGET_REGISTRY.find((w) => w.id === 'tasks');
+		expect(tasks?.name).toBe('Tasks');
+	});
+
 	it('every entry has id, name, description, icon, href, and component', () => {
 		for (const entry of WIDGET_REGISTRY) {
 			expect(entry.id).toBeTruthy();
