@@ -10,14 +10,23 @@
 	import LocalStorageProvider from '$lib/bus/providers/localStorageProvider';
 	import Sidebar from '$lib/ui/navigation/Sidebar.svelte';
 	import Spinner from '$lib/ui/feedback/Spinner.svelte';
+	import UserService from '$lib/services/User/UserService';
+	import UserSwitcher from '$lib/ui/user/UserSwitcher.svelte';
+	import { Messages } from '$lib/bus/Messages';
 
 	let ready = false;
+	let currentUserId: string | null = null;
+	const userService = new UserService();
 
 	onMount(async () => {
 		MessageBus.initialize(new LocalStorageProvider());
 		UrlPathProvider.initialize(new RealUrlProvider());
 		await ConfigService.initialize();
 		await FeatureFlagService.initialize(new ApiFeatureFlagProvider());
+		await UserService.initialize();
+		MessageBus.subscribe<string | null>(Messages.CurrentUser, () => {
+			currentUserId = userService.getCurrentUserId();
+		});
 		ready = true;
 	});
 </script>
@@ -26,7 +35,7 @@
 	<meta name="description" content="HomeHub" />
 </svelte:head>
 
-{#if ready}
+{#if ready && currentUserId}
 	<div class="app-shell">
 		<Sidebar currentPath={$page.url.pathname} />
 		<ToastWrapper />
@@ -34,6 +43,8 @@
 			<slot />
 		</main>
 	</div>
+{:else if ready}
+	<UserSwitcher users={userService.getUsers()} />
 {:else}
 	<div class="loading-shell">
 		<Spinner />
