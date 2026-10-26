@@ -34,11 +34,21 @@ export class TasksPage {
 	}
 
 	async isUndoToastVisible(): Promise<boolean> {
-		return this.page.locator('[data-testid="undo-toast"]').isVisible();
+		return this.page
+			.locator('[data-testid="toast-item"]')
+			.filter({ has: this.page.locator('[data-testid="toast-action"]') })
+			.first()
+			.isVisible();
 	}
 
 	async clickUndoOnToast(): Promise<void> {
-		await this.page.click('[data-testid="undo-button"]');
+		await this.page.click('[data-testid="toast-action"]');
+	}
+
+	async reload(): Promise<void> {
+		await this.page.reload();
+		await this.page.waitForSelector('[data-testid="tasks-page"]', { state: 'visible' });
+		await this.page.waitForSelector('[data-testid="loading"]', { state: 'detached' });
 	}
 
 	async openAddTaskModal(): Promise<void> {

@@ -101,9 +101,13 @@ Then('{string} is not visible in the Due section', async ({ tasksPage }, name: s
 });
 
 Then('an undo toast is visible', async ({ tasksPage }) => {
-	await tasksPage.page.waitForSelector('[data-testid="undo-toast"]', { state: 'visible' });
+	await tasksPage.page.waitForSelector('[data-testid="toast-item"]', { state: 'visible' });
 	const visible = await tasksPage.isUndoToastVisible();
 	expect(visible).toBe(true);
+});
+
+When('I reload the Tasks page', async ({ tasksPage }) => {
+	await tasksPage.reload();
 });
 
 When('I click Undo on the toast', async ({ tasksPage }) => {

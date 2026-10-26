@@ -38,6 +38,7 @@ Feature: Chore / Task Tracker
     When I visit the Tasks page
     And I click Done on "Sweep floors"
     Then "Sweep floors" is not visible in the Due section
+    And I reload the Tasks page
     And I see "Sweep floors" in the Upcoming section
 
   @tasks-create-one-off

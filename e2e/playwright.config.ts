@@ -11,6 +11,9 @@ export default defineConfig({
 	testDir,
 	globalSetup: './global-setup.ts',
 	globalTeardown: './global-teardown.ts',
+	// Scenarios share one backend instance; the user seed/cleanup hooks mutate
+	// global user state every scenario depends on, so runs must be serialized.
+	workers: 1,
 	use: {
 		baseURL: 'http://localhost:5173'
 	},
