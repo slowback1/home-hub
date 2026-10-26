@@ -161,6 +161,30 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpPost("users")]
+    public async Task<ActionResult> SeedUser([FromBody] SeedUserRequest request)
+    {
+        if (!IsAllowed) return NotFound();
+
+        var crud = crudFactory.GetCrud<AppUser>();
+        var user = await crud.CreateAsync(new AppUser { Name = request.Name });
+        return Ok(new { user.Id, user.Name });
+    }
+
+    [HttpDelete("users")]
+    public async Task<ActionResult> ClearUsers()
+    {
+        if (!IsAllowed) return NotFound();
+
+        var crud = crudFactory.GetCrud<AppUser>();
+        var all = await crud.QueryAsync(_ => true);
+        foreach (var user in all)
+            await crud.DeleteAsync(user.Id);
+
+        return NoContent();
+    }
+
     public record SeedPickRequest(string ActivityName, DateTime PickedAt);
+    public record SeedUserRequest(string Name);
     public record SeedAudiobookJobRequest(string EpubFilename, AudiobookJobStatus Status);
 }
