@@ -15,17 +15,18 @@ Given('I am on the dashboard', async ({ dashboardPage }) => {
 	await dashboardPage.goto();
 });
 
-Given('slot 0 has a widget assigned', async ({ request, dashboardPage }) => {
+Given('slot 0 has a widget assigned', async ({ request, testUser, dashboardPage }) => {
 	await request.put(`${BACKEND_URL}/api/dashboard/layout`, {
 		data: {
 			layoutFormat: '3x2',
 			slots: [{ slotIndex: 0, widgetType: 'tasks' }]
-		}
+		},
+		headers: { 'X-User-Id': testUser.id }
 	});
 	await dashboardPage.goto();
 });
 
-Given('I am in edit mode with slot 0 occupied', async ({ request, dashboardPage }) => {
+Given('I am in edit mode with slot 0 occupied', async ({ request, testUser, dashboardPage }) => {
 	await request.put(`${BACKEND_URL}/api/dashboard/layout`, {
 		data: {
 			layoutFormat: '3x2',
@@ -33,18 +34,20 @@ Given('I am in edit mode with slot 0 occupied', async ({ request, dashboardPage 
 				{ slotIndex: 0, widgetType: 'tasks' },
 				{ slotIndex: 1, widgetType: 'weather' }
 			]
-		}
+		},
+		headers: { 'X-User-Id': testUser.id }
 	});
 	await dashboardPage.goto();
 	await dashboardPage.clickEditDashboard();
 });
 
-Given('I am in edit mode', async ({ request, dashboardPage }) => {
+Given('I am in edit mode', async ({ request, testUser, dashboardPage }) => {
 	await request.put(`${BACKEND_URL}/api/dashboard/layout`, {
 		data: {
 			layoutFormat: '3x2',
 			slots: [{ slotIndex: 0, widgetType: 'tasks' }]
-		}
+		},
+		headers: { 'X-User-Id': testUser.id }
 	});
 	await dashboardPage.goto();
 	await dashboardPage.clickEditDashboard();

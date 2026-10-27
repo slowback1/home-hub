@@ -28,9 +28,10 @@ Given('the WALK_SESSION_HISTORY_ENABLED feature flag is disabled', async ({ requ
 	await request.patch(`${BACKEND_URL}/api/feature-flags/${FLAG}`, { data: { isEnabled: false } });
 });
 
-Given('the walk session history widget is on the dashboard', async ({ request }) => {
+Given('the walk session history widget is on the dashboard', async ({ request, testUser }) => {
 	await request.put(`${BACKEND_URL}/api/dashboard/layout`, {
-		data: { layoutFormat: '3x2', slots: [{ slotIndex: 0, widgetType: 'walk-history' }] }
+		data: { layoutFormat: '3x2', slots: [{ slotIndex: 0, widgetType: 'walk-history' }] },
+		headers: { 'X-User-Id': testUser.id }
 	});
 });
 

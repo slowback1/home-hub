@@ -58,9 +58,10 @@ Given('a wheel named {string} exists with no items', async ({ request, testUser 
 	});
 });
 
-Given('the wheels widget is on the dashboard', async ({ request }) => {
+Given('the wheels widget is on the dashboard', async ({ request, testUser }) => {
 	await request.put(`${BACKEND_URL}/api/dashboard/layout`, {
-		data: { layoutFormat: '3x2', slots: [{ slotIndex: 0, widgetType: 'wheels' }] }
+		data: { layoutFormat: '3x2', slots: [{ slotIndex: 0, widgetType: 'wheels' }] },
+		headers: { 'X-User-Id': testUser.id }
 	});
 });
 

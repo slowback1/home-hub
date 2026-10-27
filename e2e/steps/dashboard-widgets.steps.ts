@@ -27,34 +27,36 @@ After({ tags: '@dashboard-widgets' }, async ({ request }) => {
 
 async function placeWidget(
 	request: Parameters<Parameters<typeof Given>[1]>[0]['request'],
+	userId: string,
 	widgetType: string
 ) {
 	await request.put(`${BACKEND_URL}/api/dashboard/layout`, {
 		data: {
 			layoutFormat: '3x2',
 			slots: [{ slotIndex: 0, widgetType }]
-		}
+		},
+		headers: { 'X-User-Id': userId }
 	});
 }
 
-Given('the weather widget is placed in slot 0', async ({ request }) => {
-	await placeWidget(request, 'weather');
+Given('the weather widget is placed in slot 0', async ({ request, testUser }) => {
+	await placeWidget(request, testUser.id, 'weather');
 });
 
-Given('the tasks widget is placed in slot 0', async ({ request }) => {
-	await placeWidget(request, 'tasks');
+Given('the tasks widget is placed in slot 0', async ({ request, testUser }) => {
+	await placeWidget(request, testUser.id, 'tasks');
 });
 
-Given('the activity widget is placed in slot 0', async ({ request }) => {
-	await placeWidget(request, 'activity');
+Given('the activity widget is placed in slot 0', async ({ request, testUser }) => {
+	await placeWidget(request, testUser.id, 'activity');
 });
 
-Given('the audiobook widget is placed in slot 0', async ({ request }) => {
-	await placeWidget(request, 'audiobook');
+Given('the audiobook widget is placed in slot 0', async ({ request, testUser }) => {
+	await placeWidget(request, testUser.id, 'audiobook');
 });
 
-Given('the bookmarks widget is placed in slot 0', async ({ request }) => {
-	await placeWidget(request, 'bookmarks');
+Given('the bookmarks widget is placed in slot 0', async ({ request, testUser }) => {
+	await placeWidget(request, testUser.id, 'bookmarks');
 });
 
 // --- Data seeding ---
