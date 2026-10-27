@@ -17,19 +17,26 @@ public class BookmarkController : ApplicationController
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Bookmark>>> List()
     {
-        var items = await _bookmarks.QueryAsync(_ => true);
+        if (CurrentUserId is null)
+            return Unauthorized();
+
+        var items = await _bookmarks.QueryAsync(b => b.UserId == CurrentUserId);
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<ActionResult<Bookmark>> Create([FromBody] CreateBookmarkRequest request)
     {
+        if (CurrentUserId is null)
+            return Unauthorized();
+
         if (string.IsNullOrWhiteSpace(request.Url))
             return BadRequest("Url is required.");
 
         var bookmark = new Bookmark
         {
             Id = Guid.NewGuid().ToString(),
+            UserId = CurrentUserId,
             Name = request.Name ?? string.Empty,
             Url = request.Url,
             Description = request.Description,
@@ -44,8 +51,11 @@ public class BookmarkController : ApplicationController
     [HttpPut("{id}")]
     public async Task<ActionResult<Bookmark>> Update(string id, [FromBody] UpdateBookmarkRequest request)
     {
+        if (CurrentUserId is null)
+            return Unauthorized();
+
         var existing = await _bookmarks.GetByIdAsync(id);
-        if (existing is null)
+        if (existing is null || existing.UserId != CurrentUserId)
             return NotFound();
 
         existing.Name = request.Name ?? string.Empty;
@@ -59,8 +69,11 @@ public class BookmarkController : ApplicationController
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(string id)
     {
+        if (CurrentUserId is null)
+            return Unauthorized();
+
         var existing = await _bookmarks.GetByIdAsync(id);
-        if (existing is null)
+        if (existing is null || existing.UserId != CurrentUserId)
             return NotFound();
 
         await _bookmarks.DeleteAsync(id);
@@ -70,8 +83,11 @@ public class BookmarkController : ApplicationController
     [HttpPatch("{id}/star")]
     public async Task<ActionResult<Bookmark>> ToggleStar(string id)
     {
+        if (CurrentUserId is null)
+            return Unauthorized();
+
         var existing = await _bookmarks.GetByIdAsync(id);
-        if (existing is null)
+        if (existing is null || existing.UserId != CurrentUserId)
             return NotFound();
 
         existing.Starred = !existing.Starred;
