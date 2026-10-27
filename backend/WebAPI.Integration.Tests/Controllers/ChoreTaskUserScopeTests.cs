@@ -67,4 +67,49 @@ public class ChoreTaskUserScopeTests : ControllerTestBase
         var response = await GetRawAsync("/api/tasks");
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
+
+    [Test]
+    public async Task Create_PersonalTask_StampsRequestingUserId()
+    {
+        var response = await SendAsUserAsync(HttpMethod.Post, "/api/tasks",
+            new { Name = "Personal", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null, IsGlobal = false },
+            _userA);
+        response.EnsureSuccessStatusCode();
+        var created = await response.Content.ReadFromJsonAsync<ChoreTask>();
+
+        Assert.That(created!.UserId, Is.EqualTo(_userA));
+    }
+
+    [Test]
+    public async Task Create_GlobalTask_LeavesUserIdNull()
+    {
+        var response = await SendAsUserAsync(HttpMethod.Post, "/api/tasks",
+            new { Name = "Shared", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null, IsGlobal = true },
+            _userA);
+        response.EnsureSuccessStatusCode();
+        var created = await response.Content.ReadFromJsonAsync<ChoreTask>();
+
+        Assert.That(created!.UserId, Is.Null);
+    }
+
+    [Test]
+    public async Task Create_WithoutIsGlobal_DefaultsToGlobal()
+    {
+        var response = await SendAsUserAsync(HttpMethod.Post, "/api/tasks",
+            new { Name = "Default", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null },
+            _userA);
+        response.EnsureSuccessStatusCode();
+        var created = await response.Content.ReadFromJsonAsync<ChoreTask>();
+
+        Assert.That(created!.UserId, Is.Null);
+    }
+
+    [Test]
+    public async Task Create_PersonalTask_WithoutUserHeader_Returns401()
+    {
+        var response = await PostRawAsync("/api/tasks",
+            new { Name = "Personal", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null, IsGlobal = false });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
 }

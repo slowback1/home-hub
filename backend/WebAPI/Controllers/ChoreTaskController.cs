@@ -49,6 +49,9 @@ public class ChoreTaskController : ApplicationController
         if (request.IsRecurring && (request.IntervalDays is null or < 1))
             return BadRequest("IntervalDays must be >= 1 for recurring tasks.");
 
+        if (!request.IsGlobal && CurrentUserId is null)
+            return Unauthorized();
+
         var task = new ChoreTask
         {
             Id = Guid.NewGuid().ToString(),
@@ -56,7 +59,8 @@ public class ChoreTaskController : ApplicationController
             IsRecurring = request.IsRecurring,
             IntervalDays = request.IsRecurring ? request.IntervalDays : null,
             DoDate = ToUtc(request.DoDate),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UserId = request.IsGlobal ? null : CurrentUserId
         };
 
         var created = await _tasks.CreateAsync(task);
@@ -152,6 +156,6 @@ public class ChoreTaskController : ApplicationController
     private static DateTime? ToUtc(DateTime? dt) =>
         dt.HasValue ? DateTime.SpecifyKind(dt.Value, DateTimeKind.Utc) : null;
 
-    public record CreateChoreTaskRequest(string Name, bool IsRecurring, int? IntervalDays, DateTime? DoDate);
+    public record CreateChoreTaskRequest(string Name, bool IsRecurring, int? IntervalDays, DateTime? DoDate, bool IsGlobal = true);
     public record UpdateChoreTaskRequest(string Name, bool IsRecurring, int? IntervalDays, DateTime? DoDate);
 }
