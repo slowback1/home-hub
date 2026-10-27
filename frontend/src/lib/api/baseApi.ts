@@ -3,6 +3,7 @@ import AuthorizationMiddleware from '$lib/api/middleware/AuthorizationMiddleware
 import UrlMiddleware from '$lib/api/middleware/UrlMiddleware';
 import HeaderMiddleware from '$lib/api/middleware/HeaderMiddleware';
 import UrlEncodingMiddleware from '$lib/api/middleware/UrlEncodingMiddleware';
+import UserMiddleware from '$lib/api/middleware/UserMiddleware';
 
 export type RequestParameters = RequestInit & { queryParameters?: Record<string, string> };
 
@@ -13,6 +14,7 @@ export default abstract class BaseApi {
 	protected constructor() {
 		this.addMiddleware(new UrlMiddleware());
 		this.addMiddleware(new HeaderMiddleware());
+		this.addMiddleware(new UserMiddleware());
 		this.addMiddleware(new AuthorizationMiddleware());
 		this.addMiddleware(new UrlEncodingMiddleware());
 	}
