@@ -142,7 +142,12 @@ namespace EntityFramework.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("ChoreTasks");
                 });
@@ -364,6 +369,13 @@ namespace EntityFramework.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Common.Models.ChoreTask", b =>
+                {
+                    b.HasOne("Common.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Common.Models.SystemConfigOption", b =>

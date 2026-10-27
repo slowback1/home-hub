@@ -54,6 +54,18 @@ public class PerUserModelTests
         AssertForeignKeyToAppUsers(entity);
     }
 
+    [Test]
+    public void ChoreTask_HasNullableUserIdForeignKeyToAppUsers()
+    {
+        using var ctx = CreateContext();
+        var entity = ctx.Model.FindEntityType(typeof(ChoreTask));
+        Assert.That(entity, Is.Not.Null);
+        var property = entity.FindProperty(nameof(ChoreTask.UserId));
+        Assert.That(property, Is.Not.Null);
+        Assert.That(property.IsNullable, Is.True);
+        AssertForeignKeyToAppUsers(entity);
+    }
+
     private static void AssertForeignKeyToAppUsers(Microsoft.EntityFrameworkCore.Metadata.IEntityType entity)
     {
         var hasFk = entity.GetForeignKeys().Any(fk => fk.PrincipalEntityType.ClrType == typeof(AppUser));

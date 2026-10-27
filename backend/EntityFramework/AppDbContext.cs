@@ -57,6 +57,11 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(w => w.UserId);
 
+        modelBuilder.Entity<ChoreTask>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(t => t.UserId);
+
         modelBuilder.Entity<DashboardSlot>()
             .HasIndex(s => new { s.LayoutFormat, s.SlotIndex })
             .IsUnique();

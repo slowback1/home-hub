@@ -12,4 +12,5 @@ public class ChoreTask : IIdentifyable
     public DateTime? DoDate { get; set; }
     public DateTime? CompletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
+    public string? UserId { get; set; }
 }
