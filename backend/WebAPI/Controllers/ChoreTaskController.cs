@@ -77,7 +77,7 @@ public class ChoreTaskController : ApplicationController
             return BadRequest("IntervalDays must be >= 1 for recurring tasks.");
 
         var existing = await _tasks.GetByIdAsync(id);
-        if (existing is null)
+        if (existing is null || IsForeignPersonalTask(existing))
             return NotFound();
 
         existing.Name = request.Name;
@@ -93,7 +93,7 @@ public class ChoreTaskController : ApplicationController
     public async Task<ActionResult> Delete(string id)
     {
         var existing = await _tasks.GetByIdAsync(id);
-        if (existing is null)
+        if (existing is null || IsForeignPersonalTask(existing))
             return NotFound();
 
         var completions = await _completions.QueryAsync(c => c.TaskId == id);
@@ -108,7 +108,7 @@ public class ChoreTaskController : ApplicationController
     public async Task<ActionResult<ChoreTask>> Complete(string id)
     {
         var task = await _tasks.GetByIdAsync(id);
-        if (task is null)
+        if (task is null || IsForeignPersonalTask(task))
             return NotFound();
 
         var now = DateTime.UtcNow;
@@ -134,7 +134,7 @@ public class ChoreTaskController : ApplicationController
     public async Task<ActionResult<ChoreTask>> UndoLatestCompletion(string id)
     {
         var task = await _tasks.GetByIdAsync(id);
-        if (task is null)
+        if (task is null || IsForeignPersonalTask(task))
             return NotFound();
 
         var completions = await _completions.QueryAsync(c => c.TaskId == id);
@@ -152,6 +152,9 @@ public class ChoreTaskController : ApplicationController
         var updated = await _tasks.UpdateAsync(id, task);
         return Ok(updated);
     }
+
+    private bool IsForeignPersonalTask(ChoreTask task) =>
+        task.UserId != null && task.UserId != CurrentUserId;
 
     private static DateTime? ToUtc(DateTime? dt) =>
         dt.HasValue ? DateTime.SpecifyKind(dt.Value, DateTimeKind.Utc) : null;

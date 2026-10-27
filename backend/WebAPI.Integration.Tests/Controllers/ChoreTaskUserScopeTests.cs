@@ -112,4 +112,86 @@ public class ChoreTaskUserScopeTests : ControllerTestBase
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
+
+    private async Task<ChoreTask> CreatePersonalTask(string name, string userId)
+    {
+        var response = await SendAsUserAsync(HttpMethod.Post, "/api/tasks",
+            new { Name = name, IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null, IsGlobal = false },
+            userId);
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<ChoreTask>())!;
+    }
+
+    [Test]
+    public async Task Update_NonOwnerPersonalTask_Returns404()
+    {
+        var task = await CreatePersonalTask("A private", _userA);
+        var response = await SendAsUserAsync(HttpMethod.Put, $"/api/tasks/{task.Id}",
+            new { Name = "Hijacked", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null },
+            _userB);
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task Delete_NonOwnerPersonalTask_Returns404()
+    {
+        var task = await CreatePersonalTask("A private", _userA);
+        var response = await SendAsUserAsync(HttpMethod.Delete, $"/api/tasks/{task.Id}", userId: _userB);
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task Complete_NonOwnerPersonalTask_Returns404()
+    {
+        var task = await CreatePersonalTask("A private", _userA);
+        var response = await SendAsUserAsync(HttpMethod.Post, $"/api/tasks/{task.Id}/complete", new { }, _userB);
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task Undo_NonOwnerPersonalTask_Returns404()
+    {
+        var task = await CreatePersonalTask("A private", _userA);
+        await SendAsUserAsync(HttpMethod.Post, $"/api/tasks/{task.Id}/complete", new { }, _userA);
+
+        var response = await SendAsUserAsync(HttpMethod.Delete, $"/api/tasks/{task.Id}/completions/latest", userId: _userB);
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task Update_OwnerPersonalTask_ReturnsOk()
+    {
+        var task = await CreatePersonalTask("A private", _userA);
+        var response = await SendAsUserAsync(HttpMethod.Put, $"/api/tasks/{task.Id}",
+            new { Name = "Renamed", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null },
+            _userA);
+        var updated = await response.Content.ReadFromJsonAsync<ChoreTask>();
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(updated!.Name, Is.EqualTo("Renamed"));
+    }
+
+    [Test]
+    public async Task Complete_GlobalTask_AsNonOwner_ReturnsOk_AndSharedForEveryone()
+    {
+        var response = await SendAsUserAsync(HttpMethod.Post, "/api/tasks",
+            new { Name = "Shared chore", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null, IsGlobal = true },
+            _userA);
+        var task = (await response.Content.ReadFromJsonAsync<ChoreTask>())!;
+
+        var completeResponse = await SendAsUserAsync(HttpMethod.Post, $"/api/tasks/{task.Id}/complete", new { }, _userB);
+        Assert.That(completeResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var aActive = await GetRawAsUserAsync("/api/tasks", _userA);
+        var aTasks = await aActive.Content.ReadFromJsonAsync<List<ChoreTask>>();
+        var bActive = await GetRawAsUserAsync("/api/tasks", _userB);
+        var bTasks = await bActive.Content.ReadFromJsonAsync<List<ChoreTask>>();
+
+        Assert.That(aTasks!.Any(t => t.Id == task.Id), Is.False);
+        Assert.That(bTasks!.Any(t => t.Id == task.Id), Is.False);
+    }
 }
