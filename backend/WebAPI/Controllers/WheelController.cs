@@ -17,19 +17,26 @@ public class WheelController : ApplicationController
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Wheel>>> List()
     {
-        var wheels = await _wheels.QueryAsync(_ => true);
+        if (CurrentUserId is null)
+            return Unauthorized();
+
+        var wheels = await _wheels.QueryAsync(w => w.UserId == CurrentUserId);
         return Ok(wheels);
     }
 
     [HttpPost]
     public async Task<ActionResult<Wheel>> Create([FromBody] CreateWheelRequest request)
     {
+        if (CurrentUserId is null)
+            return Unauthorized();
+
         if (string.IsNullOrWhiteSpace(request.Name))
             return BadRequest("Name is required.");
 
         var wheel = new Wheel
         {
             Id = Guid.NewGuid().ToString(),
+            UserId = CurrentUserId,
             Name = request.Name.Trim(),
             Items = request.Items ?? string.Empty,
             CreatedAt = DateTime.UtcNow,
@@ -42,11 +49,14 @@ public class WheelController : ApplicationController
     [HttpPut("{id}")]
     public async Task<ActionResult<Wheel>> Update(string id, [FromBody] UpdateWheelRequest request)
     {
+        if (CurrentUserId is null)
+            return Unauthorized();
+
         if (string.IsNullOrWhiteSpace(request.Name))
             return BadRequest("Name is required.");
 
         var existing = await _wheels.GetByIdAsync(id);
-        if (existing is null)
+        if (existing is null || existing.UserId != CurrentUserId)
             return NotFound();
 
         existing.Name = request.Name.Trim();
@@ -59,8 +69,11 @@ public class WheelController : ApplicationController
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(string id)
     {
+        if (CurrentUserId is null)
+            return Unauthorized();
+
         var existing = await _wheels.GetByIdAsync(id);
-        if (existing is null)
+        if (existing is null || existing.UserId != CurrentUserId)
             return NotFound();
 
         await _wheels.DeleteAsync(id);
