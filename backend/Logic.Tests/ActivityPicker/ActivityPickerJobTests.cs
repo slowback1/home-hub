@@ -15,14 +15,21 @@ public class ActivityPickerJobTests
     public void SetUp()
     {
         InMemoryCrud<Activity>.ClearStaticState();
+        InMemoryCrud<AppUser>.ClearStaticState();
         InMemoryActivityPickRepository.ClearStaticState();
         _crudFactory = new InMemoryCrudFactory();
         _pickRepository = new InMemoryActivityPickRepository();
         _job = new ActivityPickerJob(_crudFactory, _pickRepository, new RandomActivitySelector());
     }
 
+    private async Task<AppUser> SeedUser(string name) =>
+        await _crudFactory.GetCrud<AppUser>().CreateAsync(new AppUser { Name = name });
+
+    private Task SeedActivity(string userId, string name, int weight) =>
+        _crudFactory.GetCrud<Activity>().CreateAsync(new Activity { UserId = userId, Name = name, Weight = weight });
+
     [Test]
-    public async Task ExecuteAsync_DoesNotWritePick_WhenActivityListIsEmpty()
+    public async Task ExecuteAsync_DoesNotWritePick_WhenNoUsersExist()
     {
         await _job.ExecuteAsync();
 
@@ -31,29 +38,62 @@ public class ActivityPickerJobTests
     }
 
     [Test]
-    public async Task ExecuteAsync_WritesOnePick_WhenActivitiesExist()
+    public async Task ExecuteAsync_DoesNotWritePick_WhenUserHasNoActivities()
     {
-        var activityCrud = _crudFactory.GetCrud<Activity>();
-        await activityCrud.CreateAsync(new Activity { Name = "Play Chess", Weight = 1 });
-        await activityCrud.CreateAsync(new Activity { Name = "Read a Book", Weight = 1 });
+        var user = await SeedUser("Solo");
 
         await _job.ExecuteAsync();
 
-        var pick = await _pickRepository.GetCurrentAsync(string.Empty);
+        var pick = await _pickRepository.GetCurrentAsync(user.Id);
+        Assert.That(pick, Is.Null);
+    }
+
+    [Test]
+    public async Task ExecuteAsync_WritesOnePick_WhenActivitiesExist()
+    {
+        var user = await SeedUser("Owner");
+        await SeedActivity(user.Id, "Play Chess", 1);
+        await SeedActivity(user.Id, "Read a Book", 1);
+
+        await _job.ExecuteAsync();
+
+        var pick = await _pickRepository.GetCurrentAsync(user.Id);
         Assert.That(pick, Is.Not.Null);
-        Assert.That(new[] { "Play Chess", "Read a Book" }, Does.Contain(pick!.ActivityName));
+        Assert.That(pick!.UserId, Is.EqualTo(user.Id));
+        Assert.That(new[] { "Play Chess", "Read a Book" }, Does.Contain(pick.ActivityName));
+    }
+
+    [Test]
+    public async Task ExecuteAsync_WritesOnePickPerUser()
+    {
+        var userA = await SeedUser("A");
+        var userB = await SeedUser("B");
+        await SeedActivity(userA.Id, "A Activity", 1);
+        await SeedActivity(userB.Id, "B Activity", 1);
+
+        await _job.ExecuteAsync();
+
+        var allPicks = (await _pickRepository.GetRecentAsync(userA.Id, 100)).ToList();
+        var picksB = (await _pickRepository.GetRecentAsync(userB.Id, 100)).ToList();
+
+        Assert.That(allPicks, Has.Count.EqualTo(1));
+        Assert.That(allPicks[0].UserId, Is.EqualTo(userA.Id));
+        Assert.That(allPicks[0].ActivityName, Is.EqualTo("A Activity"));
+        Assert.That(picksB, Has.Count.EqualTo(1));
+        Assert.That(picksB[0].UserId, Is.EqualTo(userB.Id));
+        Assert.That(picksB[0].ActivityName, Is.EqualTo("B Activity"));
     }
 
     [Test]
     public async Task ExecuteAsync_PickedAt_IsInUtc()
     {
-        var activityCrud = _crudFactory.GetCrud<Activity>();
-        await activityCrud.CreateAsync(new Activity { Name = "Play Chess", Weight = 1 });
+        var user = await SeedUser("Owner");
+        await SeedActivity(user.Id, "Play Chess", 1);
         var before = DateTime.UtcNow;
 
         await _job.ExecuteAsync();
 
-        var pick = await _pickRepository.GetCurrentAsync(string.Empty);
+        var pick = await _pickRepository.GetCurrentAsync(user.Id);
         Assert.That(pick!.PickedAt.Kind, Is.EqualTo(DateTimeKind.Utc));
         Assert.That(pick.PickedAt, Is.GreaterThanOrEqualTo(before));
     }
@@ -61,9 +101,9 @@ public class ActivityPickerJobTests
     [Test]
     public async Task ExecuteAsync_WeightedSelection_FavoursHigherWeightActivity()
     {
-        var activityCrud = _crudFactory.GetCrud<Activity>();
-        await activityCrud.CreateAsync(new Activity { Name = "Rare", Weight = 1 });
-        await activityCrud.CreateAsync(new Activity { Name = "Common", Weight = 9 });
+        var user = await SeedUser("Owner");
+        await SeedActivity(user.Id, "Rare", 1);
+        await SeedActivity(user.Id, "Common", 9);
 
         var counts = new Dictionary<string, int> { ["Rare"] = 0, ["Common"] = 0 };
         const int iterations = 500;
@@ -72,7 +112,7 @@ public class ActivityPickerJobTests
         {
             InMemoryActivityPickRepository.ClearStaticState();
             await _job.ExecuteAsync();
-            var pick = await _pickRepository.GetCurrentAsync(string.Empty);
+            var pick = await _pickRepository.GetCurrentAsync(user.Id);
             counts[pick!.ActivityName]++;
         }
 
@@ -83,45 +123,82 @@ public class ActivityPickerJobTests
     [Test]
     public async Task ExecuteAsync_PassesAllActivitiesToSelector()
     {
-        var activityCrud = _crudFactory.GetCrud<Activity>();
-        await activityCrud.CreateAsync(new Activity { Name = "A", Weight = 1 });
-        await activityCrud.CreateAsync(new Activity { Name = "B", Weight = 1 });
+        var user = await SeedUser("Owner");
+        await SeedActivity(user.Id, "A", 1);
+        await SeedActivity(user.Id, "B", 1);
         var capturing = new CapturingSelector(new Activity { Name = "A" });
         var job = new ActivityPickerJob(_crudFactory, _pickRepository, capturing);
 
         await job.ExecuteAsync();
 
-        Assert.That(capturing.CapturedActivities!.Select(a => a.Name),
+        Assert.That(capturing.Calls.Single().Activities.Select(a => a.Name),
             Is.EquivalentTo(new[] { "A", "B" }));
+    }
+
+    [Test]
+    public async Task ExecuteAsync_SelectionUsesOnlyUsersOwnActivities()
+    {
+        var userA = await SeedUser("A");
+        var userB = await SeedUser("B");
+        await SeedActivity(userA.Id, "A Activity", 1);
+        await SeedActivity(userB.Id, "B Activity", 1);
+        var capturing = new CapturingSelector(new Activity { Name = "A" });
+        var job = new ActivityPickerJob(_crudFactory, _pickRepository, capturing);
+
+        await job.ExecuteAsync();
+
+        var callForB = capturing.Calls.Single(c => c.Activities.Any(a => a.Name == "B Activity"));
+        Assert.That(callForB.Activities.Select(a => a.Name), Is.EquivalentTo(new[] { "B Activity" }));
     }
 
     [Test]
     public async Task ExecuteAsync_PassesRecentPicksToSelector_CountIsDoubleActivityCount()
     {
-        var activityCrud = _crudFactory.GetCrud<Activity>();
-        await activityCrud.CreateAsync(new Activity { Name = "A", Weight = 1 });
-        await activityCrud.CreateAsync(new Activity { Name = "B", Weight = 1 });
+        var user = await SeedUser("Owner");
+        await SeedActivity(user.Id, "A", 1);
+        await SeedActivity(user.Id, "B", 1);
 
         for (var i = 0; i < 6; i++)
-            await _pickRepository.WriteAsync(new ActivityPick { ActivityName = "A", PickedAt = DateTime.UtcNow.AddMinutes(-i) });
+            await _pickRepository.WriteAsync(new ActivityPick { UserId = user.Id, ActivityName = "A", PickedAt = DateTime.UtcNow.AddMinutes(-i) });
 
         var capturing = new CapturingSelector(new Activity { Name = "A" });
         var job = new ActivityPickerJob(_crudFactory, _pickRepository, capturing);
 
         await job.ExecuteAsync();
 
-        Assert.That(capturing.CapturedRecentPicks!.Count, Is.EqualTo(4));
+        Assert.That(capturing.Calls.Single().RecentPicks.Count, Is.EqualTo(4));
+    }
+
+    [Test]
+    public async Task ExecuteAsync_RecentPicksAreScopedToUser_OtherUsersPicksIgnored()
+    {
+        var userA = await SeedUser("A");
+        var userB = await SeedUser("B");
+        await SeedActivity(userA.Id, "A1", 1);
+        await SeedActivity(userA.Id, "A2", 1);
+        await SeedActivity(userB.Id, "B1", 1);
+
+        for (var i = 0; i < 6; i++)
+            await _pickRepository.WriteAsync(new ActivityPick { UserId = userA.Id, ActivityName = "A1", PickedAt = DateTime.UtcNow.AddMinutes(-i) });
+
+        var capturing = new CapturingSelector(new Activity { Name = "B1" });
+        var job = new ActivityPickerJob(_crudFactory, _pickRepository, capturing);
+
+        await job.ExecuteAsync();
+
+        var callForB = capturing.Calls.Single(c => c.Activities.Any(a => a.Name == "B1"));
+        Assert.That(callForB.RecentPicks, Is.Empty);
     }
 
     private class CapturingSelector(Activity result) : IActivitySelector
     {
-        public IList<Activity>? CapturedActivities { get; private set; }
-        public IList<ActivityPick>? CapturedRecentPicks { get; private set; }
+        public record Call(IList<Activity> Activities, IList<ActivityPick> RecentPicks);
+
+        public List<Call> Calls { get; } = [];
 
         public Task<Activity> SelectAsync(IList<Activity> activities, IList<ActivityPick> recentPicks)
         {
-            CapturedActivities = activities;
-            CapturedRecentPicks = recentPicks;
+            Calls.Add(new Call(activities, recentPicks));
             return Task.FromResult(result);
         }
     }
