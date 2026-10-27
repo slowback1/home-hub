@@ -8,4 +8,5 @@ public class DashboardSlot : IIdentifyable
     public string LayoutFormat { get; set; } = string.Empty;
     public int SlotIndex { get; set; }
     public string? WidgetType { get; set; }
+    public string UserId { get; set; } = string.Empty;
 }

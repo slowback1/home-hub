@@ -182,12 +182,16 @@ namespace EntityFramework.Migrations
                     b.Property<int>("SlotIndex")
                         .HasColumnType("integer");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("WidgetType")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LayoutFormat", "SlotIndex")
+                    b.HasIndex("UserId", "LayoutFormat", "SlotIndex")
                         .IsUnique();
 
                     b.ToTable("DashboardSlots");
@@ -376,6 +380,15 @@ namespace EntityFramework.Migrations
                     b.HasOne("Common.Models.AppUser", null)
                         .WithMany()
                         .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("Common.Models.DashboardSlot", b =>
+                {
+                    b.HasOne("Common.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Common.Models.SystemConfigOption", b =>

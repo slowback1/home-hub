@@ -66,6 +66,18 @@ public class PerUserModelTests
         AssertForeignKeyToAppUsers(entity);
     }
 
+    [Test]
+    public void DashboardSlot_HasUserIdForeignKeyToAppUsers()
+    {
+        using var ctx = CreateContext();
+        var entity = ctx.Model.FindEntityType(typeof(DashboardSlot));
+        Assert.That(entity, Is.Not.Null);
+        var property = entity.FindProperty(nameof(DashboardSlot.UserId));
+        Assert.That(property, Is.Not.Null);
+        Assert.That(property.IsNullable, Is.False);
+        AssertForeignKeyToAppUsers(entity);
+    }
+
     private static void AssertForeignKeyToAppUsers(Microsoft.EntityFrameworkCore.Metadata.IEntityType entity)
     {
         var hasFk = entity.GetForeignKeys().Any(fk => fk.PrincipalEntityType.ClrType == typeof(AppUser));
