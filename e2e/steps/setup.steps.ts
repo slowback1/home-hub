@@ -3,7 +3,7 @@ import { Before, After } from '../fixtures';
 const BACKEND_URL = 'http://localhost:5273';
 const TEST_USER_NAME = 'E2E User';
 
-Before({ tags: 'not @user-switching' }, async ({ request, userSwitchingPage }) => {
+Before({ tags: 'not @user-switching' }, async ({ request, userSwitchingPage, testUser }) => {
 	await request.delete(`${BACKEND_URL}/api/test/users`);
 	const response = await request.post(`${BACKEND_URL}/api/test/users`, {
 		data: { name: TEST_USER_NAME }
@@ -11,6 +11,8 @@ Before({ tags: 'not @user-switching' }, async ({ request, userSwitchingPage }) =
 	if (!response.ok()) {
 		throw new Error(`Failed to seed e2e test user: ${response.status()}`);
 	}
+	const seededUser = await response.json();
+	testUser.id = seededUser.id;
 	await userSwitchingPage.gotoHome();
 	await userSwitchingPage.selectUserByName(TEST_USER_NAME);
 });

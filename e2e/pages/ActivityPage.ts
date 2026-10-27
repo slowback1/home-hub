@@ -14,11 +14,11 @@ export class ActivityPage {
 		await this.page.request.delete(`${BACKEND_URL}/api/test/activity-picks`);
 	}
 
-	async seedCurrentPick(activityName: string): Promise<void> {
+	async seedCurrentPick(activityName: string, userId: string): Promise<void> {
 		const pickedAt = new Date();
 		pickedAt.setMinutes(0, 0, 0);
 		await this.page.request.post(`${BACKEND_URL}/api/test/activity-picks`, {
-			data: { activityName, pickedAt: pickedAt.toISOString() }
+			data: { activityName, pickedAt: pickedAt.toISOString(), userId }
 		});
 	}
 

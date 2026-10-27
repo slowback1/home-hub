@@ -18,6 +18,8 @@ import { WalkHistoryPage } from './pages/WalkHistoryPage';
 import { WheelsPage } from './pages/WheelsPage';
 import { UserSwitchingPage } from './pages/UserSwitchingPage';
 
+export type TestUser = { id: string };
+
 type Fixtures = {
 	walkHistoryPage: WalkHistoryPage;
 	wheelsPage: WheelsPage;
@@ -36,6 +38,7 @@ type Fixtures = {
 	bookmarksPage: BookmarksPage;
 	dashboardPage: DashboardPage;
 	userSwitchingPage: UserSwitchingPage;
+	testUser: TestUser;
 };
 
 const test = base.extend<Fixtures>({
@@ -89,6 +92,9 @@ const test = base.extend<Fixtures>({
 	},
 	userSwitchingPage: async ({ page }, use) => {
 		await use(new UserSwitchingPage(page));
+	},
+	testUser: async ({}, use) => {
+		await use({ id: '' });
 	}
 });
 

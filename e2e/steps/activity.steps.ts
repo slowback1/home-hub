@@ -86,9 +86,9 @@ Then(
 
 Given(
 	'an activity pick exists for the current hour with name {string}',
-	async ({ activityPage }, name: string) => {
+	async ({ activityPage, testUser }, name: string) => {
 		await activityPage.clearPickHistory();
-		await activityPage.seedCurrentPick(name);
+		await activityPage.seedCurrentPick(name, testUser.id);
 	}
 );
 

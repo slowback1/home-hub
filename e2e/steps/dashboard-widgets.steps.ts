@@ -85,9 +85,13 @@ Given('there are 7 due tasks in the system', async ({ request }) => {
 	}
 });
 
-Given('there is a current activity pick', async ({ request }) => {
+Given('there is a current activity pick', async ({ request, testUser }) => {
 	await request.post(`${BACKEND_URL}/api/test/activity-picks`, {
-		data: { activityName: 'Go for a walk', pickedAt: new Date().toISOString() }
+		data: {
+			activityName: 'Go for a walk',
+			pickedAt: new Date().toISOString(),
+			userId: testUser.id
+		}
 	});
 });
 
