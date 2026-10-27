@@ -264,7 +264,7 @@
 	.wheels-card {
 		border: 1px solid var(--color-border-subtle);
 		border-radius: var(--radius-md, 8px);
-		padding: var(--space-5);
+		padding: var(--space-4);
 	}
 
 	.wheels-card__title {
@@ -283,7 +283,7 @@
 	}
 
 	.spin-result {
-		margin-top: var(--space-5);
+		margin-top: var(--space-4);
 		padding: var(--space-6) var(--space-4);
 		text-align: center;
 		border: 1px solid var(--color-border-subtle);
@@ -305,7 +305,7 @@
 
 	.wheel-list {
 		list-style: none;
-		margin: 0 0 var(--space-5);
+		margin: 0 0 var(--space-4);
 		padding: 0;
 	}
 
@@ -376,7 +376,13 @@
 		color: var(--color-text-secondary);
 	}
 
+	.wheel-editor :global(.text-box) {
+		box-sizing: border-box;
+		max-width: 100%;
+	}
+
 	.items-input {
+		box-sizing: border-box;
 		width: 100%;
 		padding: var(--space-2) var(--space-3);
 		background-color: var(--color-surface-raised);

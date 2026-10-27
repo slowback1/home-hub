@@ -59,6 +59,14 @@ Feature: Wheels
     And I click Spin in the wheels widget
     Then I see a widget spin result that is one of "Pizza, Tacos, Sushi"
 
+  @wheels-card-styling
+  Scenario: Manage wheels card pads its content and constrains its form inputs
+    Given the WHEEL_PICKER_ENABLED feature flag is enabled
+    When I visit the Wheels page
+    Then the manage wheels card has padding around its content
+    And the wheel "wheel-form-name" input stays inside the manage wheels card
+    And the wheel "wheel-form-items" input stays inside the manage wheels card
+
   @wheels-feature-flag-hidden
   Scenario: Wheels is hidden when feature flag is disabled
     Given the WHEEL_PICKER_ENABLED feature flag is disabled

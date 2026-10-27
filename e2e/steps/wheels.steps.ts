@@ -130,6 +130,26 @@ Then('I see a widget spin result that is one of {string}', async ({ dashboardPag
 	expect(toItemList(items)).toContain((await result.textContent())?.trim() ?? '');
 });
 
+Then('the manage wheels card has padding around its content', async ({ wheelsPage }) => {
+	const card = wheelsPage.page.locator('[data-testid="manage-section"]');
+	const cardBox = await card.boundingBox();
+	const titleBox = await card.locator('.wheels-card__title').boundingBox();
+	expect(cardBox).not.toBeNull();
+	expect(titleBox).not.toBeNull();
+	expect(titleBox!.x - cardBox!.x).toBeGreaterThanOrEqual(8);
+});
+
+Then(
+	'the wheel {string} input stays inside the manage wheels card',
+	async ({ wheelsPage }, testId) => {
+		const cardBox = await wheelsPage.page.locator('[data-testid="manage-section"]').boundingBox();
+		const inputBox = await wheelsPage.page.locator(`[data-testid="${testId}"]`).boundingBox();
+		expect(inputBox).not.toBeNull();
+		expect(inputBox!.x).toBeGreaterThanOrEqual(cardBox!.x);
+		expect(inputBox!.x + inputBox!.width).toBeLessThanOrEqual(cardBox!.x + cardBox!.width);
+	}
+);
+
 Then('the Wheels nav item is not visible in the sidebar', async ({ dashboardPage }) => {
 	await expect(dashboardPage.page.locator('[data-testid="nav-item-wheels"]')).toBeHidden();
 });
