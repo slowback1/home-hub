@@ -40,6 +40,23 @@ public class AppDbContext : DbContext
             .HasForeignKey(c => c.TaskId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Activity>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(a => a.UserId);
+        modelBuilder.Entity<ActivityPick>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(p => p.UserId);
+        modelBuilder.Entity<Bookmark>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(b => b.UserId);
+        modelBuilder.Entity<Wheel>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(w => w.UserId);
+
         modelBuilder.Entity<DashboardSlot>()
             .HasIndex(s => new { s.LayoutFormat, s.SlotIndex })
             .IsUnique();

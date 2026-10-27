@@ -6,6 +6,7 @@ namespace Common.Models;
 public class Bookmark : IIdentifyable
 {
     public string Id { get; set; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Url { get; set; } = string.Empty;
     public string? Description { get; set; }
