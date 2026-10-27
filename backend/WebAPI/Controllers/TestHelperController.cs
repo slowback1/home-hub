@@ -143,6 +143,23 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpPost("tasks")]
+    public async Task<ActionResult> SeedTask([FromBody] SeedTaskRequest request)
+    {
+        if (!IsAllowed) return NotFound();
+
+        var crud = crudFactory.GetCrud<ChoreTask>();
+        await crud.CreateAsync(new ChoreTask
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = request.Name,
+            CreatedAt = DateTime.UtcNow,
+            CompletedAt = request.CompletedAt,
+            UserId = request.UserId
+        });
+        return Ok();
+    }
+
     [HttpDelete("tasks")]
     public async Task<ActionResult> ClearTasks()
     {
@@ -186,6 +203,7 @@ public class TestHelperController(
     }
 
     public record SeedPickRequest(string ActivityName, DateTime PickedAt, string? UserId);
+    public record SeedTaskRequest(string Name, string? UserId, DateTime? CompletedAt);
     public record SeedUserRequest(string Name);
     public record SeedAudiobookJobRequest(string EpubFilename, AudiobookJobStatus Status);
 }

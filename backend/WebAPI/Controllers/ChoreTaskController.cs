@@ -21,14 +21,22 @@ public class ChoreTaskController : ApplicationController
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ChoreTask>>> GetActive()
     {
-        var items = await _tasks.QueryAsync(t => t.CompletedAt == null);
+        if (CurrentUserId is null)
+            return Unauthorized();
+
+        var items = await _tasks.QueryAsync(t =>
+            t.CompletedAt == null && (t.UserId == CurrentUserId || t.UserId == null));
         return Ok(items);
     }
 
     [HttpGet("history")]
     public async Task<ActionResult<IEnumerable<ChoreTask>>> GetHistory()
     {
-        var items = await _tasks.QueryAsync(t => t.CompletedAt != null);
+        if (CurrentUserId is null)
+            return Unauthorized();
+
+        var items = await _tasks.QueryAsync(t =>
+            t.CompletedAt != null && (t.UserId == CurrentUserId || t.UserId == null));
         return Ok(items);
     }
 

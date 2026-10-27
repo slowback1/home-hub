@@ -9,10 +9,13 @@ public class ChoreTaskCompletionTests : ControllerTestBase
 {
 
     [SetUp]
-    public void ClearState()
+    public async Task ClearState()
     {
         InMemoryCrud<ChoreTask>.ClearStaticState();
         InMemoryCrud<TaskCompletion>.ClearStaticState();
+        InMemoryCrud<AppUser>.ClearStaticState();
+        var userId = await SeedTestUserAsync("Completion Owner");
+        SetDefaultUser(userId);
     }
 
     // --- POST /api/tasks/{id}/complete ---

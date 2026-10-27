@@ -183,6 +183,11 @@ public abstract class ControllerTestBase : IDisposable
 		return await Client.SendAsync(request);
 	}
 
+	protected void SetDefaultUser(string userId)
+	{
+		Client.DefaultRequestHeaders.Add("X-User-Id", userId);
+	}
+
 	protected async Task<HttpResponseMessage> SendAsUserAsync(HttpMethod method, string url, object? body = null, string? userId = null)
 	{
 		var request = new HttpRequestMessage(method, url);
