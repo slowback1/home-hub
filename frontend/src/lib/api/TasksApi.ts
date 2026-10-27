@@ -8,6 +8,7 @@ export type ChoreTask = {
 	doDate: string | null;
 	completedAt: string | null;
 	createdAt: string;
+	userId?: string | null;
 };
 
 export type TaskCompletion = {
@@ -22,6 +23,7 @@ export type CreateTaskRequest = {
 	isRecurring: boolean;
 	intervalDays: number | null;
 	doDate: string | null;
+	isGlobal: boolean;
 };
 
 export type UpdateTaskRequest = {

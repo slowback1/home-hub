@@ -32,7 +32,8 @@ describe('TasksApi', () => {
 			name: 'Sweep floors',
 			isRecurring: true,
 			intervalDays: 7,
-			doDate: '2026-05-24'
+			doDate: '2026-05-24',
+			isGlobal: true
 		});
 
 		const [url, options] = mockFetch.mock.calls[0] as never as [string, RequestInit];
@@ -42,7 +43,8 @@ describe('TasksApi', () => {
 			name: 'Sweep floors',
 			isRecurring: true,
 			intervalDays: 7,
-			doDate: '2026-05-24'
+			doDate: '2026-05-24',
+			isGlobal: true
 		});
 		expect(result).toEqual(mockTask);
 	});

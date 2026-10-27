@@ -31,6 +31,7 @@
 	let formDoDate = '';
 	let formIsRecurring = false;
 	let formIntervalDays = DEFAULT_INTERVAL_DAYS;
+	let formIsGlobal = true;
 	let formError: string | null = null;
 	let formSubmitting = false;
 	let formDeleting = false;
@@ -79,6 +80,7 @@
 		formDoDate = '';
 		formIsRecurring = false;
 		formIntervalDays = DEFAULT_INTERVAL_DAYS;
+		formIsGlobal = true;
 		formError = null;
 		modalOpen = true;
 	}
@@ -114,7 +116,8 @@
 			name: formName.trim(),
 			isRecurring: formIsRecurring,
 			intervalDays: formIsRecurring ? formIntervalDays : null,
-			doDate: formDoDate || null
+			doDate: formDoDate || null,
+			isGlobal: formIsGlobal
 		};
 	}
 
@@ -324,6 +327,18 @@
 							min="1"
 							bind:value={formIntervalDays}
 							data-testid="task-interval-input"
+						/>
+					</div>
+				{/if}
+
+				{#if !editingTask}
+					<div class="form-field form-field--toggle">
+						<label for="task-shared">Shared with everyone</label>
+						<input
+							id="task-shared"
+							type="checkbox"
+							bind:checked={formIsGlobal}
+							data-testid="task-shared-toggle"
 						/>
 					</div>
 				{/if}
