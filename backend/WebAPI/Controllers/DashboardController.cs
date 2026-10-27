@@ -19,7 +19,10 @@ public class DashboardController : ApplicationController
     [HttpGet("layout")]
     public async Task<ActionResult<LayoutResponse>> GetLayout()
     {
-        var existing = await _slots.QueryAsync(s => s.LayoutFormat == ActiveFormat);
+        if (CurrentUserId is null)
+            return Unauthorized();
+
+        var existing = await _slots.QueryAsync(s => s.LayoutFormat == ActiveFormat && s.UserId == CurrentUserId);
         var slotMap = existing.ToDictionary(s => s.SlotIndex);
 
         var slots = Enumerable.Range(0, SlotCount)
@@ -32,7 +35,10 @@ public class DashboardController : ApplicationController
     [HttpPut("layout")]
     public async Task<ActionResult> SaveLayout([FromBody] SaveLayoutRequest request)
     {
-        var existing = (await _slots.QueryAsync(s => s.LayoutFormat == ActiveFormat)).ToList();
+        if (CurrentUserId is null)
+            return Unauthorized();
+
+        var existing = (await _slots.QueryAsync(s => s.LayoutFormat == ActiveFormat && s.UserId == CurrentUserId)).ToList();
         var existingByIndex = existing.ToDictionary(s => s.SlotIndex);
         var incomingByIndex = request.Slots.ToDictionary(s => s.SlotIndex);
 
@@ -53,7 +59,8 @@ public class DashboardController : ApplicationController
                     Id = Guid.NewGuid().ToString(),
                     LayoutFormat = ActiveFormat,
                     SlotIndex = dto.SlotIndex,
-                    WidgetType = dto.WidgetType
+                    WidgetType = dto.WidgetType,
+                    UserId = CurrentUserId
                 });
             }
         }

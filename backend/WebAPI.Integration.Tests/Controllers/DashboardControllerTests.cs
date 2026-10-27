@@ -16,9 +16,12 @@ public class DashboardControllerTests : ControllerTestBase
     }
 
     [SetUp]
-    public void ClearState()
+    public async Task ClearState()
     {
         InMemoryCrud<DashboardSlot>.ClearStaticState();
+        InMemoryCrud<AppUser>.ClearStaticState();
+        var userId = await SeedTestUserAsync("Dash Owner");
+        SetDefaultUser(userId);
     }
 
     // --- GET /api/dashboard/layout ---
