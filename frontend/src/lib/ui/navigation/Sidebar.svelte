@@ -13,7 +13,8 @@
 		Footprints,
 		Disc3,
 		ChevronLeft,
-		ChevronRight
+		ChevronRight,
+		LogOut
 	} from 'lucide-svelte';
 	import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 	import { FeatureFlags } from '$lib/services/FeatureFlag/FeatureFlags';
@@ -141,6 +142,10 @@
 		if (prefix === '/') return path === '/';
 		return path.startsWith(prefix);
 	}
+
+	function logout() {
+		MessageBus.clear(Messages.CurrentUser);
+	}
 </script>
 
 <nav class="sidebar" bind:this={navEl}>
@@ -168,6 +173,11 @@
 	<button class="collapse-toggle" data-testid="sidebar-toggle">
 		<span class="icon-expand"><ChevronRight size={NAV_ICON_SIZE} /></span>
 		<span class="icon-collapse"><ChevronLeft size={NAV_ICON_SIZE} /></span>
+	</button>
+
+	<button class="logout-button" data-testid="logout-button" on:click={logout}>
+		<LogOut size={NAV_ICON_SIZE} />
+		<span class="nav-label">Log out</span>
 	</button>
 </nav>
 
@@ -305,5 +315,30 @@
 
 	.sidebar:global(.collapsed) .icon-collapse {
 		display: none;
+	}
+
+	/* Logout */
+	.logout-button {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		width: 100%;
+		padding: var(--space-3) var(--space-4);
+		background: none;
+		border: none;
+		border-top: 1px solid var(--color-border-subtle);
+		color: var(--color-text-secondary);
+		font-family: var(--font-family-primary);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		cursor: pointer;
+		transition:
+			color 0.15s ease,
+			background-color 0.15s ease;
+	}
+
+	.logout-button:hover {
+		background-color: var(--color-surface-raised);
+		color: var(--color-text-primary);
 	}
 </style>

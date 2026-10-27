@@ -3,6 +3,8 @@ import { beforeEach, afterEach } from 'vitest';
 import Sidebar from './Sidebar.svelte';
 import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { FeatureFlags } from '$lib/services/FeatureFlag/FeatureFlags';
+import MessageBus from '$lib/bus/MessageBus';
+import { Messages } from '$lib/bus/Messages';
 
 const ALL_NAV_FLAGS_ENABLED = [
 	{ name: FeatureFlags.CHORE_TASK_TRACKER_ENABLED, isEnabled: true },
@@ -14,11 +16,13 @@ const ALL_NAV_FLAGS_ENABLED = [
 describe('Sidebar', () => {
 	beforeEach(() => {
 		localStorage.clear();
+		MessageBus.clearAll();
 		FeatureFlagService.featureFlags = ALL_NAV_FLAGS_ENABLED;
 	});
 
 	afterEach(() => {
 		localStorage.clear();
+		MessageBus.clearAll();
 		FeatureFlagService.featureFlags = [];
 	});
 
@@ -113,5 +117,19 @@ describe('Sidebar', () => {
 		const { getByTestId } = render(Sidebar, { props: { currentPath: '/admin/feature-flags' } });
 		const item = getByTestId('nav-item-admin');
 		expect(item).toHaveClass('active');
+	});
+
+	it('renders a logout button at the bottom of the sidebar', () => {
+		const { getByTestId } = render(Sidebar);
+		expect(getByTestId('logout-button')).toBeInTheDocument();
+	});
+
+	it('clicking logout clears the current user from the message bus', async () => {
+		MessageBus.sendMessage(Messages.CurrentUser, 'u1');
+		const { getByTestId } = render(Sidebar);
+
+		await fireEvent.click(getByTestId('logout-button'));
+
+		expect(MessageBus.getLastMessage(Messages.CurrentUser)).toBeNull();
 	});
 });
