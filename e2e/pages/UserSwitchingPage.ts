@@ -33,4 +33,10 @@ export class UserSwitchingPage {
 		await this.page.getByRole('button', { name }).click();
 		await this.page.waitForSelector('[data-testid="sidebar-logo"]');
 	}
+
+	async clearUserSelection(): Promise<void> {
+		await this.page.evaluate(() => localStorage.removeItem('current_user'));
+		await this.page.reload();
+		await this.page.waitForSelector('[data-testid="user-switcher"]');
+	}
 }

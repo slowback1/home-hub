@@ -16,12 +16,14 @@ After({ tags: '@bookmarks' }, async ({ request }) => {
 	});
 });
 
-Given('I have saved bookmarks', async ({ request, bookmarksPage }) => {
+Given('I have saved bookmarks', async ({ request, bookmarksPage, testUser }) => {
 	await request.post(`${BACKEND_URL}/api/bookmarks`, {
-		data: { url: 'https://github.com', name: 'GitHub', description: 'Code hosting.' }
+		data: { url: 'https://github.com', name: 'GitHub', description: 'Code hosting.' },
+		headers: { 'X-User-Id': testUser.id }
 	});
 	await request.post(`${BACKEND_URL}/api/bookmarks`, {
-		data: { url: 'https://example.com', name: 'Example', description: '' }
+		data: { url: 'https://example.com', name: 'Example', description: '' },
+		headers: { 'X-User-Id': testUser.id }
 	});
 	await bookmarksPage.goto();
 });
@@ -30,26 +32,30 @@ Given('I am on the bookmarks page', async ({ bookmarksPage }) => {
 	await bookmarksPage.goto();
 });
 
-Given('I have a saved bookmark', async ({ request, bookmarksPage }) => {
+Given('I have a saved bookmark', async ({ request, bookmarksPage, testUser }) => {
 	await request.post(`${BACKEND_URL}/api/bookmarks`, {
-		data: { url: 'https://github.com', name: 'GitHub', description: 'Code hosting.' }
+		data: { url: 'https://github.com', name: 'GitHub', description: 'Code hosting.' },
+		headers: { 'X-User-Id': testUser.id }
 	});
 	await bookmarksPage.goto();
 });
 
-Given('I have a saved bookmark that is not starred', async ({ request, bookmarksPage }) => {
+Given('I have a saved bookmark that is not starred', async ({ request, bookmarksPage, testUser }) => {
 	await request.post(`${BACKEND_URL}/api/bookmarks`, {
-		data: { url: 'https://github.com', name: 'GitHub', description: '' }
+		data: { url: 'https://github.com', name: 'GitHub', description: '' },
+		headers: { 'X-User-Id': testUser.id }
 	});
 	await bookmarksPage.goto();
 });
 
-Given('I have multiple saved bookmarks', async ({ request, bookmarksPage }) => {
+Given('I have multiple saved bookmarks', async ({ request, bookmarksPage, testUser }) => {
 	await request.post(`${BACKEND_URL}/api/bookmarks`, {
-		data: { url: 'https://github.com', name: 'GitHub', description: 'Code hosting.' }
+		data: { url: 'https://github.com', name: 'GitHub', description: 'Code hosting.' },
+		headers: { 'X-User-Id': testUser.id }
 	});
 	await request.post(`${BACKEND_URL}/api/bookmarks`, {
-		data: { url: 'https://example.com', name: 'Example', description: 'Example site.' }
+		data: { url: 'https://example.com', name: 'Example', description: 'Example site.' },
+		headers: { 'X-User-Id': testUser.id }
 	});
 	await bookmarksPage.goto();
 });

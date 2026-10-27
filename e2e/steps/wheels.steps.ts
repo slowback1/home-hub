@@ -44,14 +44,18 @@ Given('the WHEEL_PICKER_ENABLED feature flag is disabled', async ({ request }) =
 	await request.patch(`${BACKEND_URL}/api/feature-flags/${FLAG}`, { data: { isEnabled: false } });
 });
 
-Given('a wheel named {string} exists with items {string}', async ({ request }, name, items) => {
+Given('a wheel named {string} exists with items {string}', async ({ request, testUser }, name, items) => {
 	await request.post(`${BACKEND_URL}/api/wheels`, {
-		data: { name, items: toItemLines(items) }
+		data: { name, items: toItemLines(items) },
+		headers: { 'X-User-Id': testUser.id }
 	});
 });
 
-Given('a wheel named {string} exists with no items', async ({ request }, name) => {
-	await request.post(`${BACKEND_URL}/api/wheels`, { data: { name, items: '' } });
+Given('a wheel named {string} exists with no items', async ({ request, testUser }, name) => {
+	await request.post(`${BACKEND_URL}/api/wheels`, {
+		data: { name, items: '' },
+		headers: { 'X-User-Id': testUser.id }
+	});
 });
 
 Given('the wheels widget is on the dashboard', async ({ request }) => {

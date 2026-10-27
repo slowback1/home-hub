@@ -108,20 +108,25 @@ Given('there are no audiobook jobs', async () => {
 	// cleared in Before hook
 });
 
-Given('there is a starred bookmark named {string}', async ({ request }, name: string) => {
+Given('there is a starred bookmark named {string}', async ({ request, testUser }, name: string) => {
 	const res = await request.post(`${BACKEND_URL}/api/bookmarks`, {
-		data: { url: `https://example.com/${name.toLowerCase()}`, name, description: null }
+		data: { url: `https://example.com/${name.toLowerCase()}`, name, description: null },
+		headers: { 'X-User-Id': testUser.id }
 	});
 	const bookmark = await res.json();
-	await request.patch(`${BACKEND_URL}/api/bookmarks/${bookmark.id}/star`, {});
+	await request.patch(`${BACKEND_URL}/api/bookmarks/${bookmark.id}/star`, {
+		headers: { 'X-User-Id': testUser.id }
+	});
 });
 
-Given('there are unstarred bookmarks in the system', async ({ request }) => {
+Given('there are unstarred bookmarks in the system', async ({ request, testUser }) => {
 	await request.post(`${BACKEND_URL}/api/bookmarks`, {
-		data: { url: 'https://example.com', name: 'Example', description: null }
+		data: { url: 'https://example.com', name: 'Example', description: null },
+		headers: { 'X-User-Id': testUser.id }
 	});
 	await request.post(`${BACKEND_URL}/api/bookmarks`, {
-		data: { url: 'https://news.ycombinator.com', name: 'Hacker News', description: null }
+		data: { url: 'https://news.ycombinator.com', name: 'Hacker News', description: null },
+		headers: { 'X-User-Id': testUser.id }
 	});
 });
 

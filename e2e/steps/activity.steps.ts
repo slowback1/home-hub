@@ -33,8 +33,11 @@ Then(
 
 Given(
 	'the activity list contains {string} with weight {int}',
-	async ({ activityConfigPage, request }, name: string, weight: number) => {
-		await request.post(`${BACKEND_URL}/api/activities`, { data: { name, weight } });
+	async ({ activityConfigPage, request, testUser }, name: string, weight: number) => {
+		await request.post(`${BACKEND_URL}/api/activities`, {
+			data: { name, weight },
+			headers: { 'X-User-Id': testUser.id }
+		});
 		await activityConfigPage.goto();
 	}
 );
@@ -48,8 +51,11 @@ When(
 
 Given(
 	'the activity list contains {string}',
-	async ({ activityConfigPage, request }, name: string) => {
-		await request.post(`${BACKEND_URL}/api/activities`, { data: { name, weight: 1 } });
+	async ({ activityConfigPage, request, testUser }, name: string) => {
+		await request.post(`${BACKEND_URL}/api/activities`, {
+			data: { name, weight: 1 },
+			headers: { 'X-User-Id': testUser.id }
+		});
 		await activityConfigPage.goto();
 	}
 );
