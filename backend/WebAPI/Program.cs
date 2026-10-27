@@ -195,6 +195,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors(CorsConfigurator.PolicyName);
+app.UseMiddleware<WebAPI.Middleware.UserMiddleware>();
 app.UseHangfireDashboard("/admin/hangfire", HangfireConfigurator.DashboardOptions);
 RecurringJob.AddOrUpdate<ActivityPickerJob>("activity-picker", j => j.ExecuteAsync(), "0 * * * *");
 app.MapControllers();

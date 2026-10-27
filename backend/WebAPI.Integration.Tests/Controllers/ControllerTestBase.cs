@@ -176,6 +176,34 @@ public abstract class ControllerTestBase : IDisposable
 		return await Client.SendAsync(request);
 	}
 
+	protected async Task<HttpResponseMessage> GetRawAsUserAsync(string url, string userId)
+	{
+		var request = new HttpRequestMessage(HttpMethod.Get, url);
+		request.Headers.Add("X-User-Id", userId);
+		return await Client.SendAsync(request);
+	}
+
+	protected async Task<HttpResponseMessage> SendAsUserAsync(HttpMethod method, string url, object? body = null, string? userId = null)
+	{
+		var request = new HttpRequestMessage(method, url);
+		if (body != null)
+			request.Content = JsonContent.Create(body);
+		if (userId != null)
+			request.Headers.Add("X-User-Id", userId);
+
+		return await Client.SendAsync(request);
+	}
+
+	protected async Task<string> SeedTestUserAsync(string name)
+	{
+		var response = await PostRawAsync("/api/test/users", new { Name = name }, includeToken: false);
+		response.EnsureSuccessStatusCode();
+		var user = await response.Content.ReadFromJsonAsync<SeededUserResponse>();
+		return user!.Id;
+	}
+
+	private record SeededUserResponse(string Id, string Name);
+
 	private async Task<string> GetLoginTokenAsync()
 	{
 		if (HasInitialized)
