@@ -176,6 +176,48 @@ public class ChoreTaskUserScopeTests : ControllerTestBase
     }
 
     [Test]
+    public async Task Delete_OwnerPersonalTask_ReturnsOk()
+    {
+        var task = await CreatePersonalTask("A private", _userA);
+        var response = await SendAsUserAsync(HttpMethod.Delete, $"/api/tasks/{task.Id}", userId: _userA);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+        var active = await GetRawAsUserAsync("/api/tasks", _userA);
+        var tasks = await active.Content.ReadFromJsonAsync<List<ChoreTask>>();
+        Assert.That(tasks!.Any(t => t.Id == task.Id), Is.False);
+    }
+
+    [Test]
+    public async Task Complete_OwnerPersonalTask_ReturnsOk()
+    {
+        var task = await CreatePersonalTask("A private", _userA);
+        var response = await SendAsUserAsync(HttpMethod.Post, $"/api/tasks/{task.Id}/complete", new { }, _userA);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var active = await GetRawAsUserAsync("/api/tasks", _userA);
+        var activeTasks = await active.Content.ReadFromJsonAsync<List<ChoreTask>>();
+        Assert.That(activeTasks!.Any(t => t.Id == task.Id), Is.False);
+
+        var history = await GetRawAsUserAsync("/api/tasks/history", _userA);
+        var historyTasks = await history.Content.ReadFromJsonAsync<List<ChoreTask>>();
+        Assert.That(historyTasks!.Any(t => t.Id == task.Id), Is.True);
+    }
+
+    [Test]
+    public async Task Undo_OwnerPersonalTask_ReturnsOk()
+    {
+        var task = await CreatePersonalTask("A private", _userA);
+        await SendAsUserAsync(HttpMethod.Post, $"/api/tasks/{task.Id}/complete", new { }, _userA);
+
+        var response = await SendAsUserAsync(HttpMethod.Delete, $"/api/tasks/{task.Id}/completions/latest", userId: _userA);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var active = await GetRawAsUserAsync("/api/tasks", _userA);
+        var tasks = await active.Content.ReadFromJsonAsync<List<ChoreTask>>();
+        Assert.That(tasks!.Any(t => t.Id == task.Id), Is.True);
+    }
+
+    [Test]
     public async Task Complete_GlobalTask_AsNonOwner_ReturnsOk_AndSharedForEveryone()
     {
         var response = await SendAsUserAsync(HttpMethod.Post, "/api/tasks",
