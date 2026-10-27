@@ -26,7 +26,7 @@ public class ActivityPickerJobTests
     {
         await _job.ExecuteAsync();
 
-        var pick = await _pickRepository.GetCurrentAsync();
+        var pick = await _pickRepository.GetCurrentAsync(string.Empty);
         Assert.That(pick, Is.Null);
     }
 
@@ -39,7 +39,7 @@ public class ActivityPickerJobTests
 
         await _job.ExecuteAsync();
 
-        var pick = await _pickRepository.GetCurrentAsync();
+        var pick = await _pickRepository.GetCurrentAsync(string.Empty);
         Assert.That(pick, Is.Not.Null);
         Assert.That(new[] { "Play Chess", "Read a Book" }, Does.Contain(pick!.ActivityName));
     }
@@ -53,7 +53,7 @@ public class ActivityPickerJobTests
 
         await _job.ExecuteAsync();
 
-        var pick = await _pickRepository.GetCurrentAsync();
+        var pick = await _pickRepository.GetCurrentAsync(string.Empty);
         Assert.That(pick!.PickedAt.Kind, Is.EqualTo(DateTimeKind.Utc));
         Assert.That(pick.PickedAt, Is.GreaterThanOrEqualTo(before));
     }
@@ -72,7 +72,7 @@ public class ActivityPickerJobTests
         {
             InMemoryActivityPickRepository.ClearStaticState();
             await _job.ExecuteAsync();
-            var pick = await _pickRepository.GetCurrentAsync();
+            var pick = await _pickRepository.GetCurrentAsync(string.Empty);
             counts[pick!.ActivityName]++;
         }
 

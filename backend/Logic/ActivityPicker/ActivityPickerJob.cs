@@ -16,7 +16,7 @@ public class ActivityPickerJob(ICrudFactory crudFactory, IActivityPickRepository
         if (activities.Count == 0)
             return;
 
-        var recentPicks = (await pickRepository.GetRecentAsync(activities.Count * 2)).ToList();
+        var recentPicks = (await pickRepository.GetRecentAsync(string.Empty, activities.Count * 2)).ToList();
         var selected = await selector.SelectAsync(activities, recentPicks);
         await pickRepository.WriteAsync(new ActivityPick
         {

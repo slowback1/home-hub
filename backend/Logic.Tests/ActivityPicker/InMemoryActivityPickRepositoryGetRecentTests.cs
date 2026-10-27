@@ -19,7 +19,7 @@ public class InMemoryActivityPickRepositoryGetRecentTests
         await repo.WriteAsync(Pick("B", DateTime.UtcNow.AddMinutes(-2)));
         await repo.WriteAsync(Pick("C", DateTime.UtcNow.AddMinutes(-1)));
 
-        var results = (await repo.GetRecentAsync(2)).ToList();
+        var results = (await repo.GetRecentAsync(string.Empty, 2)).ToList();
 
         Assert.That(results, Has.Count.EqualTo(2));
     }
@@ -33,7 +33,7 @@ public class InMemoryActivityPickRepositoryGetRecentTests
         await repo.WriteAsync(Pick("Older", older));
         await repo.WriteAsync(Pick("Newer", newer));
 
-        var results = (await repo.GetRecentAsync(2)).ToList();
+        var results = (await repo.GetRecentAsync(string.Empty, 2)).ToList();
 
         Assert.That(results[0].ActivityName, Is.EqualTo("Newer"));
         Assert.That(results[1].ActivityName, Is.EqualTo("Older"));
@@ -45,7 +45,7 @@ public class InMemoryActivityPickRepositoryGetRecentTests
         var repo = new InMemoryActivityPickRepository();
         await repo.WriteAsync(Pick("A", DateTime.UtcNow));
 
-        var results = (await repo.GetRecentAsync(10)).ToList();
+        var results = (await repo.GetRecentAsync(string.Empty, 10)).ToList();
 
         Assert.That(results, Has.Count.EqualTo(1));
     }
@@ -56,8 +56,21 @@ public class InMemoryActivityPickRepositoryGetRecentTests
         var repo = new InMemoryActivityPickRepository();
         await repo.WriteAsync(Pick("A", DateTime.UtcNow));
 
-        var results = (await repo.GetRecentAsync(0)).ToList();
+        var results = (await repo.GetRecentAsync(string.Empty, 0)).ToList();
 
         Assert.That(results, Is.Empty);
+    }
+
+    [Test]
+    public async Task GetRecentAsync_ReturnsOnlyRequestingUsersPicks()
+    {
+        var repo = new InMemoryActivityPickRepository();
+        await repo.WriteAsync(new ActivityPick { UserId = "user-a", ActivityName = "Mine", PickedAt = DateTime.UtcNow });
+        await repo.WriteAsync(new ActivityPick { UserId = "user-b", ActivityName = "Theirs", PickedAt = DateTime.UtcNow });
+
+        var results = (await repo.GetRecentAsync("user-a", 10)).ToList();
+
+        Assert.That(results, Has.Count.EqualTo(1));
+        Assert.That(results[0].ActivityName, Is.EqualTo("Mine"));
     }
 }

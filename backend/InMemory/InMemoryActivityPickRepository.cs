@@ -18,21 +18,30 @@ public class InMemoryActivityPickRepository : IActivityPickRepository
         return Task.CompletedTask;
     }
 
-    public Task<ActivityPick?> GetCurrentAsync()
+    public Task<ActivityPick?> GetCurrentAsync(string userId)
     {
-        var current = Picks.OrderByDescending(p => p.PickedAt).FirstOrDefault();
+        var current = Picks
+            .Where(p => p.UserId == userId)
+            .OrderByDescending(p => p.PickedAt)
+            .FirstOrDefault();
         return Task.FromResult<ActivityPick?>(current);
     }
 
-    public Task<IEnumerable<ActivityPick>> GetRangeAsync(DateTime from, DateTime to)
+    public Task<IEnumerable<ActivityPick>> GetRangeAsync(string userId, DateTime from, DateTime to)
     {
-        var results = Picks.Where(p => p.PickedAt >= from && p.PickedAt <= to).AsEnumerable();
+        var results = Picks
+            .Where(p => p.UserId == userId && p.PickedAt >= from && p.PickedAt <= to)
+            .AsEnumerable();
         return Task.FromResult(results);
     }
 
-    public Task<IEnumerable<ActivityPick>> GetRecentAsync(int count)
+    public Task<IEnumerable<ActivityPick>> GetRecentAsync(string userId, int count)
     {
-        var results = Picks.OrderByDescending(p => p.PickedAt).Take(count).AsEnumerable();
+        var results = Picks
+            .Where(p => p.UserId == userId)
+            .OrderByDescending(p => p.PickedAt)
+            .Take(count)
+            .AsEnumerable();
         return Task.FromResult(results);
     }
 

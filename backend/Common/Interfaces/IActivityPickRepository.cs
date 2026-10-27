@@ -8,8 +8,8 @@ namespace Common.Interfaces;
 public interface IActivityPickRepository
 {
     Task WriteAsync(ActivityPick pick);
-    Task<ActivityPick?> GetCurrentAsync();
-    Task<IEnumerable<ActivityPick>> GetRangeAsync(DateTime from, DateTime to);
-    Task<IEnumerable<ActivityPick>> GetRecentAsync(int count);
+    Task<ActivityPick?> GetCurrentAsync(string userId);
+    Task<IEnumerable<ActivityPick>> GetRangeAsync(string userId, DateTime from, DateTime to);
+    Task<IEnumerable<ActivityPick>> GetRecentAsync(string userId, int count);
     Task ClearAllAsync();
 }

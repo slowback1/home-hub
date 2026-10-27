@@ -13,17 +13,24 @@ public class EfActivityPickRepository(AppDbContext db) : IActivityPickRepository
         await db.SaveChangesAsync();
     }
 
-    public async Task<ActivityPick?> GetCurrentAsync() =>
-        await db.ActivityPicks.OrderByDescending(p => p.PickedAt).FirstOrDefaultAsync();
-
-    public async Task<IEnumerable<ActivityPick>> GetRangeAsync(DateTime from, DateTime to) =>
+    public async Task<ActivityPick?> GetCurrentAsync(string userId) =>
         await db.ActivityPicks
-            .Where(p => p.PickedAt >= from && p.PickedAt <= to)
+            .Where(p => p.UserId == userId)
+            .OrderByDescending(p => p.PickedAt)
+            .FirstOrDefaultAsync();
+
+    public async Task<IEnumerable<ActivityPick>> GetRangeAsync(string userId, DateTime from, DateTime to) =>
+        await db.ActivityPicks
+            .Where(p => p.UserId == userId && p.PickedAt >= from && p.PickedAt <= to)
             .OrderBy(p => p.PickedAt)
             .ToListAsync();
 
-    public async Task<IEnumerable<ActivityPick>> GetRecentAsync(int count) =>
-        await db.ActivityPicks.OrderByDescending(p => p.PickedAt).Take(count).ToListAsync();
+    public async Task<IEnumerable<ActivityPick>> GetRecentAsync(string userId, int count) =>
+        await db.ActivityPicks
+            .Where(p => p.UserId == userId)
+            .OrderByDescending(p => p.PickedAt)
+            .Take(count)
+            .ToListAsync();
 
     public async Task ClearAllAsync() => await db.ActivityPicks.ExecuteDeleteAsync();
 }

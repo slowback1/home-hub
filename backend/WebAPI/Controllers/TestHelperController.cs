@@ -25,6 +25,7 @@ public class TestHelperController(
 
         await pickRepository.WriteAsync(new ActivityPick
         {
+            UserId = request.UserId ?? string.Empty,
             ActivityName = request.ActivityName,
             PickedAt = request.PickedAt
         });
@@ -184,7 +185,7 @@ public class TestHelperController(
         return NoContent();
     }
 
-    public record SeedPickRequest(string ActivityName, DateTime PickedAt);
+    public record SeedPickRequest(string ActivityName, DateTime PickedAt, string? UserId);
     public record SeedUserRequest(string Name);
     public record SeedAudiobookJobRequest(string EpubFilename, AudiobookJobStatus Status);
 }
