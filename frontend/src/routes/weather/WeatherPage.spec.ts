@@ -51,6 +51,14 @@ describe('Weather page', () => {
 		expect(getByTestId('weather-wind').textContent).toContain('8.5');
 	});
 
+	it('rounds the temperature to the nearest whole number', async () => {
+		makeApiMock(Promise.resolve({ ...mockConditions, temperature: 73.13 }));
+		const { queryByRole, getByTestId } = render(WeatherPage);
+		await waitFor(() => expect(queryByRole('status')).not.toBeInTheDocument());
+
+		expect(getByTestId('weather-temperature').textContent?.trim()).toBe('73°F');
+	});
+
 	it('displays imperial unit labels', async () => {
 		makeApiMock(Promise.resolve(mockConditions));
 		const { queryByRole, getByTestId } = render(WeatherPage);

@@ -54,7 +54,7 @@
 	<Heading level={1}>Weather</Heading>
 	<div class="weather-grid">
 		<div class="weather-stat" data-testid="weather-temperature">
-			{conditions.temperature}{tempLabel(conditions.units)}
+			{Math.round(conditions.temperature)}{tempLabel(conditions.units)}
 		</div>
 		<div class="weather-stat" data-testid="weather-condition">
 			{conditions.conditionLabel}

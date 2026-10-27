@@ -42,7 +42,7 @@
 	{:else}
 		<div class="weather-primary">
 			<span class="weather-temp" data-testid="weather-widget-temperature">
-				{conditions.temperature}{tempUnit(conditions.units)}
+				{Math.round(conditions.temperature)}{tempUnit(conditions.units)}
 			</span>
 			<span class="weather-cond" data-testid="weather-widget-condition">
 				{conditions.conditionLabel}
