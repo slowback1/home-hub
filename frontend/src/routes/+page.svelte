@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { ChevronRight, Plus } from 'lucide-svelte';
 	import DashboardApi from '$lib/api/DashboardApi';
+	import MessageBus from '$lib/bus/MessageBus';
+	import { Messages } from '$lib/bus/Messages';
 	import { WIDGET_REGISTRY, getVisibleWidgets } from '$lib/services/Dashboard/widgetRegistry';
 	import ToastService from '$lib/ui/containers/toast/ToastService';
 
@@ -36,11 +38,26 @@
 		return 'late night';
 	}
 
-	onMount(async () => {
+	async function loadLayout() {
 		const layout = await api.getLayout();
 		const filled = Object.fromEntries(layout.slots.map((s) => [s.slotIndex, s.widgetType]));
 		slots = Array.from({ length: SLOT_COUNT }, (_, i) => filled[i] ?? null);
 		loading = false;
+	}
+
+	let unsubscribeFromUserChanges: (() => void) | undefined;
+
+	onMount(() => {
+		unsubscribeFromUserChanges = MessageBus.subscribe<string | null>(
+			Messages.CurrentUser,
+			(userId) => {
+				if (userId) void loadLayout();
+			}
+		);
+	});
+
+	onDestroy(() => {
+		unsubscribeFromUserChanges?.();
 	});
 
 	async function assignWidget(slotIndex: number, widgetId: string) {
