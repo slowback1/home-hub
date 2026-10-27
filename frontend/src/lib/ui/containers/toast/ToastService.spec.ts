@@ -1,10 +1,12 @@
 import ToastService, {
 	type ToastConfig,
-	ToastVariant
+	ToastVariant,
+	preventToastPersistence
 } from '$lib/ui/containers/toast/ToastService';
 import { beforeEach, expect } from 'vitest';
 import MessageBus from '$lib/bus/MessageBus';
 import { Messages } from '$lib/bus/Messages';
+import InMemoryStorageProvider from '$lib/bus/providers/inMemoryStorageProvider';
 
 describe('ToastService', () => {
 	let service: ToastService;
@@ -111,5 +113,29 @@ describe('ToastService', () => {
 		const toasts = getCurrentToasts();
 
 		expect(toasts[0].action).toBeUndefined();
+	});
+
+	describe('persistence', () => {
+		it('does not write toasts to the storage provider', () => {
+			const provider = new InMemoryStorageProvider();
+			MessageBus.initialize(provider);
+			preventToastPersistence();
+
+			service.AddToast({ message: 'transient' });
+
+			expect(provider.getItem(Messages.Toasts)).toBeUndefined();
+		});
+
+		it('clears toasts replayed from storage at startup', () => {
+			const provider = new InMemoryStorageProvider();
+			provider.setItem(Messages.Toasts, JSON.stringify([{ message: 'stale', variant: 0 }]));
+			MessageBus.initialize(provider);
+
+			expect(MessageBus.getLastMessage(Messages.Toasts)).not.toBeNull();
+
+			preventToastPersistence();
+
+			expect(MessageBus.getLastMessage(Messages.Toasts)).toBeNull();
+		});
 	});
 });

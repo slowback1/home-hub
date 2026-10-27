@@ -1,14 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { type ToastConfig, ToastVariant } from '$lib/ui/containers/toast/ToastService';
+	import {
+		type ToastConfig,
+		ToastVariant,
+		DEFAULT_TOAST_DURATION_MS
+	} from '$lib/ui/containers/toast/ToastService';
 	import Button from '$lib/ui/buttons/Button/Button.svelte';
 
 	export let config: ToastConfig;
 	export let onClose: () => void;
 
 	onMount(() => {
-		if (!config.durationMs) return;
-		const timer = setTimeout(onClose, config.durationMs);
+		const timer = setTimeout(onClose, config.durationMs ?? DEFAULT_TOAST_DURATION_MS);
 		return () => clearTimeout(timer);
 	});
 </script>

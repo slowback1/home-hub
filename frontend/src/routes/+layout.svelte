@@ -5,6 +5,7 @@
 	import UrlPathProvider, { RealUrlProvider } from '$lib/providers/urlPathProvider';
 	import ConfigService from '$lib/services/Config/ConfigService';
 	import ToastWrapper from '$lib/ui/containers/toast/ToastWrapper.svelte';
+	import { preventToastPersistence } from '$lib/ui/containers/toast/ToastService';
 	import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 	import ApiFeatureFlagProvider from '$lib/services/FeatureFlag/ApiFeatureFlagProvider';
 	import LocalStorageProvider from '$lib/bus/providers/localStorageProvider';
@@ -20,6 +21,7 @@
 
 	onMount(async () => {
 		MessageBus.initialize(new LocalStorageProvider());
+		preventToastPersistence();
 		UrlPathProvider.initialize(new RealUrlProvider());
 		await ConfigService.initialize();
 		await FeatureFlagService.initialize(new ApiFeatureFlagProvider());

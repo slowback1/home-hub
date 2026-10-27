@@ -15,6 +15,13 @@ export type ToastConfig = {
 	durationMs?: number;
 };
 
+export const DEFAULT_TOAST_DURATION_MS = 7000;
+
+export function preventToastPersistence() {
+	MessageBus.configure.doNotStoreDataForMessage(Messages.Toasts);
+	MessageBus.clear(Messages.Toasts);
+}
+
 export default class ToastService {
 	AddToast(config: ToastConfig) {
 		const toasts = this.getCurrentToasts();

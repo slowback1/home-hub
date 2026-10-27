@@ -100,6 +100,30 @@ describe('ToastWrapper', () => {
 		vi.useRealTimers();
 	});
 
+	it('auto-removes a toast with a default duration when no durationMs is set', async () => {
+		vi.useFakeTimers();
+		act(() => {
+			const service = new ToastService();
+			service.AddToast({ message: 'default dismiss' });
+		});
+
+		await waitFor(() => {
+			expect(result.getByTestId('toast-item')).toBeInTheDocument();
+		});
+
+		act(() => vi.advanceTimersByTime(4000));
+
+		expect(result.getByTestId('toast-item')).toBeInTheDocument();
+
+		act(() => vi.advanceTimersByTime(6000));
+
+		await waitFor(() => {
+			expect(result.queryByTestId('toast-item')).not.toBeInTheDocument();
+		});
+
+		vi.useRealTimers();
+	});
+
 	it('shows 3 toasts max', async () => {
 		addTestToast('hi');
 		addTestToast('hi 2');
