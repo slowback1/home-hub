@@ -17,19 +17,26 @@ public class ActivityController : ApplicationController
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Activity>>> GetAll()
     {
-        var items = await _activities.QueryAsync(_ => true);
+        if (CurrentUserId is null)
+            return Unauthorized();
+
+        var items = await _activities.QueryAsync(a => a.UserId == CurrentUserId);
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<ActionResult<Activity>> Create([FromBody] CreateActivityRequest request)
     {
+        if (CurrentUserId is null)
+            return Unauthorized();
+
         if (request.Weight < 1 || request.Weight > 5)
             return BadRequest("Weight must be between 1 and 5.");
 
         var activity = new Activity
         {
             Id = Guid.NewGuid().ToString(),
+            UserId = CurrentUserId,
             Name = request.Name,
             Weight = request.Weight
         };
@@ -41,11 +48,14 @@ public class ActivityController : ApplicationController
     [HttpPut("{id}")]
     public async Task<ActionResult<Activity>> Update(string id, [FromBody] UpdateActivityRequest request)
     {
+        if (CurrentUserId is null)
+            return Unauthorized();
+
         if (request.Weight < 1 || request.Weight > 5)
             return BadRequest("Weight must be between 1 and 5.");
 
         var existing = await _activities.GetByIdAsync(id);
-        if (existing is null)
+        if (existing is null || existing.UserId != CurrentUserId)
             return NotFound();
 
         existing.Name = request.Name;
@@ -58,10 +68,14 @@ public class ActivityController : ApplicationController
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(string id)
     {
-        var deleted = await _activities.DeleteAsync(id);
-        if (!deleted)
+        if (CurrentUserId is null)
+            return Unauthorized();
+
+        var existing = await _activities.GetByIdAsync(id);
+        if (existing is null || existing.UserId != CurrentUserId)
             return NotFound();
 
+        await _activities.DeleteAsync(id);
         return NoContent();
     }
 
