@@ -91,6 +91,7 @@
 		formDoDate = task.doDate ? task.doDate.split('T')[0] : '';
 		formIsRecurring = task.isRecurring;
 		formIntervalDays = task.intervalDays ?? DEFAULT_INTERVAL_DAYS;
+		formIsGlobal = task.userId == null;
 		formError = null;
 		modalOpen = true;
 	}
@@ -331,17 +332,15 @@
 					</div>
 				{/if}
 
-				{#if !editingTask}
-					<div class="form-field form-field--toggle">
-						<label for="task-shared">Shared with everyone</label>
-						<input
-							id="task-shared"
-							type="checkbox"
-							bind:checked={formIsGlobal}
-							data-testid="task-shared-toggle"
-						/>
-					</div>
-				{/if}
+				<div class="form-field form-field--toggle">
+					<label for="task-shared">Shared with everyone</label>
+					<input
+						id="task-shared"
+						type="checkbox"
+						bind:checked={formIsGlobal}
+						data-testid="task-shared-toggle"
+					/>
+				</div>
 
 				{#if formError}
 					<p class="form-error" data-testid="form-error">{formError}</p>

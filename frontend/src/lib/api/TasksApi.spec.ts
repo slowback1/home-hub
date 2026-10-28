@@ -58,12 +58,20 @@ describe('TasksApi', () => {
 			name: 'Sweep all floors',
 			isRecurring: true,
 			intervalDays: 7,
-			doDate: '2026-05-24'
+			doDate: '2026-05-24',
+			isGlobal: true
 		});
 
 		const [url, options] = mockFetch.mock.calls[0] as never as [string, RequestInit];
 		expect(url).toContain('/api/tasks/1');
 		expect(options.method).toEqual('PUT');
+		expect(JSON.parse(options.body as string)).toEqual({
+			name: 'Sweep all floors',
+			isRecurring: true,
+			intervalDays: 7,
+			doDate: '2026-05-24',
+			isGlobal: true
+		});
 		expect(result).toEqual(updated);
 	});
 

@@ -31,6 +31,7 @@ export type UpdateTaskRequest = {
 	isRecurring: boolean;
 	intervalDays: number | null;
 	doDate: string | null;
+	isGlobal: boolean;
 };
 
 export default class TasksApi extends BaseApi {

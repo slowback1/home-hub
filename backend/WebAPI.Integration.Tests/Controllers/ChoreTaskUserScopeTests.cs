@@ -163,6 +163,36 @@ public class ChoreTaskUserScopeTests : ControllerTestBase
     }
 
     [Test]
+    public async Task Update_PersonalTask_SetGlobal_ClearsUserId()
+    {
+        var task = await CreatePersonalTask("Mine", _userA);
+        var response = await SendAsUserAsync(HttpMethod.Put, $"/api/tasks/{task.Id}",
+            new { Name = "Mine", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null, IsGlobal = true },
+            _userA);
+        response.EnsureSuccessStatusCode();
+        var updated = await response.Content.ReadFromJsonAsync<ChoreTask>();
+
+        Assert.That(updated!.UserId, Is.Null);
+    }
+
+    [Test]
+    public async Task Update_GlobalTask_SetPersonal_StampsCurrentUserId()
+    {
+        var response = await SendAsUserAsync(HttpMethod.Post, "/api/tasks",
+            new { Name = "Shared", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null, IsGlobal = true },
+            _userA);
+        var task = (await response.Content.ReadFromJsonAsync<ChoreTask>())!;
+
+        var updateResponse = await SendAsUserAsync(HttpMethod.Put, $"/api/tasks/{task.Id}",
+            new { Name = "Shared", IsRecurring = false, IntervalDays = (int?)null, DoDate = (DateTime?)null, IsGlobal = false },
+            _userB);
+        updateResponse.EnsureSuccessStatusCode();
+        var updated = await updateResponse.Content.ReadFromJsonAsync<ChoreTask>();
+
+        Assert.That(updated!.UserId, Is.EqualTo(_userB));
+    }
+
+    [Test]
     public async Task Update_OwnerPersonalTask_ReturnsOk()
     {
         var task = await CreatePersonalTask("A private", _userA);
