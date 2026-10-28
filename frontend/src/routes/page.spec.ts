@@ -3,12 +3,24 @@ import { afterEach, beforeEach } from 'vitest';
 import MessageBus from '$lib/bus/MessageBus';
 import { Messages } from '$lib/bus/Messages';
 import { mockApi } from '$lib/testHelpers/getFetchMock';
+import UserService from '$lib/services/User/UserService';
 import Page from './+page.svelte';
 
 const emptyLayout = {
 	layoutFormat: '3x2',
 	slots: [0, 1, 2, 3, 4, 5].map((slotIndex) => ({ slotIndex, widgetType: null }))
 };
+
+const mockUsers = [
+	{ id: 'user-a', name: 'Alex' },
+	{ id: 'user-b', name: 'Sam' }
+];
+
+async function resolveUser(userIds: string) {
+	mockApi({ '/api/users': mockUsers });
+	await UserService.initialize();
+	MessageBus.sendMessage(Messages.CurrentUser, userIds);
+}
 
 type FetchMock = ReturnType<typeof mockApi>;
 
@@ -31,7 +43,7 @@ describe('Dashboard page layout re-fetch', () => {
 	});
 
 	it('loads the layout for the current user on mount', async () => {
-		MessageBus.sendMessage(Messages.CurrentUser, 'user-a');
+		await resolveUser('user-a');
 		const mockFetch = mockApi({ '/api/dashboard/layout': emptyLayout });
 
 		const { getByTestId } = render(Page);
@@ -44,7 +56,7 @@ describe('Dashboard page layout re-fetch', () => {
 	});
 
 	it('re-fetches the layout when the current user changes', async () => {
-		MessageBus.sendMessage(Messages.CurrentUser, 'user-a');
+		await resolveUser('user-a');
 		const mockFetch = mockApi({ '/api/dashboard/layout': emptyLayout });
 
 		const { getByTestId } = render(Page);
@@ -60,6 +72,8 @@ describe('Dashboard page layout re-fetch', () => {
 	});
 
 	it('does not fetch the layout when no current user is set', async () => {
+		mockApi({ '/api/users': mockUsers });
+		await UserService.initialize();
 		const mockFetch = mockApi({ '/api/dashboard/layout': emptyLayout });
 
 		render(Page);
@@ -69,8 +83,22 @@ describe('Dashboard page layout re-fetch', () => {
 		expect(layoutGetCalls(mockFetch).length).toBe(0);
 	});
 
+	it('does not fetch the layout or render widgets until the user id is resolved', async () => {
+		mockApi({ '/api/users': mockUsers });
+		await UserService.initialize();
+		MessageBus.sendMessage(Messages.CurrentUser, 'bogus-user');
+		const mockFetch = mockApi({ '/api/dashboard/layout': emptyLayout });
+
+		const { container } = render(Page);
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		expect(layoutGetCalls(mockFetch).length).toBe(0);
+		expect(container.querySelector('[data-testid="dashboard-page"]')).toBeNull();
+	});
+
 	it('stops re-fetching after the page is destroyed', async () => {
-		MessageBus.sendMessage(Messages.CurrentUser, 'user-a');
+		await resolveUser('user-a');
 		const mockFetch = mockApi({ '/api/dashboard/layout': emptyLayout });
 
 		const { getByTestId, unmount } = render(Page);

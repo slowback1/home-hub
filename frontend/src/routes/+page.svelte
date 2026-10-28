@@ -5,6 +5,7 @@
 	import MessageBus from '$lib/bus/MessageBus';
 	import { Messages } from '$lib/bus/Messages';
 	import { WIDGET_REGISTRY, getVisibleWidgets } from '$lib/services/Dashboard/widgetRegistry';
+	import UserService from '$lib/services/User/UserService';
 	import ToastService from '$lib/ui/containers/toast/ToastService';
 
 	const SLOT_COUNT = 6;
@@ -19,6 +20,7 @@
 	const ICON_STROKE = 2.25;
 	const api = new DashboardApi();
 	const toastService = new ToastService();
+	const userService = new UserService();
 
 	let slots: (string | null)[] = Array(SLOT_COUNT).fill(null);
 	let loading = true;
@@ -48,12 +50,9 @@
 	let unsubscribeFromUserChanges: (() => void) | undefined;
 
 	onMount(() => {
-		unsubscribeFromUserChanges = MessageBus.subscribe<string | null>(
-			Messages.CurrentUser,
-			(userId) => {
-				if (userId) void loadLayout();
-			}
-		);
+		unsubscribeFromUserChanges = MessageBus.subscribe<string | null>(Messages.CurrentUser, () => {
+			if (userService.getCurrentUserId()) void loadLayout();
+		});
 	});
 
 	onDestroy(() => {
