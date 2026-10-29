@@ -46,8 +46,8 @@ public class CrudFactoryConfiguratorTests
     public void Registers_EfCrudFactory_WhenEntityFrameworkIsConfigured()
     {
         var services = CreateServices("entityframework");
-        // Need to register AppDbContext for EF case; should throw if unresolved
-        services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("tddInMemory"));
+        // Need to register AppDbContext factory for EF case; should throw if unresolved
+        services.AddDbContextFactory<AppDbContext>(opt => opt.UseInMemoryDatabase("tddInMemory"));
         services.AddScoped<ICrudFactory, EfCrudFactory>();
         var sp = services.BuildServiceProvider();
         var factory = sp.GetRequiredService<ICrudFactory>();

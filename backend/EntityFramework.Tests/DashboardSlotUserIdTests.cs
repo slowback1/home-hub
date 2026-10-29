@@ -7,33 +7,24 @@ namespace EntityFramework.Tests;
 [TestFixture]
 public class DashboardSlotUserIdTests
 {
-    private AppDbContext CreateContext(string databaseName)
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName)
-            .Options;
-        return new AppDbContext(options);
-    }
-
     [Test]
     public async Task EfCrud_PersistsAndReturnsUserId_Unchanged()
     {
-        var databaseName = Guid.NewGuid().ToString();
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        using var factory = new TestDbContextFactory(options);
 
-        using (var writeCtx = CreateContext(databaseName))
+        ICrud<DashboardSlot> crud = new EfCrud<DashboardSlot>(factory);
+        await crud.CreateAsync(new DashboardSlot
         {
-            ICrud<DashboardSlot> crud = new EfCrud<DashboardSlot>(writeCtx);
-            await crud.CreateAsync(new DashboardSlot
-            {
-                LayoutFormat = "3x2",
-                SlotIndex = 0,
-                WidgetType = "tasks",
-                UserId = "user-1"
-            });
-        }
+            LayoutFormat = "3x2",
+            SlotIndex = 0,
+            WidgetType = "tasks",
+            UserId = "user-1"
+        });
 
-        using var readCtx = CreateContext(databaseName);
-        ICrud<DashboardSlot> readCrud = new EfCrud<DashboardSlot>(readCtx);
+        ICrud<DashboardSlot> readCrud = new EfCrud<DashboardSlot>(factory);
         var stored = await readCrud.GetByQueryAsync(s => s.LayoutFormat == "3x2" && s.SlotIndex == 0);
 
         Assert.That(stored, Is.Not.Null);

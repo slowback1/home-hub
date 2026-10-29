@@ -47,7 +47,7 @@ var crudImpl = builder.Configuration["CrudFactory:Implementation"]?.ToLower() ??
 if (crudImpl == "entityframework")
 {
     var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
-    builder.Services.AddDbContext<EntityFramework.AppDbContext>(options =>
+    builder.Services.AddDbContextFactory<EntityFramework.AppDbContext>(options =>
         options.UseNpgsql(connStr));
     builder.Services.AddScoped<ISystemConfigProvider>(sp =>
         new EntityFramework.EfSystemConfigProvider(sp.GetRequiredService<EntityFramework.AppDbContext>()));

@@ -4,53 +4,56 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EntityFramework;
 
-public class EfCrud<T> : ICrud<T> where T : class, IIdentifyable
+public class EfCrud<T>(IDbContextFactory<AppDbContext> contextFactory) : ICrud<T> where T : class, IIdentifyable
 {
-    private readonly AppDbContext _context;
-    private readonly DbSet<T> _dbSet;
-
-    public EfCrud(AppDbContext context)
-    {
-        _context = context;
-        _dbSet = context.Set<T>();
-    }
-
     public async Task<T> CreateAsync(T item)
     {
         if (string.IsNullOrWhiteSpace(item.Id))
         {
             item.Id = Guid.NewGuid().ToString();
         }
-        await _dbSet.AddAsync(item);
-        await _context.SaveChangesAsync();
+        await using var context = await contextFactory.CreateDbContextAsync();
+        await context.Set<T>().AddAsync(item);
+        await context.SaveChangesAsync();
         return item;
     }
 
-    public Task<T?> GetByIdAsync(string id)
-        => _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+    public async Task<T?> GetByIdAsync(string id)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync();
+        return await context.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+    }
 
     public async Task<T?> UpdateAsync(string id, T item)
     {
-        var existing = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var existing = await context.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
         if (existing == null)
             return null;
-        _context.Entry(existing).CurrentValues.SetValues(item);
-        await _context.SaveChangesAsync();
+        context.Entry(existing).CurrentValues.SetValues(item);
+        await context.SaveChangesAsync();
         return existing;
     }
 
     public async Task<bool> DeleteAsync(string id)
     {
-        var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+        await using var context = await contextFactory.CreateDbContextAsync();
+        var entity = await context.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
         if (entity == null) return false;
-        _dbSet.Remove(entity);
-        await _context.SaveChangesAsync();
+        context.Set<T>().Remove(entity);
+        await context.SaveChangesAsync();
         return true;
     }
 
-    public Task<T?> GetByQueryAsync(Expression<Func<T, bool>> query)
-        => _dbSet.FirstOrDefaultAsync(query);
+    public async Task<T?> GetByQueryAsync(Expression<Func<T, bool>> query)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync();
+        return await context.Set<T>().FirstOrDefaultAsync(query);
+    }
 
     public async Task<IEnumerable<T>> QueryAsync(Expression<Func<T, bool>> query)
-        => await _dbSet.Where(query).ToListAsync();
+    {
+        await using var context = await contextFactory.CreateDbContextAsync();
+        return await context.Set<T>().Where(query).ToListAsync();
+    }
 }

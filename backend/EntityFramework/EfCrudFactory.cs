@@ -1,14 +1,10 @@
 using Common.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace EntityFramework;
 
-public class EfCrudFactory : ICrudFactory
+public class EfCrudFactory(IDbContextFactory<AppDbContext> contextFactory) : ICrudFactory
 {
-    private readonly AppDbContext _context;
-    public EfCrudFactory(AppDbContext context)
-    {
-        _context = context;
-    }
     public ICrud<T> GetCrud<T>() where T : class, IIdentifyable
-        => new EfCrud<T>(_context);
+        => new EfCrud<T>(contextFactory);
 }

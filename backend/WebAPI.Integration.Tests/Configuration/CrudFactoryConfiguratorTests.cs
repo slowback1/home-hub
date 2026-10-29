@@ -74,8 +74,8 @@ public class CrudFactoryConfiguratorTests
         var services = new ServiceCollection();
         var configuration = CreateConfiguration("EntityFramework");
 
-         // Register AppDbContext for EF scenario - UseInMemoryDatabase for test isolation.
-         services.AddDbContext<EntityFramework.AppDbContext>(options => options.UseInMemoryDatabase("CrudFactoryConfiguratorTests"));
+         // Register AppDbContext factory for EF scenario - UseInMemoryDatabase for test isolation.
+         services.AddDbContextFactory<EntityFramework.AppDbContext>(options => options.UseInMemoryDatabase("CrudFactoryConfiguratorTests"));
 
          CrudFactoryConfigurator.ConfigureCrudFactory(services, configuration);
 
