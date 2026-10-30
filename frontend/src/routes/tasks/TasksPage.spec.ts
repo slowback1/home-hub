@@ -52,6 +52,26 @@ async function openAddModal(getByTestId: ReturnType<typeof render>['getByTestId'
 	await waitFor(() => expect(getByTestId('task-modal')).toBeInTheDocument());
 }
 
+describe('Tasks page ownership chips', () => {
+	it('shows a household chip for a global task', async () => {
+		mockApi([makeTask({ id: '1', name: 'Global task', userId: null })]);
+		const { getByTestId } = render(TasksPage);
+		await waitFor(() => expect(getByTestId('task-name')).toBeInTheDocument());
+
+		const chip = getByTestId('task-ownership-chip');
+		expect(chip.textContent).toBe('household');
+	});
+
+	it('shows a personal chip for a user-specific task', async () => {
+		mockApi([makeTask({ id: '1', name: 'My task', userId: 'user-1' })]);
+		const { getByTestId } = render(TasksPage);
+		await waitFor(() => expect(getByTestId('task-name')).toBeInTheDocument());
+
+		const chip = getByTestId('task-ownership-chip');
+		expect(chip.textContent).toBe('personal');
+	});
+});
+
 describe('Tasks page ownership', () => {
 	it('shows a shared toggle checked by default when adding a task', async () => {
 		mockApi([]);

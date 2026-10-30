@@ -3,6 +3,8 @@
 	import { SvelteDate } from 'svelte/reactivity';
 	import TasksApi, { type ChoreTask } from '$lib/api/TasksApi';
 	import ToastService from '$lib/ui/containers/toast/ToastService';
+	import Chip from '$lib/ui/containers/chip/Chip.svelte';
+	import { ChipSize, ChipVariant } from '$lib/ui/containers/chip/chipTypes';
 	import TaskCompletionService from '$lib/services/Tasks/TaskCompletionService';
 
 	const api = new TasksApi();
@@ -210,6 +212,12 @@
 					{#each dueTasks as task (task.id)}
 						<li class="task-row" data-testid="due-task-row" data-task-id={task.id}>
 							<span class="task-name" data-testid="task-name">{task.name}</span>
+							<Chip
+								testId="task-ownership-chip"
+								text={task.userId == null ? 'household' : 'personal'}
+								variant={ChipVariant.Secondary}
+								size={ChipSize.Small}
+							/>
 							{#if task.isRecurring}
 								<span class="task-meta">every {task.intervalDays}d</span>
 							{/if}
@@ -246,6 +254,12 @@
 					{#each upcomingTasks as task (task.id)}
 						<li class="task-row" data-testid="upcoming-task-row" data-task-id={task.id}>
 							<span class="task-name" data-testid="task-name">{task.name}</span>
+							<Chip
+								testId="task-ownership-chip"
+								text={task.userId == null ? 'household' : 'personal'}
+								variant={ChipVariant.Secondary}
+								size={ChipSize.Small}
+							/>
 							{#if task.isRecurring}
 								<span class="task-meta">every {task.intervalDays}d</span>
 							{/if}
