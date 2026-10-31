@@ -1,3 +1,4 @@
+using System.Reflection;
 using Common.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,6 +7,7 @@ namespace WebAPI.Controllers;
 public class HealthCheckResult
 {
     public string Status { get; init; } = string.Empty;
+    public string Version { get; init; } = string.Empty;
     public DateTime ResponseDate { get; set; } = DateTime.Now;
 }
 
@@ -17,6 +19,18 @@ public class HealthCheckController(ICrudFactory factory) : ApplicationController
     [Route("")]
     public ActionResult HealthCheck()
     {
-        return Ok(new HealthCheckResult { Status = "Healthy" });
+        return Ok(new HealthCheckResult { Status = "Healthy", Version = GetAssemblyVersion() });
+    }
+
+    private static string GetAssemblyVersion()
+    {
+        var informationalVersion = typeof(HealthCheckController).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+        if (string.IsNullOrWhiteSpace(informationalVersion))
+            return "dev";
+
+        var plusIndex = informationalVersion.IndexOf('+');
+        return plusIndex >= 0 ? informationalVersion[..plusIndex] : informationalVersion;
     }
 }

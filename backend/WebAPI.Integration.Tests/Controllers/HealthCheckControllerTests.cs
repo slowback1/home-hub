@@ -13,4 +13,14 @@ public class HealthCheckControllerTests : ControllerTestBase
         Assert.That(response, Is.Not.Null);
         Assert.That(response.Status, Is.EqualTo("Healthy"));
     }
+
+    [Test]
+    public async Task GetHealthCheck_ReturnsNonEmptyVersion()
+    {
+        var url = "/healthcheck";
+        var response = await GetAsync<HealthCheckResult>(url);
+
+        Assert.That(response, Is.Not.Null);
+        Assert.That(response.Version, Is.Not.Empty);
+    }
 }
