@@ -49,3 +49,5 @@ jobs:
           file: backend/WebAPI/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/homehub-backend:latest
+          build-args: |
+            BUILD_VERSION=${{ github.sha }}
