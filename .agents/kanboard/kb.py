@@ -48,6 +48,7 @@ The pipeline (Features swimlane), one stage per unattended run:
 Usage:
   kb.py ping | resolve
   kb.py stage list "<column>" [--lane Features|Chores]
+  kb.py pending <stage>                         # cards a pipeline stage would act on
   kb.py move <id> "<column>"
   kb.py comment add <id> --text-file PATH | --text T
   kb.py comment list <id>
@@ -353,6 +354,70 @@ def cmd_stage_list(args):
     print(json.dumps(rows, indent=2))
 
 
+# --- pending (pipeline precheck) -------------------------------------------- #
+def _open_cards(lane_name, column_title):
+    """Open tasks in one column of a swimlane (raw Kanboard rows)."""
+    if "open_tasks" not in _CACHE:
+        _CACHE["open_tasks"] = rpc("getAllTasks", project_id=project_id(), status_id=1) or []
+    lane = swimlane_id(lane_name)
+    cid = column_id(column_title)
+    return [t for t in _CACHE["open_tasks"]
+            if int(t["swimlane_id"]) == lane and int(t["column_id"]) == cid]
+
+
+def _unblockable(task):
+    """Blocked card whose 'is blocked by' deps are all Done (or it has none)."""
+    for link in _links_of(int(task["id"])):
+        if link.get("label") != BLOCKED_BY_LABEL:
+            continue
+        dep = rpc("getTask", task_id=int(link["task_id"]))
+        if not dep or column_name(dep["column_id"]) != COL_DONE:
+            return False
+    return True
+
+
+def _human_answered(task):
+    """Card has a non-mine comment posted after the pipeline's last Questions: comment."""
+    comments = rpc("getAllComments", task_id=int(task["id"])) or []
+    comments.sort(key=lambda c: int(c.get("date_creation", 0)))
+    my_name = me().get("username")
+    asked = False
+    for c in comments:
+        mine = c.get("username") == my_name
+        if mine and c.get("comment", "").lstrip().startswith("Questions:"):
+            asked = True
+        elif asked and not mine:
+            return True
+    return False
+
+
+# stage -> [(lane, column, predicate-or-None)]; a card counts as pending when it
+# sits in one of the stage's input columns and passes the predicate. Mirrors the
+# columns each pipeline skill reads — keep in sync with the SKILL.md files.
+PENDING_SOURCES = {
+    "triage": [(FEATURE_SWIMLANE, COL_BLOCKED, _unblockable),
+               (FEATURE_SWIMLANE, COL_BACKLOG, None)],
+    "refine": [(FEATURE_SWIMLANE, COL_TO_REFINE, None)],
+    "implement": [(FEATURE_SWIMLANE, COL_WIP, None),
+                  (FEATURE_SWIMLANE, COL_READY, None)],
+    "review": [(FEATURE_SWIMLANE, COL_READY_REVIEW, None)],
+    "triage-chores": [(CHORE_SWIMLANE, COL_REVIEW_REFINE, _human_answered),
+                      (CHORE_SWIMLANE, COL_BACKLOG, None)],
+    "implement-chores": [(CHORE_SWIMLANE, COL_WIP, None),
+                         (CHORE_SWIMLANE, COL_READY, None)],
+    "review-chores": [(CHORE_SWIMLANE, COL_READY_REVIEW, None)],
+}
+
+
+def cmd_pending(args):
+    by_column = {}
+    for lane, col, pred in PENDING_SOURCES[args.stage]:
+        ids = [int(t["id"]) for t in _open_cards(lane, col) if pred is None or pred(t)]
+        by_column[f"{lane}/{col}"] = ids
+    count = sum(len(v) for v in by_column.values())
+    print(json.dumps({"stage": args.stage, "count": count, "cards": by_column}))
+
+
 def cmd_move(args):
     task = _move(args.id, args.column)
     print(json.dumps({"moved": int(args.id), "from": column_name(task["column_id"]),
@@ -645,6 +710,10 @@ def build_parser():
     s_list.add_argument("--lane", default=FEATURE_SWIMLANE,
                         choices=[FEATURE_SWIMLANE, CHORE_SWIMLANE])
     s_list.set_defaults(func=cmd_stage_list)
+
+    pend = sub.add_parser("pending", help="count cards a pipeline stage would act on")
+    pend.add_argument("stage", choices=list(PENDING_SOURCES))
+    pend.set_defaults(func=cmd_pending)
 
     mv = sub.add_parser("move", help="move a card to a named column")
     mv.add_argument("id", type=int)
