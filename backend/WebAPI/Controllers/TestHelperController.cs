@@ -136,6 +136,19 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpDelete("saved-items")]
+    public async Task<ActionResult> ClearSavedItems()
+    {
+        if (!IsAllowed) return NotFound();
+
+        var crud = crudFactory.GetCrud<SavedItem>();
+        var all = await crud.QueryAsync(_ => true);
+        foreach (var item in all)
+            await crud.DeleteAsync(item.Id);
+
+        return NoContent();
+    }
+
     [HttpDelete("walk-sessions")]
     public async Task<ActionResult> ClearWalkSessions()
     {

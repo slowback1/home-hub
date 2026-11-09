@@ -241,4 +241,24 @@ public class SavedItemControllerTests : ControllerTestBase
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
+
+    // --- DELETE /api/test/saved-items ---
+
+    [Test]
+    public async Task TestHelper_ClearSavedItems_DeletesAll()
+    {
+        await CreateSavedItemAsync("Item A");
+        var otherUserId = await SeedTestUserAsync("Other Owner");
+        await CreateSavedItemAsync("Item B", otherUserId);
+
+        var clearResponse = await DeleteRawAsync("/api/test/saved-items");
+        Assert.That(clearResponse.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+        var items = await (await GetAsUser()).Content.ReadFromJsonAsync<SavedItem[]>();
+        Assert.That(items, Is.Empty);
+
+        var otherItems = await (await SendAsUserAsync(HttpMethod.Get, "/api/saved-items", null, otherUserId))
+            .Content.ReadFromJsonAsync<SavedItem[]>();
+        Assert.That(otherItems, Is.Empty);
+    }
 }
