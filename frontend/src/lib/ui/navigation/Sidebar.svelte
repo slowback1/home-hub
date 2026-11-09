@@ -13,6 +13,7 @@
 		Footprints,
 		Disc3,
 		ShoppingBasket,
+		Package,
 		ChevronLeft,
 		ChevronRight,
 		LogOut
@@ -93,6 +94,13 @@
 			label: 'Shopping Lists',
 			icon: ShoppingBasket,
 			flag: FeatureFlags.SHOPPING_LISTS_ENABLED
+		},
+		{
+			testId: 'nav-item-saved-items',
+			href: '/saved-items',
+			label: 'Saved Items',
+			icon: Package,
+			flag: FeatureFlags.SAVED_ITEMS_ENABLED
 		},
 		{
 			testId: 'nav-item-comfyui',

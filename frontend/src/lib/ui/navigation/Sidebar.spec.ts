@@ -119,6 +119,25 @@ describe('Sidebar', () => {
 		expect(queryByTestId('nav-item-shopping-lists')).not.toBeInTheDocument();
 	});
 
+	it('renders Saved Items nav item when SAVED_ITEMS_ENABLED is enabled', () => {
+		FeatureFlagService.featureFlags = [
+			...ALL_NAV_FLAGS_ENABLED,
+			{ name: FeatureFlags.SAVED_ITEMS_ENABLED, isEnabled: true }
+		];
+		const { getByTestId } = render(Sidebar);
+		const item = getByTestId('nav-item-saved-items');
+		expect(item.querySelector('a')).toHaveAttribute('href', '/saved-items');
+	});
+
+	it('hides Saved Items nav item when SAVED_ITEMS_ENABLED is disabled', () => {
+		FeatureFlagService.featureFlags = [
+			...ALL_NAV_FLAGS_ENABLED,
+			{ name: FeatureFlags.SAVED_ITEMS_ENABLED, isEnabled: false }
+		];
+		const { queryByTestId } = render(Sidebar);
+		expect(queryByTestId('nav-item-saved-items')).not.toBeInTheDocument();
+	});
+
 	it('renders the Admin nav item linking to /admin/system-config', () => {
 		const { getByTestId } = render(Sidebar);
 		const item = getByTestId('nav-item-admin');
