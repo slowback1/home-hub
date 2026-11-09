@@ -79,4 +79,20 @@ public class FeatureFlagControllerTests
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
     }
+
+    [Test]
+    public async Task GetAll_IncludesSavedItemsFlag_DisabledByDefault()
+    {
+        var factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder => builder.UseEnvironment("Test"));
+        var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/feature-flags");
+        var flags = await response.Content.ReadFromJsonAsync<List<FeatureFlag>>();
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        var savedItems = flags!.SingleOrDefault(f => f.Name == "SAVED_ITEMS_ENABLED");
+        Assert.That(savedItems, Is.Not.Null);
+        Assert.That(savedItems!.IsEnabled, Is.False);
+    }
 }

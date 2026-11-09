@@ -68,7 +68,8 @@ else
         ["WEATHER_ENABLED"] = true,
         ["AUDIOBOOK_ENABLED"] = false,
         ["COMFYUI_ENABLED"] = false,
-        ["SHOPPING_LISTS_ENABLED"] = false
+        ["SHOPPING_LISTS_ENABLED"] = false,
+        ["SAVED_ITEMS_ENABLED"] = false
     });
     builder.Services.AddSingleton<IFeatureFlagProvider>(inMemoryFlagStore);
     builder.Services.AddSingleton<IFeatureFlagRepository>(inMemoryFlagStore);
