@@ -71,7 +71,7 @@ public class ShoppingListController : ApplicationController
     }
 
     [HttpPost]
-    public async Task<ActionResult<ShoppingList>> Create([FromBody] CreateShoppingListRequest request)
+    public async Task<ActionResult<ShoppingListResponse>> Create([FromBody] CreateShoppingListRequest request)
     {
         if (CurrentUserId is null)
             return Unauthorized();
@@ -89,7 +89,7 @@ public class ShoppingListController : ApplicationController
         };
 
         var created = await _lists.CreateAsync(list);
-        return Ok(created);
+        return Ok(await ToResponse(created));
     }
 
     [HttpPost("{id}/items")]
