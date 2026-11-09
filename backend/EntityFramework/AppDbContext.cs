@@ -26,6 +26,7 @@ public class AppDbContext : DbContext
     public DbSet<Wheel> Wheels => Set<Wheel>();
     public DbSet<ShoppingList> ShoppingLists => Set<ShoppingList>();
     public DbSet<ShoppingListItem> ShoppingListItems => Set<ShoppingListItem>();
+    public DbSet<SavedItem> SavedItems => Set<SavedItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -67,6 +68,10 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(i => i.ListId)
             .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SavedItem>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(s => s.UserId);
 
         modelBuilder.Entity<ChoreTask>()
             .HasOne<AppUser>()

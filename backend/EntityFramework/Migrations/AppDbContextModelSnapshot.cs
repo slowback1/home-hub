@@ -227,6 +227,29 @@ namespace EntityFramework.Migrations
                     b.ToTable("FeatureFlags");
                 });
 
+            modelBuilder.Entity("Common.Models.SavedItem", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SavedItems");
+                });
+
             modelBuilder.Entity("Common.Models.ShoppingList", b =>
                 {
                     b.Property<string>("Id")
@@ -438,6 +461,15 @@ namespace EntityFramework.Migrations
                 });
 
             modelBuilder.Entity("Common.Models.DashboardSlot", b =>
+                {
+                    b.HasOne("Common.Models.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Common.Models.SavedItem", b =>
                 {
                     b.HasOne("Common.Models.AppUser", null)
                         .WithMany()

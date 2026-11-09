@@ -65,6 +65,16 @@ public class PerUserModelTests
     }
 
     [Test]
+    public void SavedItem_HasUserIdForeignKeyToAppUsers()
+    {
+        using var ctx = CreateContext();
+        var entity = ctx.Model.FindEntityType(typeof(SavedItem));
+        Assert.That(entity, Is.Not.Null);
+        Assert.That(entity.FindProperty(nameof(SavedItem.UserId)), Is.Not.Null);
+        AssertForeignKeyToAppUsers(entity);
+    }
+
+    [Test]
     public void ChoreTask_HasNullableUserIdForeignKeyToAppUsers()
     {
         using var ctx = CreateContext();
