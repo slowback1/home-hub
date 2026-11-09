@@ -250,6 +250,136 @@ public class ShoppingListControllerTests : ControllerTestBase
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
 
+    private Task<HttpResponseMessage> CompleteListAsync(string listId, string? userId = null) =>
+        SendAsUserAsync(HttpMethod.Post, $"/api/shopping-lists/{listId}/complete", null, userId ?? _userId);
+
+    private Task<HttpResponseMessage> GetArchivedAsUser() =>
+        SendAsUserAsync(HttpMethod.Get, "/api/shopping-lists?status=archived", null, _userId);
+
+    [Test]
+    public async Task Complete_FlipsStatusToArchived_AndStampsArchivedAt()
+    {
+        var list = await CreateList("Groceries");
+        await AddItemAsync(list.Id, "Milk");
+
+        var response = await CompleteListAsync(list.Id);
+        var completed = await response.Content.ReadFromJsonAsync<ShoppingListWithItems>(JsonOptions);
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(completed!.Items.Select(i => i.Text), Is.EquivalentTo(new[] { "Milk" }));
+
+        var archived = await (await GetArchivedAsUser()).Content.ReadFromJsonAsync<List<ShoppingListWithItems>>(JsonOptions);
+        Assert.That(archived!.Count, Is.EqualTo(1));
+        Assert.That(archived[0].Name, Is.EqualTo("Groceries"));
+    }
+
+    [Test]
+    public async Task Complete_SetsArchivedAt_AndArchivedExcludedFromDefaultGet()
+    {
+        var list = await CreateList("Groceries");
+        var response = await CompleteListAsync(list.Id);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var completed = await response.Content.ReadFromJsonAsync<ShoppingList>(JsonOptions);
+        Assert.That(completed!.Status, Is.EqualTo(ShoppingListStatus.Archived));
+        Assert.That(completed.ArchivedAt, Is.Not.Null);
+
+        var active = await (await GetAsUser()).Content.ReadFromJsonAsync<List<ShoppingListWithItems>>(JsonOptions);
+        Assert.That(active, Is.Empty);
+    }
+
+    [Test]
+    public async Task Complete_Returns400_WhenAlreadyArchived()
+    {
+        var list = await CreateList("Groceries");
+        await CompleteListAsync(list.Id);
+
+        var response = await CompleteListAsync(list.Id);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+    }
+
+    [Test]
+    public async Task Complete_Returns404_WhenListBelongsToOtherUser()
+    {
+        var otherUserId = await SeedTestUserAsync("Other Owner");
+        var theirs = await CreateList("Theirs", otherUserId);
+
+        var response = await CompleteListAsync(theirs.Id);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task Complete_Returns404_WhenListDoesNotExist()
+    {
+        var response = await CompleteListAsync("missing-list-id");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task Complete_WithoutUserId_Returns401()
+    {
+        var list = await CreateList("Groceries");
+        var response = await SendAsUserAsync(HttpMethod.Post, $"/api/shopping-lists/{list.Id}/complete");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task ArchivedGet_ReturnsOnlyRequestingUsersArchivedLists()
+    {
+        var otherUserId = await SeedTestUserAsync("Other Owner");
+        var mine = await CreateList("Mine");
+        var theirs = await CreateList("Theirs", otherUserId);
+        await CompleteListAsync(mine.Id);
+        await CompleteListAsync(theirs.Id, otherUserId);
+
+        var archived = await (await GetArchivedAsUser()).Content.ReadFromJsonAsync<List<ShoppingListWithItems>>(JsonOptions);
+
+        Assert.That(archived!.Count, Is.EqualTo(1));
+        Assert.That(archived[0].Name, Is.EqualTo("Mine"));
+    }
+
+    [Test]
+    public async Task ArchivedGet_WithoutUserId_Returns401()
+    {
+        var response = await SendAsUserAsync(HttpMethod.Get, "/api/shopping-lists?status=archived");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    [Test]
+    public async Task AddItem_Returns400_WhenListIsArchived()
+    {
+        var list = await CreateList("Groceries");
+        await CompleteListAsync(list.Id);
+
+        var response = await PostItemAsync(list.Id, new { Text = "Milk" });
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+    }
+
+    [Test]
+    public async Task ToggleItem_Returns400_WhenListIsArchived()
+    {
+        var list = await CreateList("Groceries");
+        var item = await AddItemAsync(list.Id, "Milk");
+        await CompleteListAsync(list.Id);
+
+        var response = await PatchItemAsync(list.Id, item.Id);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+    }
+
+    [Test]
+    public async Task ArchivedList_RemainsFullyReadable()
+    {
+        var list = await CreateList("Groceries");
+        await AddItemAsync(list.Id, "Milk");
+        await AddItemAsync(list.Id, "Eggs");
+        await CompleteListAsync(list.Id);
+
+        var archived = await (await GetArchivedAsUser()).Content.ReadFromJsonAsync<List<ShoppingListWithItems>>(JsonOptions);
+
+        Assert.That(archived!.Count, Is.EqualTo(1));
+        Assert.That(archived[0].Items.Select(i => i.Text), Is.EquivalentTo(new[] { "Milk", "Eggs" }));
+    }
+
     // --- DELETE /api/test/shopping-lists ---
 
     [Test]

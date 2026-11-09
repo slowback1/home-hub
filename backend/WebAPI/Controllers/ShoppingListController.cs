@@ -17,30 +17,39 @@ public class ShoppingListController : ApplicationController
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ShoppingListResponse>>> List()
+    public async Task<ActionResult<IEnumerable<ShoppingListResponse>>> List([FromQuery] ShoppingListStatus? status = null)
     {
         if (CurrentUserId is null)
             return Unauthorized();
 
-        var lists = await _lists.QueryAsync(l => l.UserId == CurrentUserId && l.Status == ShoppingListStatus.Active);
+        var wanted = status ?? ShoppingListStatus.Active;
+        var lists = await _lists.QueryAsync(l => l.UserId == CurrentUserId && l.Status == wanted);
 
         var responses = new List<ShoppingListResponse>();
         foreach (var list in lists)
-        {
-            var items = await _items.QueryAsync(i => i.ListId == list.Id);
-            responses.Add(new ShoppingListResponse
-            {
-                Id = list.Id,
-                UserId = list.UserId,
-                Name = list.Name,
-                Status = list.Status,
-                ArchivedAt = list.ArchivedAt,
-                CreatedAt = list.CreatedAt,
-                Items = [.. items]
-            });
-        }
+            responses.Add(await ToResponse(list));
 
         return Ok(responses);
+    }
+
+    [HttpPost("{id}/complete")]
+    public async Task<ActionResult<ShoppingListResponse>> Complete(string id)
+    {
+        if (CurrentUserId is null)
+            return Unauthorized();
+
+        var list = await _lists.GetByIdAsync(id);
+        if (list is null || list.UserId != CurrentUserId)
+            return NotFound();
+
+        if (list.Status == ShoppingListStatus.Archived)
+            return BadRequest("List is already archived.");
+
+        list.Status = ShoppingListStatus.Archived;
+        list.ArchivedAt = DateTime.UtcNow;
+        await _lists.UpdateAsync(id, list);
+
+        return Ok(await ToResponse(list));
     }
 
     [HttpPost]
@@ -75,6 +84,9 @@ public class ShoppingListController : ApplicationController
         if (list is null || list.UserId != CurrentUserId)
             return NotFound();
 
+        if (list.Status == ShoppingListStatus.Archived)
+            return BadRequest("Cannot add items to an archived list.");
+
         if (string.IsNullOrWhiteSpace(request.Text))
             return BadRequest("Text is required.");
 
@@ -101,6 +113,9 @@ public class ShoppingListController : ApplicationController
         if (list is null || list.UserId != CurrentUserId)
             return NotFound();
 
+        if (list.Status == ShoppingListStatus.Archived)
+            return BadRequest("Cannot toggle items on an archived list.");
+
         var item = await _items.GetByIdAsync(itemId);
         if (item is null || item.ListId != list.Id)
             return NotFound();
@@ -108,6 +123,21 @@ public class ShoppingListController : ApplicationController
         item.IsChecked = !item.IsChecked;
         var updated = await _items.UpdateAsync(itemId, item);
         return Ok(updated);
+    }
+
+    private async Task<ShoppingListResponse> ToResponse(ShoppingList list)
+    {
+        var items = await _items.QueryAsync(i => i.ListId == list.Id);
+        return new ShoppingListResponse
+        {
+            Id = list.Id,
+            UserId = list.UserId,
+            Name = list.Name,
+            Status = list.Status,
+            ArchivedAt = list.ArchivedAt,
+            CreatedAt = list.CreatedAt,
+            Items = [.. items]
+        };
     }
 
     public record CreateShoppingListRequest(string? Name);
