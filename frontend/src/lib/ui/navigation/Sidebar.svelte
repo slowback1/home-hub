@@ -12,6 +12,7 @@
 		Bookmark,
 		Footprints,
 		Disc3,
+		ShoppingBasket,
 		ChevronLeft,
 		ChevronRight,
 		LogOut
@@ -85,6 +86,13 @@
 			label: 'Wheels',
 			icon: Disc3,
 			flag: FeatureFlags.WHEEL_PICKER_ENABLED
+		},
+		{
+			testId: 'nav-item-shopping-lists',
+			href: '/shopping-lists',
+			label: 'Shopping Lists',
+			icon: ShoppingBasket,
+			flag: FeatureFlags.SHOPPING_LISTS_ENABLED
 		},
 		{
 			testId: 'nav-item-comfyui',
