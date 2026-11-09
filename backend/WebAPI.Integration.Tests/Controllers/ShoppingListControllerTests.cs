@@ -380,6 +380,67 @@ public class ShoppingListControllerTests : ControllerTestBase
         Assert.That(archived[0].Items.Select(i => i.Text), Is.EquivalentTo(new[] { "Milk", "Eggs" }));
     }
 
+    private Task<HttpResponseMessage> DeleteListAsync(string listId, string? userId = null) =>
+        SendAsUserAsync(HttpMethod.Delete, $"/api/shopping-lists/{listId}", null, userId ?? _userId);
+
+    [Test]
+    public async Task Delete_RemovesListAndItsItems()
+    {
+        var list = await CreateList("Groceries");
+        await AddItemAsync(list.Id, "Milk");
+
+        var response = await DeleteListAsync(list.Id);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+        var active = await (await GetAsUser()).Content.ReadFromJsonAsync<List<ShoppingListWithItems>>(JsonOptions);
+        Assert.That(active, Is.Empty);
+
+        var archived = await (await GetArchivedAsUser()).Content.ReadFromJsonAsync<List<ShoppingListWithItems>>(JsonOptions);
+        Assert.That(archived, Is.Empty);
+    }
+
+    [Test]
+    public async Task Delete_RemovesArchivedList()
+    {
+        var list = await CreateList("Groceries");
+        await CompleteListAsync(list.Id);
+
+        var response = await DeleteListAsync(list.Id);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+        var archived = await (await GetArchivedAsUser()).Content.ReadFromJsonAsync<List<ShoppingListWithItems>>(JsonOptions);
+        Assert.That(archived, Is.Empty);
+    }
+
+    [Test]
+    public async Task Delete_Returns404_WhenListBelongsToOtherUser()
+    {
+        var otherUserId = await SeedTestUserAsync("Other Owner");
+        var theirs = await CreateList("Theirs", otherUserId);
+
+        var response = await DeleteListAsync(theirs.Id);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+
+        var theirsLists = await SendAsUserAsync(HttpMethod.Get, "/api/shopping-lists", null, otherUserId);
+        var items = await theirsLists.Content.ReadFromJsonAsync<List<ShoppingListWithItems>>(JsonOptions);
+        Assert.That(items!.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task Delete_Returns404_WhenListDoesNotExist()
+    {
+        var response = await DeleteListAsync("missing-list-id");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task Delete_WithoutUserId_Returns401()
+    {
+        var list = await CreateList("Groceries");
+        var response = await SendAsUserAsync(HttpMethod.Delete, $"/api/shopping-lists/{list.Id}");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
     // --- DELETE /api/test/shopping-lists ---
 
     [Test]

@@ -52,6 +52,24 @@ public class ShoppingListController : ApplicationController
         return Ok(await ToResponse(list));
     }
 
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete(string id)
+    {
+        if (CurrentUserId is null)
+            return Unauthorized();
+
+        var list = await _lists.GetByIdAsync(id);
+        if (list is null || list.UserId != CurrentUserId)
+            return NotFound();
+
+        var items = await _items.QueryAsync(i => i.ListId == list.Id);
+        foreach (var item in items)
+            await _items.DeleteAsync(item.Id);
+
+        await _lists.DeleteAsync(id);
+        return NoContent();
+    }
+
     [HttpPost]
     public async Task<ActionResult<ShoppingList>> Create([FromBody] CreateShoppingListRequest request)
     {
