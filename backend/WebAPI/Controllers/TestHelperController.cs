@@ -117,6 +117,25 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpDelete("shopping-lists")]
+    public async Task<ActionResult> ClearShoppingLists()
+    {
+        if (!IsAllowed) return NotFound();
+
+        var itemCrud = crudFactory.GetCrud<ShoppingListItem>();
+        var listCrud = crudFactory.GetCrud<ShoppingList>();
+
+        var items = await itemCrud.QueryAsync(_ => true);
+        foreach (var item in items)
+            await itemCrud.DeleteAsync(item.Id);
+
+        var lists = await listCrud.QueryAsync(_ => true);
+        foreach (var list in lists)
+            await listCrud.DeleteAsync(list.Id);
+
+        return NoContent();
+    }
+
     [HttpDelete("walk-sessions")]
     public async Task<ActionResult> ClearWalkSessions()
     {
