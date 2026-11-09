@@ -1,0 +1,291 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { ListTodo } from 'lucide-svelte';
+	import Heading from '$lib/ui/typography/Heading/Heading.svelte';
+	import Spinner from '$lib/ui/feedback/Spinner.svelte';
+	import Button from '$lib/ui/buttons/Button/Button.svelte';
+	import TextBox from '$lib/ui/inputs/TextBox/TextBox.svelte';
+	import ToastService, { ToastVariant } from '$lib/ui/containers/toast/ToastService';
+	import ShoppingListApi, {
+		type ShoppingList,
+		type ShoppingListItem
+	} from '$lib/api/ShoppingListApi';
+	import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
+
+	const ICON_LG = 24;
+
+	const api = new ShoppingListApi();
+	const toast = new ToastService();
+
+	let loading = true;
+	let error = false;
+	let enabled = true;
+	let lists: ShoppingList[] = [];
+	let newListName = '';
+	let itemDrafts: Record<string, string> = {};
+
+	onMount(async () => {
+		enabled = FeatureFlagService.featureFlags.some(
+			(f) => f.name === 'SHOPPING_LISTS_ENABLED' && f.isEnabled
+		);
+
+		if (!enabled) {
+			loading = false;
+			return;
+		}
+
+		try {
+			lists = await api.listActive();
+		} catch {
+			error = true;
+		} finally {
+			loading = false;
+		}
+	});
+
+	async function createList() {
+		const name = newListName.trim();
+		if (!name) return;
+
+		try {
+			const created = await api.create(name);
+			lists = [...lists, created];
+			newListName = '';
+			toast.AddToast({ message: 'List created.', variant: ToastVariant.success });
+		} catch {
+			toast.AddToast({ message: 'Failed to create list.', variant: ToastVariant.error });
+		}
+	}
+
+	async function addItem(list: ShoppingList) {
+		const text = (itemDrafts[list.id] ?? '').trim();
+		if (!text) return;
+
+		try {
+			const created = await api.addItem(list.id, text);
+			lists = lists.map((l) => (l.id === list.id ? { ...l, items: [...l.items, created] } : l));
+			itemDrafts[list.id] = '';
+		} catch {
+			toast.AddToast({ message: 'Failed to add item.', variant: ToastVariant.error });
+		}
+	}
+
+	async function toggleItem(list: ShoppingList, item: ShoppingListItem) {
+		try {
+			const updated = await api.toggleItem(list.id, item.id);
+			lists = lists.map((l) =>
+				l.id === list.id ? { ...l, items: l.items.map((i) => (i.id === item.id ? updated : i)) } : l
+			);
+		} catch {
+			toast.AddToast({ message: 'Failed to update item.', variant: ToastVariant.error });
+		}
+	}
+
+	async function completeList(list: ShoppingList) {
+		try {
+			await api.complete(list.id);
+			lists = lists.filter((l) => l.id !== list.id);
+			toast.AddToast({ message: 'List completed.', variant: ToastVariant.success });
+		} catch {
+			toast.AddToast({ message: 'Failed to complete list.', variant: ToastVariant.error });
+		}
+	}
+</script>
+
+<svelte:head>
+	<title>Shopping Lists — HomeHub</title>
+</svelte:head>
+
+<div class="shopping-lists-page" data-testid="shopping-lists-page">
+	<header class="shopping-lists-header">
+		<span class="shopping-lists-header__icon" aria-hidden="true">
+			<ListTodo size={ICON_LG} />
+		</span>
+		<Heading level={1}>Shopping Lists</Heading>
+	</header>
+
+	{#if !enabled}
+		<div data-testid="shopping-lists-disabled">
+			<p>Shopping lists are not available.</p>
+		</div>
+	{:else if loading}
+		<Spinner />
+	{:else if error}
+		<p class="shopping-lists-error" role="alert">Failed to load shopping lists.</p>
+	{:else}
+		{#if lists.length === 0}
+			<p class="shopping-lists-empty" data-testid="shopping-lists-empty-state">
+				No shopping lists yet — create your first one below.
+			</p>
+		{:else}
+			<ul class="shopping-list-list" data-testid="shopping-lists-list">
+				{#each lists as list (list.id)}
+					<li class="shopping-list-card" data-testid="shopping-list-row-{list.name}">
+						<div class="shopping-list-card__header">
+							<h2 class="shopping-list-name">{list.name}</h2>
+							<Button
+								testId="shopping-list-complete-{list.name}"
+								variant="primary"
+								onClick={() => completeList(list)}
+							>
+								Complete
+							</Button>
+						</div>
+
+						{#if list.items.length === 0}
+							<p class="shopping-list-hint" data-testid="shopping-list-empty-{list.name}">
+								No items yet.
+							</p>
+						{:else}
+							<ul class="shopping-item-list">
+								{#each list.items as item (item.id)}
+									<li>
+										<button
+											class="shopping-item"
+											class:shopping-item--checked={item.isChecked}
+											data-testid="shopping-item-{item.text}"
+											on:click={() => toggleItem(list, item)}
+										>
+											{item.text}
+										</button>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+
+						<div class="shopping-item-add">
+							<TextBox
+								label="New item"
+								id="shopping-item-input-{list.name}"
+								bind:value={itemDrafts[list.id]}
+								placeholder="Item name"
+							/>
+							<Button
+								testId="shopping-item-add-{list.name}"
+								variant="secondary"
+								onClick={() => addItem(list)}
+							>
+								Add item
+							</Button>
+						</div>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+
+		<section class="shopping-list-card" data-testid="shopping-list-form">
+			<h3 class="shopping-list-form__title">New list</h3>
+			<TextBox
+				label="Name"
+				id="shopping-list-form-name"
+				bind:value={newListName}
+				placeholder="List name"
+			/>
+			<div class="form-actions">
+				<Button testId="shopping-list-form-add" variant="primary" onClick={createList}>Add</Button>
+			</div>
+		</section>
+	{/if}
+</div>
+
+<style>
+	.shopping-lists-header {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		margin-bottom: var(--space-6);
+	}
+
+	.shopping-lists-header :global(h1) {
+		margin: 0;
+	}
+
+	.shopping-lists-header__icon {
+		display: flex;
+		color: var(--color-brand);
+	}
+
+	.shopping-lists-empty,
+	.shopping-list-hint {
+		color: var(--color-text-secondary);
+	}
+
+	.shopping-lists-error {
+		color: var(--color-error, red);
+	}
+
+	.shopping-list-list {
+		list-style: none;
+		margin: 0 0 var(--space-6);
+		padding: 0;
+		display: grid;
+		gap: var(--space-4);
+	}
+
+	.shopping-list-card {
+		border: 1px solid var(--color-border-subtle);
+		border-radius: var(--radius-md, 8px);
+		padding: var(--space-4);
+	}
+
+	.shopping-list-card__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+		margin-bottom: var(--space-3);
+	}
+
+	.shopping-list-name {
+		margin: 0;
+		font-size: var(--font-size-lg);
+		font-weight: var(--font-weight-semibold);
+		color: var(--color-text-primary);
+	}
+
+	.shopping-item-list {
+		list-style: none;
+		margin: 0 0 var(--space-3);
+		padding: 0;
+	}
+
+	.shopping-item {
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: var(--space-1) 0;
+		font-family: var(--font-family-primary);
+		font-size: var(--font-size-md);
+		color: var(--color-text-primary);
+		text-align: left;
+	}
+
+	.shopping-item--checked {
+		text-decoration: line-through;
+		color: var(--color-text-secondary);
+	}
+
+	.shopping-item-add {
+		display: flex;
+		align-items: flex-end;
+		gap: var(--space-2);
+		margin-top: var(--space-3);
+	}
+
+	.shopping-item-add :global(.text-box) {
+		box-sizing: border-box;
+		max-width: 100%;
+	}
+
+	.shopping-list-form__title {
+		margin: 0 0 var(--space-3);
+		font-size: var(--font-size-lg);
+		color: var(--color-text-primary);
+	}
+
+	.form-actions {
+		display: flex;
+		gap: var(--space-2);
+		margin-top: var(--space-4);
+	}
+</style>
