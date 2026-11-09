@@ -66,7 +66,7 @@ public class ShoppingListControllerTests : ControllerTestBase
         Assert.That(item.Id, Is.Not.Empty);
     }
 
-    private record ShoppingListWithItems(string Id, string Name, ShoppingListItem[] Items);
+    private record ShoppingListWithItems(string Name, ShoppingListItem[] Items);
 
     [Test]
     public async Task List_IncludesItemsInline_PerList()
@@ -179,6 +179,74 @@ public class ShoppingListControllerTests : ControllerTestBase
     public async Task List_WithoutUserId_Returns401()
     {
         var response = await SendAsUserAsync(HttpMethod.Get, "/api/shopping-lists");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
+    private Task<HttpResponseMessage> PatchItemAsync(string listId, string itemId, string? userId = null) =>
+        SendAsUserAsync(HttpMethod.Patch, $"/api/shopping-lists/{listId}/items/{itemId}", null, userId ?? _userId);
+
+    private async Task<ShoppingListItem> AddItemAsync(string listId, string text, string? userId = null)
+    {
+        var response = await PostItemAsync(listId, new { Text = text }, userId);
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<ShoppingListItem>(JsonOptions))!;
+    }
+
+    [Test]
+    public async Task ToggleItem_ChecksOffAndBackOn_ItemStaysInList()
+    {
+        var list = await CreateList("Groceries");
+        var item = await AddItemAsync(list.Id, "Milk");
+
+        var off = await PatchItemAsync(list.Id, item.Id);
+        var offItem = await off.Content.ReadFromJsonAsync<ShoppingListItem>(JsonOptions);
+        Assert.That(off.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(offItem!.IsChecked, Is.True);
+
+        var on = await PatchItemAsync(list.Id, item.Id);
+        var onItem = await on.Content.ReadFromJsonAsync<ShoppingListItem>(JsonOptions);
+        Assert.That(on.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(onItem!.IsChecked, Is.False);
+
+        var lists = await (await GetAsUser()).Content.ReadFromJsonAsync<List<ShoppingListWithItems>>(JsonOptions);
+        Assert.That(lists![0].Items.Select(i => i.Text), Is.EquivalentTo(new[] { "Milk" }));
+    }
+
+    [Test]
+    public async Task ToggleItem_Returns404_WhenListBelongsToOtherUser()
+    {
+        var otherUserId = await SeedTestUserAsync("Other Owner");
+        var theirs = await CreateList("Theirs", otherUserId);
+        var item = await AddItemAsync(theirs.Id, "Secret", otherUserId);
+
+        var response = await PatchItemAsync(theirs.Id, item.Id);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task ToggleItem_Returns404_WhenItemDoesNotExist()
+    {
+        var list = await CreateList("Groceries");
+        var response = await PatchItemAsync(list.Id, "missing-item-id");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task ToggleItem_Returns404_WhenListDoesNotExist()
+    {
+        var list = await CreateList("Groceries");
+        var item = await AddItemAsync(list.Id, "Milk");
+        var response = await PatchItemAsync("missing-list-id", item.Id);
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task ToggleItem_WithoutUserId_Returns401()
+    {
+        var list = await CreateList("Groceries");
+        var item = await AddItemAsync(list.Id, "Milk");
+        var response = await SendAsUserAsync(
+            HttpMethod.Patch, $"/api/shopping-lists/{list.Id}/items/{item.Id}");
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
 

@@ -28,9 +28,16 @@ public class ShoppingListController : ApplicationController
         foreach (var list in lists)
         {
             var items = await _items.QueryAsync(i => i.ListId == list.Id);
-            responses.Add(new ShoppingListResponse(
-                list.Id, list.UserId, list.Name, list.Status, list.ArchivedAt, list.CreatedAt,
-                [.. items]));
+            responses.Add(new ShoppingListResponse
+            {
+                Id = list.Id,
+                UserId = list.UserId,
+                Name = list.Name,
+                Status = list.Status,
+                ArchivedAt = list.ArchivedAt,
+                CreatedAt = list.CreatedAt,
+                Items = [.. items]
+            });
         }
 
         return Ok(responses);
@@ -84,9 +91,35 @@ public class ShoppingListController : ApplicationController
         return Ok(created);
     }
 
+    [HttpPatch("{id}/items/{itemId}")]
+    public async Task<ActionResult<ShoppingListItem>> ToggleItem(string id, string itemId)
+    {
+        if (CurrentUserId is null)
+            return Unauthorized();
+
+        var list = await _lists.GetByIdAsync(id);
+        if (list is null || list.UserId != CurrentUserId)
+            return NotFound();
+
+        var item = await _items.GetByIdAsync(itemId);
+        if (item is null || item.ListId != list.Id)
+            return NotFound();
+
+        item.IsChecked = !item.IsChecked;
+        var updated = await _items.UpdateAsync(itemId, item);
+        return Ok(updated);
+    }
+
     public record CreateShoppingListRequest(string? Name);
     public record AddItemRequest(string? Text);
-    public record ShoppingListResponse(
-        string Id, string UserId, string Name, ShoppingListStatus Status,
-        DateTime? ArchivedAt, DateTime CreatedAt, ShoppingListItem[] Items);
+    public record ShoppingListResponse
+    {
+        public required string Id { get; init; }
+        public required string UserId { get; init; }
+        public required string Name { get; init; }
+        public required ShoppingListStatus Status { get; init; }
+        public required DateTime? ArchivedAt { get; init; }
+        public required DateTime CreatedAt { get; init; }
+        public required ShoppingListItem[] Items { get; init; }
+    }
 }
