@@ -24,6 +24,8 @@ public class AppDbContext : DbContext
     public DbSet<DashboardSlot> DashboardSlots => Set<DashboardSlot>();
     public DbSet<WalkSession> WalkSessions => Set<WalkSession>();
     public DbSet<Wheel> Wheels => Set<Wheel>();
+    public DbSet<ShoppingList> ShoppingLists => Set<ShoppingList>();
+    public DbSet<ShoppingListItem> ShoppingListItems => Set<ShoppingListItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -56,6 +58,15 @@ public class AppDbContext : DbContext
             .HasOne<AppUser>()
             .WithMany()
             .HasForeignKey(w => w.UserId);
+        modelBuilder.Entity<ShoppingList>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(l => l.UserId);
+        modelBuilder.Entity<ShoppingListItem>()
+            .HasOne<ShoppingList>()
+            .WithMany()
+            .HasForeignKey(i => i.ListId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<ChoreTask>()
             .HasOne<AppUser>()
