@@ -32,12 +32,12 @@ function makeList(overrides: Partial<ShoppingList> = {}): ShoppingList {
 	};
 }
 
-function mockApi(lists: ShoppingList[]) {
+function mockApi(lists: ShoppingList[], archived: ShoppingList[] = []) {
 	vi.mocked(ShoppingListApi).mockImplementation(
 		() =>
 			({
 				listActive: vi.fn().mockResolvedValue(lists),
-				listArchived: vi.fn().mockResolvedValue([]),
+				listArchived: vi.fn().mockResolvedValue(archived),
 				create: vi.fn().mockResolvedValue(makeList({ items: [] })),
 				addItem: vi
 					.fn()
@@ -156,5 +156,33 @@ describe('Shopping lists page', () => {
 		await waitFor(() =>
 			expect(queryByTestId('shopping-list-row-Groceries')).not.toBeInTheDocument()
 		);
+	});
+
+	it('renders archived lists read-only with items and archive date', async () => {
+		mockApi(
+			[],
+			[
+				makeList({
+					id: 'l2',
+					name: 'Camping',
+					status: 'archived',
+					archivedAt: '2026-06-01T10:00:00Z',
+					items: [
+						makeItem({ id: 'i3', listId: 'l2', text: 'Tent', isChecked: true }),
+						makeItem({ id: 'i4', listId: 'l2', text: 'Fuel', isChecked: false })
+					]
+				})
+			]
+		);
+		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
+
+		await waitFor(() => expect(getByTestId('shopping-archived-row-Camping')).toBeInTheDocument());
+		expect(getByTestId('shopping-archived-item-Tent')).toHaveClass('shopping-item--checked');
+		expect(getByTestId('shopping-archived-item-Fuel')).not.toHaveClass('shopping-item--checked');
+		expect(getByTestId('shopping-archived-date-Camping')).toBeInTheDocument();
+
+		expect(queryByTestId('shopping-item-input-Camping')).not.toBeInTheDocument();
+		expect(queryByTestId('shopping-item-add-Camping')).not.toBeInTheDocument();
+		expect(queryByTestId('shopping-list-complete-Camping')).not.toBeInTheDocument();
 	});
 });
