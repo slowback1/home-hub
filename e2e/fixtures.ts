@@ -16,6 +16,7 @@ import { BookmarksPage } from './pages/BookmarksPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { WalkHistoryPage } from './pages/WalkHistoryPage';
 import { WheelsPage } from './pages/WheelsPage';
+import { ShoppingListsPage } from './pages/ShoppingListsPage';
 import { UserSwitchingPage } from './pages/UserSwitchingPage';
 
 export type TestUser = { id: string };
@@ -23,6 +24,7 @@ export type TestUser = { id: string };
 type Fixtures = {
 	walkHistoryPage: WalkHistoryPage;
 	wheelsPage: WheelsPage;
+	shoppingListsPage: ShoppingListsPage;
 	examplePage: ExamplePage;
 	designSystemPage: DesignSystemPage;
 	systemConfigPage: SystemConfigPage;
@@ -47,6 +49,9 @@ const test = base.extend<Fixtures>({
 	},
 	wheelsPage: async ({ page }, use) => {
 		await use(new WheelsPage(page));
+	},
+	shoppingListsPage: async ({ page }, use) => {
+		await use(new ShoppingListsPage(page));
 	},
 	examplePage: async ({ page }, use) => {
 		await use(new ExamplePage(page));
