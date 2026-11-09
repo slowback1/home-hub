@@ -36,6 +36,14 @@ jobs:
         run: npm run test:ci
         working-directory: frontend
 
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-junit-results
+          path: frontend/testOutput/results.xml
+          if-no-files-found: warn
+
       - name: Log in to DockerHub
         if: github.event_name == 'push'
         uses: docker/login-action@v3
