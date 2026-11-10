@@ -10,16 +10,20 @@
 		type ShoppingList,
 		type ShoppingListItem
 	} from '$lib/api/ShoppingListApi';
+	import SavedItemsApi, { type SavedItem } from '$lib/api/SavedItemsApi';
 	import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 
 	const ICON_LG = 24;
 
 	const api = new ShoppingListApi();
+	const savedItemsApi = new SavedItemsApi();
 	const toast = new ToastService();
 
 	let loading = true;
 	let error = false;
 	let enabled = true;
+	let savedItemsEnabled = false;
+	let savedItems: SavedItem[] = [];
 	let lists: ShoppingList[] = [];
 	let archivedLists: ShoppingList[] = [];
 	let newListName = '';
@@ -28,6 +32,9 @@
 	onMount(async () => {
 		enabled = FeatureFlagService.featureFlags.some(
 			(f) => f.name === 'SHOPPING_LISTS_ENABLED' && f.isEnabled
+		);
+		savedItemsEnabled = FeatureFlagService.featureFlags.some(
+			(f) => f.name === 'SAVED_ITEMS_ENABLED' && f.isEnabled
 		);
 
 		if (!enabled) {
@@ -43,6 +50,14 @@
 			error = true;
 		} finally {
 			loading = false;
+		}
+
+		if (savedItemsEnabled) {
+			try {
+				savedItems = await savedItemsApi.list();
+			} catch {
+				savedItems = [];
+			}
 		}
 	});
 
@@ -63,7 +78,10 @@
 	async function addItem(list: ShoppingList) {
 		const text = (itemDrafts[list.id] ?? '').trim();
 		if (!text) return;
+		await addText(list, text);
+	}
 
+	async function addText(list: ShoppingList, text: string) {
 		try {
 			const created = await api.addItem(list.id, text);
 			lists = lists.map((l) => (l.id === list.id ? { ...l, items: [...l.items, created] } : l));
@@ -71,6 +89,16 @@
 		} catch {
 			toast.AddToast({ message: 'Failed to add item.', variant: ToastVariant.error });
 		}
+	}
+
+	function suggestionsFor(listId: string): SavedItem[] {
+		const draft = (itemDrafts[listId] ?? '').trim().toLowerCase();
+		if (!savedItemsEnabled || !draft) return [];
+		return savedItems.filter((s) => s.name.toLowerCase().includes(draft));
+	}
+
+	async function addSavedItem(list: ShoppingList, saved: SavedItem) {
+		await addText(list, saved.name);
 	}
 
 	async function toggleItem(list: ShoppingList, item: ShoppingListItem) {
@@ -162,12 +190,32 @@
 						{/if}
 
 						<div class="shopping-item-add">
-							<TextBox
-								label="New item"
-								id="shopping-item-input-{list.name}"
-								bind:value={itemDrafts[list.id]}
-								placeholder="Item name"
-							/>
+							<div class="shopping-item-add__field">
+								<TextBox
+									label="New item"
+									id="shopping-item-input-{list.name}"
+									bind:value={itemDrafts[list.id]}
+									placeholder="Item name"
+								/>
+								{#if suggestionsFor(list.id).length > 0}
+									<ul
+										class="saved-item-suggestions"
+										data-testid="saved-item-suggestions-{list.name}"
+									>
+										{#each suggestionsFor(list.id) as suggestion (suggestion.id)}
+											<li>
+												<button
+													class="saved-item-suggestion"
+													data-testid="saved-item-suggestion-{suggestion.name}"
+													on:click={() => addSavedItem(list, suggestion)}
+												>
+													{suggestion.name}
+												</button>
+											</li>
+										{/each}
+									</ul>
+								{/if}
+							</div>
 							<Button
 								testId="shopping-item-add-{list.name}"
 								variant="secondary"
@@ -322,6 +370,31 @@
 	.shopping-item-add :global(.text-box) {
 		box-sizing: border-box;
 		max-width: 100%;
+	}
+
+	.shopping-item-add__field {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.saved-item-suggestions {
+		list-style: none;
+		margin: var(--space-2) 0 0;
+		padding: 0;
+		display: grid;
+		gap: var(--space-1);
+	}
+
+	.saved-item-suggestion {
+		background: none;
+		border: 1px solid var(--color-border-subtle);
+		border-radius: var(--radius-sm);
+		cursor: pointer;
+		padding: var(--space-1) var(--space-2);
+		font-family: var(--font-family-primary);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		text-align: left;
 	}
 
 	.shopping-list-form__title {

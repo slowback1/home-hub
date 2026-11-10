@@ -3,10 +3,13 @@ import { vi } from 'vitest';
 import ShoppingListsPage from './+page.svelte';
 import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import type { ShoppingList, ShoppingListItem } from '$lib/api/ShoppingListApi';
+import type { SavedItem } from '$lib/api/SavedItemsApi';
 
 vi.mock('$lib/api/ShoppingListApi', () => ({ default: vi.fn() }));
+vi.mock('$lib/api/SavedItemsApi', () => ({ default: vi.fn() }));
 
 import ShoppingListApi from '$lib/api/ShoppingListApi';
+import SavedItemsApi from '$lib/api/SavedItemsApi';
 
 function makeItem(overrides: Partial<ShoppingListItem> = {}): ShoppingListItem {
 	return {
@@ -66,17 +69,54 @@ function getApiMock() {
 }
 
 function enableShoppingListsFlag() {
-	FeatureFlagService.featureFlags = [{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: true }];
+	FeatureFlagService.featureFlags = [
+		{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: true },
+		{ name: 'SAVED_ITEMS_ENABLED', isEnabled: true }
+	];
 }
 
 function disableShoppingListsFlag() {
-	FeatureFlagService.featureFlags = [{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: false }];
+	FeatureFlagService.featureFlags = [
+		{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: false },
+		{ name: 'SAVED_ITEMS_ENABLED', isEnabled: true }
+	];
+}
+
+function disableSavedItemsFlag() {
+	FeatureFlagService.featureFlags = [
+		{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: true },
+		{ name: 'SAVED_ITEMS_ENABLED', isEnabled: false }
+	];
+}
+
+function makeSavedItem(overrides: Partial<SavedItem> = {}): SavedItem {
+	return {
+		id: 's1',
+		userId: 'u1',
+		name: 'Milk',
+		createdAt: '2026-05-25T00:00:00Z',
+		...overrides
+	};
+}
+
+function mockSavedItemsApi(items: SavedItem[]) {
+	vi.mocked(SavedItemsApi).mockImplementation(
+		() => ({ list: vi.fn().mockResolvedValue(items) }) as never
+	);
+}
+
+function getSavedItemsApiMock() {
+	return vi.mocked(SavedItemsApi).mock.results[0].value as {
+		list: ReturnType<typeof vi.fn>;
+	};
 }
 
 describe('Shopping lists page', () => {
 	beforeEach(() => {
 		vi.mocked(ShoppingListApi).mockClear();
+		vi.mocked(SavedItemsApi).mockClear();
 		enableShoppingListsFlag();
+		mockSavedItemsApi([]);
 	});
 
 	it('shows disabled state when SHOPPING_LISTS_ENABLED flag is off', () => {
@@ -184,5 +224,52 @@ describe('Shopping lists page', () => {
 		expect(queryByTestId('shopping-item-input-Camping')).not.toBeInTheDocument();
 		expect(queryByTestId('shopping-item-add-Camping')).not.toBeInTheDocument();
 		expect(queryByTestId('shopping-list-complete-Camping')).not.toBeInTheDocument();
+	});
+
+	it('shows matching saved item suggestions while typing in the add-item input', async () => {
+		mockApi([makeList({ items: [] })]);
+		mockSavedItemsApi([makeSavedItem({ name: 'Milk' }), makeSavedItem({ id: 's2', name: 'Eggs' })]);
+		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
+		await waitFor(() => expect(getByTestId('shopping-list-row-Groceries')).toBeInTheDocument());
+
+		const input = getByTestId('shopping-item-input-Groceries');
+		await fireEvent.input(input, { target: { value: 'mi' } });
+
+		await waitFor(() => expect(getByTestId('saved-item-suggestion-Milk')).toBeInTheDocument());
+		expect(queryByTestId('saved-item-suggestion-Eggs')).not.toBeInTheDocument();
+	});
+
+	it('adds a picked saved item to the list as a normal unchecked item', async () => {
+		mockApi([makeList({ items: [] })]);
+		mockSavedItemsApi([makeSavedItem({ name: 'Milk' })]);
+		const { getByTestId } = render(ShoppingListsPage);
+		await waitFor(() => expect(getByTestId('shopping-list-row-Groceries')).toBeInTheDocument());
+
+		const input = getByTestId('shopping-item-input-Groceries');
+		await fireEvent.input(input, { target: { value: 'mi' } });
+		await waitFor(() => expect(getByTestId('saved-item-suggestion-Milk')).toBeInTheDocument());
+
+		await fireEvent.click(getByTestId('saved-item-suggestion-Milk'));
+
+		await waitFor(() => expect(getApiMock().addItem).toHaveBeenCalledWith('l1', 'Milk'));
+		await waitFor(() => expect(getByTestId('shopping-item-Milk')).toBeInTheDocument());
+		expect(getByTestId('shopping-item-Milk')).not.toHaveClass('shopping-item--checked');
+	});
+
+	it('does not fetch saved items or show suggestions when SAVED_ITEMS_ENABLED is off', async () => {
+		disableSavedItemsFlag();
+		mockApi([makeList({ items: [] })]);
+		mockSavedItemsApi([makeSavedItem({ name: 'Milk' })]);
+		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
+		await waitFor(() => expect(getByTestId('shopping-list-row-Groceries')).toBeInTheDocument());
+
+		const input = getByTestId('shopping-item-input-Groceries');
+		await fireEvent.input(input, { target: { value: 'mi' } });
+
+		expect(getSavedItemsApiMock().list).not.toHaveBeenCalled();
+		expect(queryByTestId('saved-item-suggestion-Milk')).not.toBeInTheDocument();
+
+		await fireEvent.click(getByTestId('shopping-item-add-Groceries'));
+		await waitFor(() => expect(getApiMock().addItem).toHaveBeenCalledWith('l1', 'mi'));
 	});
 });
