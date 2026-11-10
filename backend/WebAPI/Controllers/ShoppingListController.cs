@@ -9,11 +9,17 @@ public class ShoppingListController : ApplicationController
 {
     private readonly ICrud<ShoppingList> _lists;
     private readonly ICrud<ShoppingListItem> _items;
+    private readonly ICrud<PremadeList> _premadeLists;
+    private readonly ICrud<PremadeListItem> _premadeItems;
+    private readonly ICrud<SavedItem> _savedItems;
 
     public ShoppingListController(ICrudFactory factory) : base(factory)
     {
         _lists = Factory.GetCrud<ShoppingList>();
         _items = Factory.GetCrud<ShoppingListItem>();
+        _premadeLists = Factory.GetCrud<PremadeList>();
+        _premadeItems = Factory.GetCrud<PremadeListItem>();
+        _savedItems = Factory.GetCrud<SavedItem>();
     }
 
     [HttpGet]
@@ -79,6 +85,14 @@ public class ShoppingListController : ApplicationController
         if (string.IsNullOrWhiteSpace(request.Name))
             return BadRequest("Name is required.");
 
+        PremadeList? premade = null;
+        if (!string.IsNullOrWhiteSpace(request.PremadeListId))
+        {
+            premade = await _premadeLists.GetByIdAsync(request.PremadeListId);
+            if (premade is null || premade.UserId != CurrentUserId)
+                return NotFound();
+        }
+
         var list = new ShoppingList
         {
             Id = Guid.NewGuid().ToString(),
@@ -89,6 +103,27 @@ public class ShoppingListController : ApplicationController
         };
 
         var created = await _lists.CreateAsync(list);
+
+        if (premade is not null)
+        {
+            var memberships = await _premadeItems.QueryAsync(m => m.PremadeListId == premade.Id);
+            foreach (var membership in memberships)
+            {
+                var savedItem = await _savedItems.GetByIdAsync(membership.SavedItemId);
+                if (savedItem is null)
+                    continue;
+
+                await _items.CreateAsync(new ShoppingListItem
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    ListId = created.Id,
+                    Text = savedItem.Name,
+                    IsChecked = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
         return Ok(await ToResponse(created));
     }
 
@@ -158,7 +193,7 @@ public class ShoppingListController : ApplicationController
         };
     }
 
-    public record CreateShoppingListRequest(string? Name);
+    public record CreateShoppingListRequest(string? Name, string? PremadeListId);
     public record AddItemRequest(string? Text);
     public record ShoppingListResponse
     {

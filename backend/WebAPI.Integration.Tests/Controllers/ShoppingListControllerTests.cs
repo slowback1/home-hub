@@ -21,6 +21,9 @@ public class ShoppingListControllerTests : ControllerTestBase
     {
         InMemoryCrud<ShoppingList>.ClearStaticState();
         InMemoryCrud<ShoppingListItem>.ClearStaticState();
+        InMemoryCrud<PremadeList>.ClearStaticState();
+        InMemoryCrud<PremadeListItem>.ClearStaticState();
+        InMemoryCrud<SavedItem>.ClearStaticState();
         InMemoryCrud<AppUser>.ClearStaticState();
         _userId = await SeedTestUserAsync("Shopping Owner");
     }
@@ -455,5 +458,80 @@ public class ShoppingListControllerTests : ControllerTestBase
 
         var items = await (await GetAsUser()).Content.ReadFromJsonAsync<List<ShoppingList>>(JsonOptions);
         Assert.That(items, Is.Empty);
+    }
+
+    // --- POST /api/shopping-lists with premadeListId ---
+
+    private async Task<SavedItem> CreateSavedItemAsync(string name, string? userId = null)
+    {
+        var response = await SendAsUserAsync(
+            HttpMethod.Post, "/api/saved-items", new { Name = name }, userId ?? _userId);
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<SavedItem>())!;
+    }
+
+    private async Task<PremadeList> CreatePremadeListAsync(string name, string? userId = null)
+    {
+        var response = await SendAsUserAsync(
+            HttpMethod.Post, "/api/premade-lists", new { Name = name }, userId ?? _userId);
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<PremadeList>())!;
+    }
+
+    private async Task AddMembershipAsync(string listId, string savedItemId, string? userId = null)
+    {
+        var response = await SendAsUserAsync(
+            HttpMethod.Post, $"/api/premade-lists/{listId}/items", new { SavedItemId = savedItemId }, userId ?? _userId);
+        response.EnsureSuccessStatusCode();
+    }
+
+    [Test]
+    public async Task Create_WithPremadeList_ExpandsSavedItemsAsUncheckedSnapshots()
+    {
+        var saved1 = await CreateSavedItemAsync("Milk");
+        var saved2 = await CreateSavedItemAsync("Eggs");
+        var premade = await CreatePremadeListAsync("Weekly groceries");
+        await AddMembershipAsync(premade.Id, saved1.Id);
+        await AddMembershipAsync(premade.Id, saved2.Id);
+
+        var response = await PostAsUser(new { Name = "Shop run", PremadeListId = premade.Id });
+        var created = await response.Content.ReadFromJsonAsync<ShoppingListWithItems>(JsonOptions);
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(created!.Name, Is.EqualTo("Shop run"));
+        Assert.That(created.Items.Select(i => i.Text), Is.EquivalentTo(new[] { "Milk", "Eggs" }));
+        Assert.That(created.Items.All(i => !i.IsChecked), Is.True);
+    }
+
+    [Test]
+    public async Task Create_WithNullPremadeListId_BehavesUnchanged()
+    {
+        var response = await PostAsUser(new { Name = "Plain", PremadeListId = (string?)null });
+        var created = await response.Content.ReadFromJsonAsync<ShoppingListWithItems>(JsonOptions);
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.That(created!.Items, Is.Empty);
+    }
+
+    [Test]
+    public async Task Create_WithUnknownPremadeListId_Returns404()
+    {
+        var response = await PostAsUser(new { Name = "Shop run", PremadeListId = "does-not-exist" });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task Create_WithForeignPremadeListId_Returns404()
+    {
+        var otherUserId = await SeedTestUserAsync("Other Owner");
+        var theirs = await CreatePremadeListAsync("Theirs", otherUserId);
+
+        var response = await PostAsUser(new { Name = "Shop run", PremadeListId = theirs.Id });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+
+        var lists = await (await GetAsUser()).Content.ReadFromJsonAsync<List<ShoppingListWithItems>>(JsonOptions);
+        Assert.That(lists, Is.Empty);
     }
 }
