@@ -20,6 +20,22 @@ export class ShoppingListsPage {
 		await this.expectItem(text);
 	}
 
+	async typeItemDraft(listName: string, text: string): Promise<void> {
+		await this.page.locator(`[data-testid="shopping-item-input-${listName}"]`).fill(text);
+	}
+
+	async expectSuggestion(name: string): Promise<void> {
+		await expect(this.page.locator(`[data-testid="saved-item-suggestion-${name}"]`)).toBeVisible();
+	}
+
+	async expectNoSuggestion(name: string): Promise<void> {
+		await expect(this.page.locator(`[data-testid="saved-item-suggestion-${name}"]`)).toHaveCount(0);
+	}
+
+	async pickSuggestion(name: string): Promise<void> {
+		await this.page.locator(`[data-testid="saved-item-suggestion-${name}"]`).click();
+	}
+
 	async toggleItem(_listName: string, text: string): Promise<void> {
 		const item = this.page.locator(`[data-testid="shopping-item-${text}"]`);
 		await item.click();
