@@ -27,6 +27,8 @@ public class AppDbContext : DbContext
     public DbSet<ShoppingList> ShoppingLists => Set<ShoppingList>();
     public DbSet<ShoppingListItem> ShoppingListItems => Set<ShoppingListItem>();
     public DbSet<SavedItem> SavedItems => Set<SavedItem>();
+    public DbSet<PremadeList> PremadeLists => Set<PremadeList>();
+    public DbSet<PremadeListItem> PremadeListItems => Set<PremadeListItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -72,6 +74,15 @@ public class AppDbContext : DbContext
             .HasOne<AppUser>()
             .WithMany()
             .HasForeignKey(s => s.UserId);
+        modelBuilder.Entity<PremadeList>()
+            .HasOne<AppUser>()
+            .WithMany()
+            .HasForeignKey(l => l.UserId);
+        modelBuilder.Entity<PremadeListItem>()
+            .HasOne<PremadeList>()
+            .WithMany()
+            .HasForeignKey(i => i.PremadeListId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<ChoreTask>()
             .HasOne<AppUser>()
