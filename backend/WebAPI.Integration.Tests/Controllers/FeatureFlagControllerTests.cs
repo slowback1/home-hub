@@ -95,4 +95,20 @@ public class FeatureFlagControllerTests
         Assert.That(savedItems, Is.Not.Null);
         Assert.That(savedItems!.IsEnabled, Is.False);
     }
+
+    [Test]
+    public async Task GetAll_IncludesPremadeListsFlag_DisabledByDefault()
+    {
+        var factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder => builder.UseEnvironment("Test"));
+        var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/feature-flags");
+        var flags = await response.Content.ReadFromJsonAsync<List<FeatureFlag>>();
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        var premadeLists = flags!.SingleOrDefault(f => f.Name == "PREMADE_LISTS_ENABLED");
+        Assert.That(premadeLists, Is.Not.Null);
+        Assert.That(premadeLists!.IsEnabled, Is.False);
+    }
 }
