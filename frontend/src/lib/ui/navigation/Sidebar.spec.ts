@@ -138,6 +138,25 @@ describe('Sidebar', () => {
 		expect(queryByTestId('nav-item-saved-items')).not.toBeInTheDocument();
 	});
 
+	it('renders Premade Lists nav item when PREMADE_LISTS_ENABLED is enabled', () => {
+		FeatureFlagService.featureFlags = [
+			...ALL_NAV_FLAGS_ENABLED,
+			{ name: FeatureFlags.PREMADE_LISTS_ENABLED, isEnabled: true }
+		];
+		const { getByTestId } = render(Sidebar);
+		const item = getByTestId('nav-item-premade-lists');
+		expect(item.querySelector('a')).toHaveAttribute('href', '/premade-lists');
+	});
+
+	it('hides Premade Lists nav item when PREMADE_LISTS_ENABLED is disabled', () => {
+		FeatureFlagService.featureFlags = [
+			...ALL_NAV_FLAGS_ENABLED,
+			{ name: FeatureFlags.PREMADE_LISTS_ENABLED, isEnabled: false }
+		];
+		const { queryByTestId } = render(Sidebar);
+		expect(queryByTestId('nav-item-premade-lists')).not.toBeInTheDocument();
+	});
+
 	it('renders the Admin nav item linking to /admin/system-config', () => {
 		const { getByTestId } = render(Sidebar);
 		const item = getByTestId('nav-item-admin');
