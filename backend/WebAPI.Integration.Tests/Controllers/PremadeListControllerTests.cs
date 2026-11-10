@@ -303,4 +303,26 @@ public class PremadeListControllerTests : ControllerTestBase
             HttpMethod.Get, "/api/premade-lists", null, otherUserId)).Content.ReadFromJsonAsync<PremadeListController.PremadeListResponse[]>();
         Assert.That(theirIds!.Single(l => l.Id == theirs.Id).SavedItemIds, Is.EquivalentTo(new[] { saved.Id }));
     }
+
+    // --- DELETE /api/test/premade-lists ---
+
+    [Test]
+    public async Task TestHelper_ClearPremadeLists_DeletesAll()
+    {
+        var otherUserId = await SeedTestUserAsync("Other Owner");
+        var list = await CreatePremadeListAsync("Weekly groceries");
+        var saved = await CreateSavedItemAsync("Milk");
+        await PostMembershipAsync(list.Id, saved.Id);
+        await CreatePremadeListAsync("Theirs", otherUserId);
+
+        var clearResponse = await DeleteRawAsync("/api/test/premade-lists");
+        Assert.That(clearResponse.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+        var lists = await (await GetAsUser()).Content.ReadFromJsonAsync<PremadeList[]>();
+        Assert.That(lists, Is.Empty);
+
+        var otherLists = await (await SendAsUserAsync(HttpMethod.Get, "/api/premade-lists", null, otherUserId))
+            .Content.ReadFromJsonAsync<PremadeList[]>();
+        Assert.That(otherLists, Is.Empty);
+    }
 }

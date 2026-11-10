@@ -14,6 +14,15 @@ export class ShoppingListsPage {
 		await this.expectListRow(name);
 	}
 
+	async createListFromPremade(name: string, premadeName: string): Promise<void> {
+		await this.page.locator('[data-testid="shopping-list-form-name"]').fill(name);
+		await this.page
+			.locator('[data-testid="shopping-list-premade-picker"]')
+			.selectOption({ label: premadeName });
+		await this.page.locator('[data-testid="shopping-list-form-add"]').click();
+		await this.expectListRow(name);
+	}
+
 	async addItem(listName: string, text: string): Promise<void> {
 		await this.page.locator(`[data-testid="shopping-item-input-${listName}"]`).fill(text);
 		await this.page.locator(`[data-testid="shopping-item-add-${listName}"]`).click();

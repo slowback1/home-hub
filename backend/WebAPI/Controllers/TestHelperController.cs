@@ -136,6 +136,25 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpDelete("premade-lists")]
+    public async Task<ActionResult> ClearPremadeLists()
+    {
+        if (!IsAllowed) return NotFound();
+
+        var membershipCrud = crudFactory.GetCrud<PremadeListItem>();
+        var listCrud = crudFactory.GetCrud<PremadeList>();
+
+        var memberships = await membershipCrud.QueryAsync(_ => true);
+        foreach (var membership in memberships)
+            await membershipCrud.DeleteAsync(membership.Id);
+
+        var lists = await listCrud.QueryAsync(_ => true);
+        foreach (var list in lists)
+            await listCrud.DeleteAsync(list.Id);
+
+        return NoContent();
+    }
+
     [HttpDelete("saved-items")]
     public async Task<ActionResult> ClearSavedItems()
     {
