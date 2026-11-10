@@ -9,11 +9,13 @@ public class PremadeListController : ApplicationController
 {
     private readonly ICrud<PremadeList> _lists;
     private readonly ICrud<PremadeListItem> _memberships;
+    private readonly ICrud<SavedItem> _savedItems;
 
     public PremadeListController(ICrudFactory factory) : base(factory)
     {
         _lists = Factory.GetCrud<PremadeList>();
         _memberships = Factory.GetCrud<PremadeListItem>();
+        _savedItems = Factory.GetCrud<SavedItem>();
     }
 
     [HttpGet]
@@ -64,6 +66,49 @@ public class PremadeListController : ApplicationController
         return NoContent();
     }
 
+    [HttpPost("{id}/items")]
+    public async Task<ActionResult<PremadeListResponse>> AddItem(string id, [FromBody] AddPremadeListItemRequest request)
+    {
+        if (CurrentUserId is null) return Unauthorized();
+        if (string.IsNullOrWhiteSpace(request.SavedItemId)) return BadRequest("SavedItemId is required.");
+
+        var list = await _lists.GetByIdAsync(id);
+        if (list is null || list.UserId != CurrentUserId) return NotFound();
+
+        var savedItem = await _savedItems.GetByIdAsync(request.SavedItemId);
+        if (savedItem is null || savedItem.UserId != CurrentUserId) return NotFound();
+
+        var existing = await _memberships.QueryAsync(
+            m => m.PremadeListId == list.Id && m.SavedItemId == savedItem.Id);
+        if (existing.Any()) return Conflict();
+
+        await _memberships.CreateAsync(new PremadeListItem
+        {
+            Id = Guid.NewGuid().ToString(),
+            PremadeListId = list.Id,
+            SavedItemId = savedItem.Id,
+        });
+
+        return Ok(await ToResponse(list));
+    }
+
+    [HttpDelete("{id}/items/{savedItemId}")]
+    public async Task<ActionResult> RemoveItem(string id, string savedItemId)
+    {
+        if (CurrentUserId is null) return Unauthorized();
+
+        var list = await _lists.GetByIdAsync(id);
+        if (list is null || list.UserId != CurrentUserId) return NotFound();
+
+        var memberships = await _memberships.QueryAsync(
+            m => m.PremadeListId == list.Id && m.SavedItemId == savedItemId);
+        var membership = memberships.FirstOrDefault();
+        if (membership is null) return NotFound();
+
+        await _memberships.DeleteAsync(membership.Id);
+        return NoContent();
+    }
+
     private async Task<PremadeListResponse> ToResponse(PremadeList list)
     {
         var memberships = await _memberships.QueryAsync(m => m.PremadeListId == list.Id);
@@ -78,6 +123,7 @@ public class PremadeListController : ApplicationController
     }
 
     public record CreatePremadeListRequest(string? Name);
+    public record AddPremadeListItemRequest(string? SavedItemId);
     public record PremadeListResponse
     {
         public required string Id { get; init; }
