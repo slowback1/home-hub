@@ -7,9 +7,11 @@ import type { SavedItem } from '$lib/api/SavedItemsApi';
 
 vi.mock('$lib/api/ShoppingListApi', () => ({ default: vi.fn() }));
 vi.mock('$lib/api/SavedItemsApi', () => ({ default: vi.fn() }));
+vi.mock('$lib/api/PremadeListsApi', () => ({ default: vi.fn() }));
 
 import ShoppingListApi from '$lib/api/ShoppingListApi';
 import SavedItemsApi from '$lib/api/SavedItemsApi';
+import PremadeListsApi, { type PremadeList } from '$lib/api/PremadeListsApi';
 
 function makeItem(overrides: Partial<ShoppingListItem> = {}): ShoppingListItem {
 	return {
@@ -35,13 +37,17 @@ function makeList(overrides: Partial<ShoppingList> = {}): ShoppingList {
 	};
 }
 
-function mockApi(lists: ShoppingList[], archived: ShoppingList[] = []) {
+function mockApi(
+	lists: ShoppingList[],
+	archived: ShoppingList[] = [],
+	created: ShoppingList = makeList({ items: [] })
+) {
 	vi.mocked(ShoppingListApi).mockImplementation(
 		() =>
 			({
 				listActive: vi.fn().mockResolvedValue(lists),
 				listArchived: vi.fn().mockResolvedValue(archived),
-				create: vi.fn().mockResolvedValue(makeList({ items: [] })),
+				create: vi.fn().mockResolvedValue(created),
 				addItem: vi
 					.fn()
 					.mockImplementation((listId: string, text: string) =>
@@ -111,6 +117,31 @@ function getSavedItemsApiMock() {
 	};
 }
 
+function makePremadeList(overrides: Partial<PremadeList> = {}): PremadeList {
+	return {
+		id: 'p1',
+		userId: 'u1',
+		name: 'Weekly groceries',
+		createdAt: '2026-05-25T00:00:00Z',
+		savedItemIds: ['s1', 's2'],
+		...overrides
+	};
+}
+
+function mockPremadeListsApi(premadeLists: PremadeList[]) {
+	vi.mocked(PremadeListsApi).mockImplementation(
+		() => ({ list: vi.fn().mockResolvedValue(premadeLists) }) as never
+	);
+}
+
+function enablePremadeListsFlag() {
+	FeatureFlagService.featureFlags = [
+		{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: true },
+		{ name: 'SAVED_ITEMS_ENABLED', isEnabled: true },
+		{ name: 'PREMADE_LISTS_ENABLED', isEnabled: true }
+	];
+}
+
 describe('Shopping lists page', () => {
 	beforeEach(() => {
 		vi.mocked(ShoppingListApi).mockClear();
@@ -156,6 +187,67 @@ describe('Shopping lists page', () => {
 
 		await waitFor(() => expect(getApiMock().create).toHaveBeenCalledWith('Groceries'));
 		await waitFor(() => expect(getByTestId('shopping-list-row-Groceries')).toBeInTheDocument());
+	});
+
+	it('renders a premade-list picker when PREMADE_LISTS_ENABLED is on', async () => {
+		enablePremadeListsFlag();
+		mockPremadeListsApi([makePremadeList()]);
+		mockApi([]);
+		const { getByTestId } = render(ShoppingListsPage);
+
+		await waitFor(() => expect(getByTestId('shopping-list-premade-picker')).toBeInTheDocument());
+		const picker = () => getByTestId('shopping-list-premade-picker') as HTMLSelectElement;
+		await waitFor(() => expect(picker().options.length).toEqual(2));
+		expect(picker().value).toEqual('');
+		expect(picker().options[0].textContent).toContain('None');
+		expect(picker().options[1].textContent).toContain('Weekly groceries');
+	});
+
+	it('creates a list expanded from a chosen premade list', async () => {
+		enablePremadeListsFlag();
+		mockPremadeListsApi([makePremadeList()]);
+		mockApi(
+			[],
+			[],
+			makeList({
+				id: 'l2',
+				name: 'Trip',
+				items: [makeItem({ id: 'i1', text: 'Milk' }), makeItem({ id: 'i2', text: 'Eggs' })]
+			})
+		);
+		const { getByTestId } = render(ShoppingListsPage);
+		await waitFor(() =>
+			expect(
+				(getByTestId('shopping-list-premade-picker') as HTMLSelectElement).options.length
+			).toEqual(2)
+		);
+
+		await fireEvent.change(getByTestId('shopping-list-premade-picker'), {
+			target: { value: 'p1' }
+		});
+		await fireEvent.input(getByTestId('shopping-list-form-name'), { target: { value: 'Trip' } });
+		await fireEvent.click(getByTestId('shopping-list-form-add'));
+
+		await waitFor(() => expect(getApiMock().create).toHaveBeenCalledWith('Trip', 'p1'));
+		await waitFor(() => expect(getByTestId('shopping-list-row-Trip')).toBeInTheDocument());
+		expect(getByTestId('shopping-item-Milk')).toBeInTheDocument();
+		expect(getByTestId('shopping-item-Eggs')).toBeInTheDocument();
+	});
+
+	it('hides the premade-list picker when PREMADE_LISTS_ENABLED is off', async () => {
+		mockPremadeListsApi([]);
+		mockApi([]);
+		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
+		await waitFor(() => expect(getByTestId('shopping-lists-empty-state')).toBeInTheDocument());
+
+		expect(queryByTestId('shopping-list-premade-picker')).not.toBeInTheDocument();
+
+		await fireEvent.input(getByTestId('shopping-list-form-name'), {
+			target: { value: 'Groceries' }
+		});
+		await fireEvent.click(getByTestId('shopping-list-form-add'));
+
+		await waitFor(() => expect(getApiMock().create).toHaveBeenCalledWith('Groceries'));
 	});
 
 	it('adds a free-text item to a list, rendered unchecked', async () => {

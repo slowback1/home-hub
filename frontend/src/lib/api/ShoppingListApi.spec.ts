@@ -62,6 +62,19 @@ describe('ShoppingListApi', () => {
 		expect(result).toEqual(mockList);
 	});
 
+	it('create with premadeListId sends it in the body', async () => {
+		const mockFetch = mockApi({ '/api/shopping-lists': mockList });
+		const api = new ShoppingListApi();
+
+		const result = await api.create('Groceries', 'p1');
+
+		const [url, options] = mockFetch.mock.calls[0] as never as [string, RequestInit];
+		expect(url).toContain('/api/shopping-lists');
+		expect(options.method).toEqual('POST');
+		expect(JSON.parse(options.body as string)).toEqual({ name: 'Groceries', premadeListId: 'p1' });
+		expect(result).toEqual(mockList);
+	});
+
 	it('addItem calls POST /api/shopping-lists/{id}/items with correct body', async () => {
 		const mockFetch = mockApi({ '/api/shopping-lists/l1/items': mockItem });
 		const api = new ShoppingListApi();

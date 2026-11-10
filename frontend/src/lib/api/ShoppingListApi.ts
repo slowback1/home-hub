@@ -33,8 +33,8 @@ export default class ShoppingListApi extends BaseApi {
 		return this.Get<ShoppingList[]>('/api/shopping-lists', { status: 'archived' });
 	}
 
-	async create(name: string): Promise<ShoppingList> {
-		return this.Post<ShoppingList>('/api/shopping-lists', { name });
+	async create(name: string, premadeListId?: string): Promise<ShoppingList> {
+		return this.Post<ShoppingList>('/api/shopping-lists', { name, premadeListId });
 	}
 
 	async addItem(listId: string, text: string): Promise<ShoppingListItem> {

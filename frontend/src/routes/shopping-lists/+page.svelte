@@ -11,19 +11,24 @@
 		type ShoppingListItem
 	} from '$lib/api/ShoppingListApi';
 	import SavedItemsApi, { type SavedItem } from '$lib/api/SavedItemsApi';
+	import PremadeListsApi, { type PremadeList } from '$lib/api/PremadeListsApi';
 	import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 
 	const ICON_LG = 24;
 
 	const api = new ShoppingListApi();
 	const savedItemsApi = new SavedItemsApi();
+	const premadeApi = new PremadeListsApi();
 	const toast = new ToastService();
 
 	let loading = true;
 	let error = false;
 	let enabled = true;
 	let savedItemsEnabled = false;
+	let premadeEnabled = false;
 	let savedItems: SavedItem[] = [];
+	let premadeLists: PremadeList[] = [];
+	let premadeDraft = '';
 	let lists: ShoppingList[] = [];
 	let archivedLists: ShoppingList[] = [];
 	let newListName = '';
@@ -35,6 +40,9 @@
 		);
 		savedItemsEnabled = FeatureFlagService.featureFlags.some(
 			(f) => f.name === 'SAVED_ITEMS_ENABLED' && f.isEnabled
+		);
+		premadeEnabled = FeatureFlagService.featureFlags.some(
+			(f) => f.name === 'PREMADE_LISTS_ENABLED' && f.isEnabled
 		);
 
 		if (!enabled) {
@@ -52,23 +60,40 @@
 			loading = false;
 		}
 
-		if (savedItemsEnabled) {
-			try {
-				savedItems = await savedItemsApi.list();
-			} catch {
-				savedItems = [];
-			}
-		}
+		if (savedItemsEnabled) await loadSavedItems();
+		if (premadeEnabled) await loadPremadeLists();
 	});
+
+	async function loadSavedItems() {
+		try {
+			savedItems = await savedItemsApi.list();
+		} catch {
+			savedItems = [];
+		}
+	}
+
+	async function loadPremadeLists() {
+		try {
+			premadeLists = await premadeApi.list();
+		} catch {
+			premadeLists = [];
+		}
+	}
+
+	function createViaApi(name: string) {
+		if (premadeEnabled && premadeDraft) return api.create(name, premadeDraft);
+		return api.create(name);
+	}
 
 	async function createList() {
 		const name = newListName.trim();
 		if (!name) return;
 
 		try {
-			const created = await api.create(name);
+			const created = await createViaApi(name);
 			lists = [...lists, created];
 			newListName = '';
+			premadeDraft = '';
 			toast.AddToast({ message: 'List created.', variant: ToastVariant.success });
 		} catch {
 			toast.AddToast({ message: 'Failed to create list.', variant: ToastVariant.error });
@@ -237,6 +262,21 @@
 				bind:value={newListName}
 				placeholder="List name"
 			/>
+			{#if premadeEnabled}
+				<div class="shopping-list-premade-pick">
+					<label for="shopping-list-premade-picker">Premade list</label>
+					<select
+						id="shopping-list-premade-picker"
+						data-testid="shopping-list-premade-picker"
+						bind:value={premadeDraft}
+					>
+						<option value="">None</option>
+						{#each premadeLists as premade (premade.id)}
+							<option value={premade.id}>{premade.name}</option>
+						{/each}
+					</select>
+				</div>
+			{/if}
 			<div class="form-actions">
 				<Button testId="shopping-list-form-add" variant="primary" onClick={createList}>Add</Button>
 			</div>
@@ -400,6 +440,21 @@
 	.shopping-list-form__title {
 		margin: 0 0 var(--space-3);
 		font-size: var(--font-size-lg);
+		color: var(--color-text-primary);
+	}
+
+	.shopping-list-premade-pick {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		margin-top: var(--space-3);
+	}
+
+	.shopping-list-premade-pick select {
+		padding: var(--space-2);
+		border: 1px solid var(--color-border-subtle);
+		border-radius: var(--radius-md, 8px);
+		background: var(--color-surface, white);
 		color: var(--color-text-primary);
 	}
 
