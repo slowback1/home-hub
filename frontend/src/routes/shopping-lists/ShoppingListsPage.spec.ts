@@ -300,7 +300,7 @@ describe('Shopping lists page', () => {
 		);
 	});
 
-	it('renders archived lists read-only with items and archive date', async () => {
+	it('does not fetch or render archived lists', async () => {
 		mockApi(
 			[],
 			[
@@ -309,23 +309,16 @@ describe('Shopping lists page', () => {
 					name: 'Camping',
 					status: 'archived',
 					archivedAt: '2026-06-01T10:00:00Z',
-					items: [
-						makeItem({ id: 'i3', listId: 'l2', text: 'Tent', isChecked: true }),
-						makeItem({ id: 'i4', listId: 'l2', text: 'Fuel', isChecked: false })
-					]
+					items: [makeItem({ id: 'i3', listId: 'l2', text: 'Tent', isChecked: true })]
 				})
 			]
 		);
 		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
 
-		await waitFor(() => expect(getByTestId('shopping-archived-row-Camping')).toBeInTheDocument());
-		expect(getByTestId('shopping-archived-item-Tent')).toHaveClass('shopping-item--checked');
-		expect(getByTestId('shopping-archived-item-Fuel')).not.toHaveClass('shopping-item--checked');
-		expect(getByTestId('shopping-archived-date-Camping')).toBeInTheDocument();
+		await waitFor(() => expect(getByTestId('shopping-lists-empty-state')).toBeInTheDocument());
 
-		expect(queryByTestId('shopping-item-input-Camping')).not.toBeInTheDocument();
-		expect(queryByTestId('shopping-item-add-Camping')).not.toBeInTheDocument();
-		expect(queryByTestId('shopping-list-complete-Camping')).not.toBeInTheDocument();
+		expect(queryByTestId('shopping-lists-archived')).not.toBeInTheDocument();
+		expect(queryByTestId('shopping-archived-row-Camping')).not.toBeInTheDocument();
 	});
 
 	it('shows matching saved item suggestions while typing in the add-item input', async () => {

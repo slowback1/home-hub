@@ -31,7 +31,6 @@
 	let premadeLists: PremadeList[] = [];
 	let premadeDraft = '';
 	let lists: ShoppingList[] = [];
-	let archivedLists: ShoppingList[] = [];
 	let newListName = '';
 	let itemDrafts: Record<string, string> = {};
 
@@ -57,9 +56,7 @@
 		}
 
 		try {
-			const [active, archived] = await Promise.all([api.listActive(), api.listArchived()]);
-			lists = active;
-			archivedLists = archived;
+			lists = await api.listActive();
 		} catch {
 			error = true;
 		} finally {
@@ -145,17 +142,12 @@
 
 	async function completeList(list: ShoppingList) {
 		try {
-			const completed = await api.complete(list.id);
+			await api.complete(list.id);
 			lists = lists.filter((l) => l.id !== list.id);
-			archivedLists = [...archivedLists, completed];
 			toast.AddToast({ message: 'List completed.', variant: ToastVariant.success });
 		} catch {
 			toast.AddToast({ message: 'Failed to complete list.', variant: ToastVariant.error });
 		}
-	}
-
-	function formatArchivedDate(list: ShoppingList): string {
-		return list.archivedAt ? new Date(list.archivedAt).toLocaleDateString() : '';
 	}
 </script>
 
@@ -305,45 +297,6 @@
 				<Button testId="shopping-list-form-add" variant="primary" onClick={createList}>Add</Button>
 			</div>
 		</section>
-
-		{#if archivedLists.length > 0}
-			<section class="shopping-archived" data-testid="shopping-lists-archived">
-				<h3 class="shopping-archived__title">Archived</h3>
-				<ul class="shopping-list-list">
-					{#each archivedLists as list (list.id)}
-						<li
-							class="shopping-list-card shopping-list-card--archived"
-							data-testid="shopping-archived-row-{list.name}"
-						>
-							<div class="shopping-list-card__header">
-								<h2 class="shopping-list-name">{list.name}</h2>
-								<span
-									class="shopping-archived-date"
-									data-testid="shopping-archived-date-{list.name}"
-								>
-									{formatArchivedDate(list)}
-								</span>
-							</div>
-							{#if list.items.length > 0}
-								<ul class="shopping-item-list">
-									{#each list.items as item (item.id)}
-										<li>
-											<span
-												class="shopping-item"
-												class:shopping-item--checked={item.isChecked}
-												data-testid="shopping-archived-item-{item.text}"
-											>
-												{item.text}
-											</span>
-										</li>
-									{/each}
-								</ul>
-							{/if}
-						</li>
-					{/each}
-				</ul>
-			</section>
-		{/if}
 	{/if}
 </div>
 
@@ -481,25 +434,6 @@
 
 	.shopping-list-premade-pick {
 		margin-top: var(--space-3);
-	}
-
-	.shopping-archived {
-		margin-top: var(--space-6);
-	}
-
-	.shopping-archived__title {
-		margin: 0 0 var(--space-3);
-		font-size: var(--font-size-lg);
-		color: var(--color-text-secondary);
-	}
-
-	.shopping-list-card--archived {
-		opacity: 0.85;
-	}
-
-	.shopping-archived-date {
-		font-size: var(--font-size-sm);
-		color: var(--color-text-secondary);
 	}
 
 	.form-actions {
