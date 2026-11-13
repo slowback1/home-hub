@@ -5,6 +5,7 @@
 	import Spinner from '$lib/ui/feedback/Spinner.svelte';
 	import Button from '$lib/ui/buttons/Button/Button.svelte';
 	import TextBox from '$lib/ui/inputs/TextBox/TextBox.svelte';
+	import Select from '$lib/ui/inputs/Select/Select.svelte';
 	import ToastService, { ToastVariant } from '$lib/ui/containers/toast/ToastService';
 	import PremadeListsApi, { type PremadeList } from '$lib/api/PremadeListsApi';
 	import SavedItemsApi, { type SavedItem } from '$lib/api/SavedItemsApi';
@@ -23,6 +24,11 @@
 	let savedItems: SavedItem[] = [];
 	let newListName = '';
 	let pickDrafts: Record<string, string> = {};
+
+	$: pickOptions = [
+		{ value: '', label: 'Pick a saved item…' },
+		...savedItems.map((savedItem) => ({ value: savedItem.id, label: savedItem.name }))
+	];
 
 	onMount(async () => {
 		enabled = FeatureFlagService.featureFlags.some(
@@ -163,16 +169,12 @@
 						{/if}
 
 						<div class="premade-list-pick">
-							<select
+							<Select
 								id="premade-list-pick-{list.name}"
 								data-testid="premade-list-pick-{list.name}"
 								bind:value={pickDrafts[list.id]}
-							>
-								<option value="">Pick a saved item…</option>
-								{#each savedItems as savedItem (savedItem.id)}
-									<option value={savedItem.id}>{savedItem.name}</option>
-								{/each}
-							</select>
+								options={pickOptions}
+							/>
 							<Button
 								testId="premade-list-add-item-{list.name}"
 								variant="primary"
@@ -279,14 +281,6 @@
 		align-items: center;
 		gap: var(--space-3);
 		margin-top: var(--space-4);
-	}
-
-	.premade-list-pick select {
-		padding: var(--space-2);
-		border: 1px solid var(--color-border-subtle);
-		border-radius: var(--radius-md, 8px);
-		background: var(--color-surface, white);
-		color: var(--color-text-primary);
 	}
 
 	.premade-list-form__title {

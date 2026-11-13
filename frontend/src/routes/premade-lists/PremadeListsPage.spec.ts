@@ -125,6 +125,16 @@ describe('Premade lists page', () => {
 		);
 	});
 
+	it('styles the saved-item picker with the app standard select styling', async () => {
+		mockApis([makeList({ id: 'p1', name: 'Weekly groceries' })]);
+		const { getByTestId } = render(PremadeListsPage);
+		await waitFor(() =>
+			expect(getByTestId('premade-list-pick-Weekly groceries')).toBeInTheDocument()
+		);
+
+		expect(getByTestId('premade-list-pick-Weekly groceries')).toHaveClass('select__input');
+	});
+
 	it('removes a saved item from a premade list', async () => {
 		mockApis([makeList({ id: 'p1', name: 'Weekly groceries', savedItemIds: ['s1'] })]);
 		const { getByTestId, queryByTestId } = render(PremadeListsPage);
