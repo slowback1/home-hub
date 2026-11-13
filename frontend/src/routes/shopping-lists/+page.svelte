@@ -5,6 +5,7 @@
 	import Spinner from '$lib/ui/feedback/Spinner.svelte';
 	import Button from '$lib/ui/buttons/Button/Button.svelte';
 	import TextBox from '$lib/ui/inputs/TextBox/TextBox.svelte';
+	import Select from '$lib/ui/inputs/Select/Select.svelte';
 	import ToastService, { ToastVariant } from '$lib/ui/containers/toast/ToastService';
 	import ShoppingListApi, {
 		type ShoppingList,
@@ -33,6 +34,11 @@
 	let archivedLists: ShoppingList[] = [];
 	let newListName = '';
 	let itemDrafts: Record<string, string> = {};
+
+	$: premadeOptions = [
+		{ value: '', label: 'None' },
+		...premadeLists.map((premade) => ({ value: premade.id, label: premade.name }))
+	];
 
 	onMount(async () => {
 		enabled = FeatureFlagService.featureFlags.some(
@@ -286,17 +292,13 @@
 			/>
 			{#if premadeEnabled}
 				<div class="shopping-list-premade-pick">
-					<label for="shopping-list-premade-picker">Premade list</label>
-					<select
+					<Select
+						label="Premade list"
 						id="shopping-list-premade-picker"
 						data-testid="shopping-list-premade-picker"
 						bind:value={premadeDraft}
-					>
-						<option value="">None</option>
-						{#each premadeLists as premade (premade.id)}
-							<option value={premade.id}>{premade.name}</option>
-						{/each}
-					</select>
+						options={premadeOptions}
+					/>
 				</div>
 			{/if}
 			<div class="form-actions">
@@ -483,18 +485,7 @@
 	}
 
 	.shopping-list-premade-pick {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
 		margin-top: var(--space-3);
-	}
-
-	.shopping-list-premade-pick select {
-		padding: var(--space-2);
-		border: 1px solid var(--color-border-subtle);
-		border-radius: var(--radius-md, 8px);
-		background: var(--color-surface, white);
-		color: var(--color-text-primary);
 	}
 
 	.shopping-archived {

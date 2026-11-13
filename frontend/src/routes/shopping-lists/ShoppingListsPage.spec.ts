@@ -203,6 +203,16 @@ describe('Shopping lists page', () => {
 		expect(picker().options[1].textContent).toContain('Weekly groceries');
 	});
 
+	it('styles the premade-list picker with the app standard select styling', async () => {
+		enablePremadeListsFlag();
+		mockPremadeListsApi([makePremadeList()]);
+		mockApi([]);
+		const { getByTestId } = render(ShoppingListsPage);
+
+		await waitFor(() => expect(getByTestId('shopping-list-premade-picker')).toBeInTheDocument());
+		expect(getByTestId('shopping-list-premade-picker')).toHaveClass('select__input');
+	});
+
 	it('creates a list expanded from a chosen premade list', async () => {
 		enablePremadeListsFlag();
 		mockPremadeListsApi([makePremadeList()]);
