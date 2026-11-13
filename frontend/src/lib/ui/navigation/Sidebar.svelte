@@ -13,8 +13,6 @@
 		Footprints,
 		Disc3,
 		ShoppingBasket,
-		Package,
-		ListTodo,
 		ChevronLeft,
 		ChevronRight,
 		LogOut
@@ -95,20 +93,6 @@
 			label: 'Shopping Lists',
 			icon: ShoppingBasket,
 			flag: FeatureFlags.SHOPPING_LISTS_ENABLED
-		},
-		{
-			testId: 'nav-item-saved-items',
-			href: '/saved-items',
-			label: 'Saved Items',
-			icon: Package,
-			flag: FeatureFlags.SAVED_ITEMS_ENABLED
-		},
-		{
-			testId: 'nav-item-premade-lists',
-			href: '/premade-lists',
-			label: 'Premade Lists',
-			icon: ListTodo,
-			flag: FeatureFlags.PREMADE_LISTS_ENABLED
 		},
 		{
 			testId: 'nav-item-comfyui',

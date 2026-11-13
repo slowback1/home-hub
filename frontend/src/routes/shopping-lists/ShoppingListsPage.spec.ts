@@ -348,6 +348,43 @@ describe('Shopping lists page', () => {
 		expect(getByTestId('shopping-item-Milk')).not.toHaveClass('shopping-item--checked');
 	});
 
+	it('renders a Saved Items link on the page when SAVED_ITEMS_ENABLED is on', async () => {
+		mockApi([]);
+		const { getByTestId } = render(ShoppingListsPage);
+		await waitFor(() => expect(getByTestId('shopping-lists-empty-state')).toBeInTheDocument());
+
+		const link = getByTestId('shopping-lists-saved-items-link');
+		expect(link).toHaveAttribute('href', '/saved-items');
+	});
+
+	it('hides the Saved Items link when SAVED_ITEMS_ENABLED is off', async () => {
+		disableSavedItemsFlag();
+		mockApi([]);
+		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
+		await waitFor(() => expect(getByTestId('shopping-lists-empty-state')).toBeInTheDocument());
+
+		expect(queryByTestId('shopping-lists-saved-items-link')).not.toBeInTheDocument();
+	});
+
+	it('renders a Premade Lists link on the page when PREMADE_LISTS_ENABLED is on', async () => {
+		enablePremadeListsFlag();
+		mockPremadeListsApi([]);
+		mockApi([]);
+		const { getByTestId } = render(ShoppingListsPage);
+		await waitFor(() => expect(getByTestId('shopping-lists-empty-state')).toBeInTheDocument());
+
+		const link = getByTestId('shopping-lists-premade-lists-link');
+		expect(link).toHaveAttribute('href', '/premade-lists');
+	});
+
+	it('hides the Premade Lists link when PREMADE_LISTS_ENABLED is off', async () => {
+		mockApi([]);
+		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
+		await waitFor(() => expect(getByTestId('shopping-lists-empty-state')).toBeInTheDocument());
+
+		expect(queryByTestId('shopping-lists-premade-lists-link')).not.toBeInTheDocument();
+	});
+
 	it('does not fetch saved items or show suggestions when SAVED_ITEMS_ENABLED is off', async () => {
 		disableSavedItemsFlag();
 		mockApi([makeList({ items: [] })]);

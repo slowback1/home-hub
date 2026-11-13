@@ -174,6 +174,28 @@
 	{:else if error}
 		<p class="shopping-lists-error" role="alert">Failed to load shopping lists.</p>
 	{:else}
+		{#if savedItemsEnabled || premadeEnabled}
+			<nav class="shopping-lists-subnav">
+				{#if savedItemsEnabled}
+					<a
+						class="shopping-lists-subnav__link"
+						href="/saved-items"
+						data-testid="shopping-lists-saved-items-link"
+					>
+						Saved Items
+					</a>
+				{/if}
+				{#if premadeEnabled}
+					<a
+						class="shopping-lists-subnav__link"
+						href="/premade-lists"
+						data-testid="shopping-lists-premade-lists-link"
+					>
+						Premade Lists
+					</a>
+				{/if}
+			</nav>
+		{/if}
 		{#if lists.length === 0}
 			<p class="shopping-lists-empty" data-testid="shopping-lists-empty-state">
 				No shopping lists yet — create your first one below.
@@ -343,6 +365,23 @@
 	.shopping-lists-empty,
 	.shopping-list-hint {
 		color: var(--color-text-secondary);
+	}
+
+	.shopping-lists-subnav {
+		display: flex;
+		gap: var(--space-4);
+		margin-bottom: var(--space-6);
+	}
+
+	.shopping-lists-subnav__link {
+		color: var(--color-brand-lighter);
+		font-size: var(--font-size-sm);
+		font-weight: var(--font-weight-medium);
+		text-decoration: none;
+	}
+
+	.shopping-lists-subnav__link:hover {
+		text-decoration: underline;
 	}
 
 	.shopping-lists-error {

@@ -119,39 +119,19 @@ describe('Sidebar', () => {
 		expect(queryByTestId('nav-item-shopping-lists')).not.toBeInTheDocument();
 	});
 
-	it('renders Saved Items nav item when SAVED_ITEMS_ENABLED is enabled', () => {
+	it('does not render a Saved Items nav item even when SAVED_ITEMS_ENABLED is enabled', () => {
 		FeatureFlagService.featureFlags = [
 			...ALL_NAV_FLAGS_ENABLED,
 			{ name: FeatureFlags.SAVED_ITEMS_ENABLED, isEnabled: true }
-		];
-		const { getByTestId } = render(Sidebar);
-		const item = getByTestId('nav-item-saved-items');
-		expect(item.querySelector('a')).toHaveAttribute('href', '/saved-items');
-	});
-
-	it('hides Saved Items nav item when SAVED_ITEMS_ENABLED is disabled', () => {
-		FeatureFlagService.featureFlags = [
-			...ALL_NAV_FLAGS_ENABLED,
-			{ name: FeatureFlags.SAVED_ITEMS_ENABLED, isEnabled: false }
 		];
 		const { queryByTestId } = render(Sidebar);
 		expect(queryByTestId('nav-item-saved-items')).not.toBeInTheDocument();
 	});
 
-	it('renders Premade Lists nav item when PREMADE_LISTS_ENABLED is enabled', () => {
+	it('does not render a Premade Lists nav item even when PREMADE_LISTS_ENABLED is enabled', () => {
 		FeatureFlagService.featureFlags = [
 			...ALL_NAV_FLAGS_ENABLED,
 			{ name: FeatureFlags.PREMADE_LISTS_ENABLED, isEnabled: true }
-		];
-		const { getByTestId } = render(Sidebar);
-		const item = getByTestId('nav-item-premade-lists');
-		expect(item.querySelector('a')).toHaveAttribute('href', '/premade-lists');
-	});
-
-	it('hides Premade Lists nav item when PREMADE_LISTS_ENABLED is disabled', () => {
-		FeatureFlagService.featureFlags = [
-			...ALL_NAV_FLAGS_ENABLED,
-			{ name: FeatureFlags.PREMADE_LISTS_ENABLED, isEnabled: false }
 		];
 		const { queryByTestId } = render(Sidebar);
 		expect(queryByTestId('nav-item-premade-lists')).not.toBeInTheDocument();
