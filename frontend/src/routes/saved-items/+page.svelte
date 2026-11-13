@@ -226,11 +226,6 @@
 		color: var(--color-text-primary);
 	}
 
-	.saved-item-edit :global(.text-box) {
-		box-sizing: border-box;
-		max-width: 100%;
-	}
-
 	.form-actions {
 		display: flex;
 		gap: var(--space-2);

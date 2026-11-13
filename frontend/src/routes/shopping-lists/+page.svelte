@@ -448,11 +448,6 @@
 		margin-top: var(--space-3);
 	}
 
-	.shopping-item-add :global(.text-box) {
-		box-sizing: border-box;
-		max-width: 100%;
-	}
-
 	.shopping-item-add__field {
 		flex: 1;
 		min-width: 0;

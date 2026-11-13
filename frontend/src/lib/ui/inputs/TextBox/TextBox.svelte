@@ -43,6 +43,7 @@
 	}
 
 	.text-box {
+		box-sizing: border-box;
 		width: 100%;
 		padding: var(--space-2) var(--space-3);
 		background-color: var(--color-surface-raised);
