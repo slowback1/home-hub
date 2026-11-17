@@ -71,4 +71,18 @@ describe('PremadeListsApi', () => {
 		expect(url).toContain('/api/premade-lists/p1/items/s1');
 		expect(options.method).toEqual('DELETE');
 	});
+
+	it('moveItem calls POST /api/premade-lists/{id}/items/{savedItemId}/move with correct body', async () => {
+		const moved = { ...mockList, savedItemIds: ['s2', 's1'] };
+		const mockFetch = mockApi({ '/api/premade-lists/p1/items/s1/move': moved });
+		const api = new PremadeListsApi();
+
+		const result = await api.moveItem('p1', 's1', 'down');
+
+		const [url, options] = mockFetch.mock.calls[0] as never as [string, RequestInit];
+		expect(url).toContain('/api/premade-lists/p1/items/s1/move');
+		expect(options.method).toEqual('POST');
+		expect(JSON.parse(options.body as string)).toEqual({ direction: 'down' });
+		expect(result).toEqual(moved);
+	});
 });

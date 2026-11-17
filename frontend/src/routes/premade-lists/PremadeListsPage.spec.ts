@@ -28,6 +28,15 @@ function makeSavedItem(id: string, name: string): SavedItem {
 
 const savedItems = [makeSavedItem('s1', 'Milk'), makeSavedItem('s2', 'Eggs')];
 
+function moveSavedItemIds(ids: string[], savedItemId: string, direction: string): string[] {
+	const result = [...ids];
+	const index = result.indexOf(savedItemId);
+	const target = direction === 'up' ? index - 1 : index + 1;
+	if (index < 0 || target < 0 || target >= result.length) return result;
+	[result[index], result[target]] = [result[target], result[index]];
+	return result;
+}
+
 function mockApis(lists: PremadeList[]) {
 	vi.mocked(SavedItemsApi).mockImplementation(
 		() => ({ list: vi.fn().mockResolvedValue(savedItems) }) as never
@@ -49,7 +58,14 @@ function mockApis(lists: PremadeList[]) {
 						})
 					)
 				),
-				removeItem: vi.fn().mockResolvedValue(undefined)
+				removeItem: vi.fn().mockResolvedValue(undefined),
+				moveItem: vi
+					.fn()
+					.mockImplementation((id: string, savedItemId: string, direction: string) => {
+						const source = lists.find((l) => l.id === id);
+						const ids = moveSavedItemIds(source?.savedItemIds ?? [], savedItemId, direction);
+						return Promise.resolve(makeList({ id, name: source?.name ?? '', savedItemIds: ids }));
+					})
 			}) as never
 	);
 }
@@ -61,6 +77,7 @@ function getApiMock() {
 		delete: ReturnType<typeof vi.fn>;
 		addItem: ReturnType<typeof vi.fn>;
 		removeItem: ReturnType<typeof vi.fn>;
+		moveItem: ReturnType<typeof vi.fn>;
 	};
 }
 
@@ -163,5 +180,35 @@ describe('Premade lists page', () => {
 		await waitFor(() =>
 			expect(queryByTestId('premade-list-row-Weekly groceries')).not.toBeInTheDocument()
 		);
+	});
+
+	it('renders move buttons hiding up on the first item and down on the last', async () => {
+		mockApis([makeList({ id: 'p1', name: 'Weekly groceries', savedItemIds: ['s1', 's2'] })]);
+		const { getByTestId, queryByTestId } = render(PremadeListsPage);
+		await waitFor(() =>
+			expect(getByTestId('premade-list-item-Weekly groceries-Milk')).toBeInTheDocument()
+		);
+
+		expect(queryByTestId('premade-list-move-up-Weekly groceries-Milk')).not.toBeInTheDocument();
+		expect(getByTestId('premade-list-move-down-Weekly groceries-Milk')).toBeInTheDocument();
+		expect(getByTestId('premade-list-move-up-Weekly groceries-Eggs')).toBeInTheDocument();
+		expect(queryByTestId('premade-list-move-down-Weekly groceries-Eggs')).not.toBeInTheDocument();
+	});
+
+	it('moves a saved item down and reorders the list', async () => {
+		mockApis([makeList({ id: 'p1', name: 'Weekly groceries', savedItemIds: ['s1', 's2'] })]);
+		const { getByTestId } = render(PremadeListsPage);
+		await waitFor(() =>
+			expect(getByTestId('premade-list-item-Weekly groceries-Milk')).toBeInTheDocument()
+		);
+
+		await fireEvent.click(getByTestId('premade-list-move-down-Weekly groceries-Milk'));
+
+		await waitFor(() => expect(getApiMock().moveItem).toHaveBeenCalledWith('p1', 's1', 'down'));
+		await waitFor(() => {
+			const eggs = getByTestId('premade-list-item-Weekly groceries-Eggs');
+			const milk = getByTestId('premade-list-item-Weekly groceries-Milk');
+			expect(eggs.compareDocumentPosition(milk) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+		});
 	});
 });

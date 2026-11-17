@@ -32,4 +32,10 @@ export default class PremadeListsApi extends BaseApi {
 	async removeItem(id: string, savedItemId: string): Promise<void> {
 		return this.Delete<void>(`/api/premade-lists/${id}/items/${savedItemId}`);
 	}
+
+	async moveItem(id: string, savedItemId: string, direction: 'up' | 'down'): Promise<PremadeList> {
+		return this.Post<PremadeList>(`/api/premade-lists/${id}/items/${savedItemId}/move`, {
+			direction
+		});
+	}
 }

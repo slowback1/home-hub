@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { ListTodo } from 'lucide-svelte';
+	import { ListTodo, ArrowUp, ArrowDown } from 'lucide-svelte';
 	import Heading from '$lib/ui/typography/Heading/Heading.svelte';
 	import Spinner from '$lib/ui/feedback/Spinner.svelte';
 	import Button from '$lib/ui/buttons/Button/Button.svelte';
@@ -12,6 +12,7 @@
 	import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 
 	const ICON_LG = 24;
+	const ICON_SM = 16;
 
 	const premadeApi = new PremadeListsApi();
 	const savedApi = new SavedItemsApi();
@@ -104,6 +105,15 @@
 			toast.AddToast({ message: 'Failed to remove saved item.', variant: ToastVariant.error });
 		}
 	}
+
+	async function moveSavedItem(list: PremadeList, savedItemId: string, direction: 'up' | 'down') {
+		try {
+			const updated = await premadeApi.moveItem(list.id, savedItemId, direction);
+			lists = lists.map((l) => (l.id === list.id ? updated : l));
+		} catch {
+			toast.AddToast({ message: 'Failed to move saved item.', variant: ToastVariant.error });
+		}
+	}
 </script>
 
 <svelte:head>
@@ -148,19 +158,41 @@
 
 						{#if list.savedItemIds.length > 0}
 							<ul class="premade-list-items">
-								{#each list.savedItemIds as savedItemId (savedItemId)}
+								{#each list.savedItemIds as savedItemId, itemIndex (savedItemId)}
 									<li
 										class="premade-list-item"
 										data-testid="premade-list-item-{list.name}-{savedItemName(savedItemId)}"
 									>
 										<span>{savedItemName(savedItemId)}</span>
-										<Button
-											testId="premade-list-remove-item-{list.name}-{savedItemName(savedItemId)}"
-											variant="secondary"
-											onClick={() => removeSavedItem(list, savedItemId)}
-										>
-											Remove
-										</Button>
+										<div class="premade-list-item__actions">
+											{#if itemIndex > 0}
+												<Button
+													testId="premade-list-move-up-{list.name}-{savedItemName(savedItemId)}"
+													variant="secondary"
+													size="small"
+													onClick={() => moveSavedItem(list, savedItemId, 'up')}
+												>
+													<ArrowUp size={ICON_SM} aria-hidden="true" />
+												</Button>
+											{/if}
+											{#if itemIndex < list.savedItemIds.length - 1}
+												<Button
+													testId="premade-list-move-down-{list.name}-{savedItemName(savedItemId)}"
+													variant="secondary"
+													size="small"
+													onClick={() => moveSavedItem(list, savedItemId, 'down')}
+												>
+													<ArrowDown size={ICON_SM} aria-hidden="true" />
+												</Button>
+											{/if}
+											<Button
+												testId="premade-list-remove-item-{list.name}-{savedItemName(savedItemId)}"
+												variant="secondary"
+												onClick={() => removeSavedItem(list, savedItemId)}
+											>
+												Remove
+											</Button>
+										</div>
 									</li>
 								{/each}
 							</ul>
@@ -269,6 +301,12 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-3);
+	}
+
+	.premade-list-item__actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
 	}
 
 	.premade-list-items-empty {
