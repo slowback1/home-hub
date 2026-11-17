@@ -65,6 +65,35 @@ public class PremadeListTests
     }
 
     [Test]
+    public async Task PremadeListItems_CanStoreAndRetrieveSortOrder()
+    {
+        using var ctx = CreateContext();
+        var list = new PremadeList
+        {
+            Id = Guid.NewGuid().ToString(),
+            UserId = "user-1",
+            Name = "Weekly groceries",
+            CreatedAt = DateTime.UtcNow,
+        };
+        var membership = new PremadeListItem
+        {
+            Id = Guid.NewGuid().ToString(),
+            PremadeListId = list.Id,
+            SavedItemId = "saved-1",
+            CreatedAt = DateTime.UtcNow,
+            SortOrder = 7,
+        };
+
+        ctx.PremadeLists.Add(list);
+        ctx.PremadeListItems.Add(membership);
+        await ctx.SaveChangesAsync();
+
+        var saved = await ctx.PremadeListItems.FirstOrDefaultAsync(i => i.Id == membership.Id);
+        Assert.That(saved, Is.Not.Null);
+        Assert.That(saved!.SortOrder, Is.EqualTo(7));
+    }
+
+    [Test]
     public async Task PremadeListItems_CascadeDeleteWithList()
     {
         using var ctx = CreateContext();
