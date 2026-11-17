@@ -304,6 +304,133 @@ public class PremadeListControllerTests : ControllerTestBase
         Assert.That(theirIds!.Single(l => l.Id == theirs.Id).SavedItemIds, Is.EquivalentTo(new[] { saved.Id }));
     }
 
+    // --- Move endpoint ---
+
+    private Task<HttpResponseMessage> MoveItemAsync(
+        string listId, string savedItemId, string direction, string? userId = null) =>
+        SendAsUserAsync(
+            HttpMethod.Post, $"/api/premade-lists/{listId}/items/{savedItemId}/move", new { Direction = direction }, userId ?? _userId);
+
+    private async Task<(PremadeList list, SavedItem a, SavedItem b, SavedItem c)> SeedThreeItemsAsync()
+    {
+        var list = await CreatePremadeListAsync("Weekly groceries");
+        var a = await CreateSavedItemAsync("A");
+        var b = await CreateSavedItemAsync("B");
+        var c = await CreateSavedItemAsync("C");
+        await PostMembershipAsync(list.Id, a.Id);
+        await PostMembershipAsync(list.Id, b.Id);
+        await PostMembershipAsync(list.Id, c.Id);
+        return (list, a, b, c);
+    }
+
+    [Test]
+    public async Task PostMove_Down_SwapsItemWithNext()
+    {
+        var (list, a, b, c) = await SeedThreeItemsAsync();
+
+        var response = await MoveItemAsync(list.Id, b.Id, "down");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var ids = await GetSavedItemIdsAsync(list.Id);
+        Assert.That(ids, Is.EqualTo(new[] { a.Id, c.Id, b.Id }));
+    }
+
+    [Test]
+    public async Task PostMove_Up_SwapsItemWithPrevious()
+    {
+        var (list, a, b, c) = await SeedThreeItemsAsync();
+
+        var response = await MoveItemAsync(list.Id, b.Id, "up");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var ids = await GetSavedItemIdsAsync(list.Id);
+        Assert.That(ids, Is.EqualTo(new[] { b.Id, a.Id, c.Id }));
+    }
+
+    [Test]
+    public async Task PostMove_UpOnFirstItem_ClampsAndKeepsOrder()
+    {
+        var (list, a, b, c) = await SeedThreeItemsAsync();
+
+        var response = await MoveItemAsync(list.Id, a.Id, "up");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var ids = await GetSavedItemIdsAsync(list.Id);
+        Assert.That(ids, Is.EqualTo(new[] { a.Id, b.Id, c.Id }));
+    }
+
+    [Test]
+    public async Task PostMove_DownOnLastItem_ClampsAndKeepsOrder()
+    {
+        var (list, a, b, c) = await SeedThreeItemsAsync();
+
+        var response = await MoveItemAsync(list.Id, c.Id, "down");
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var ids = await GetSavedItemIdsAsync(list.Id);
+        Assert.That(ids, Is.EqualTo(new[] { a.Id, b.Id, c.Id }));
+    }
+
+    [Test]
+    public async Task PostMove_NewItems_AppendAtEnd()
+    {
+        var (list, a, b, c) = await SeedThreeItemsAsync();
+        var d = await CreateSavedItemAsync("D");
+
+        await PostMembershipAsync(list.Id, d.Id);
+
+        var ids = await GetSavedItemIdsAsync(list.Id);
+        Assert.That(ids, Is.EqualTo(new[] { a.Id, b.Id, c.Id, d.Id }));
+    }
+
+    [Test]
+    public async Task PostMove_UnknownItem_Returns404()
+    {
+        var (list, _, _, _) = await SeedThreeItemsAsync();
+
+        var response = await MoveItemAsync(list.Id, "does-not-exist", "up");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task PostMove_OtherUsersPremadeList_Returns404()
+    {
+        var otherUserId = await SeedTestUserAsync("Other Owner");
+        var theirs = await CreatePremadeListAsync("Theirs", otherUserId);
+        var saved = await CreateSavedItemAsync("Milk", otherUserId);
+        await PostMembershipAsync(theirs.Id, saved.Id, otherUserId);
+
+        var response = await MoveItemAsync(theirs.Id, saved.Id, "up");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+
+        var theirIds = await (await SendAsUserAsync(
+            HttpMethod.Get, "/api/premade-lists", null, otherUserId)).Content.ReadFromJsonAsync<PremadeListController.PremadeListResponse[]>();
+        Assert.That(theirIds!.Single(l => l.Id == theirs.Id).SavedItemIds, Is.EquivalentTo(new[] { saved.Id }));
+    }
+
+    [Test]
+    public async Task PostMove_InvalidDirection_Returns400()
+    {
+        var (list, _, b, _) = await SeedThreeItemsAsync();
+
+        var response = await MoveItemAsync(list.Id, b.Id, "sideways");
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+    }
+
+    [Test]
+    public async Task PostMove_WithoutUserId_Returns401()
+    {
+        var (list, _, b, _) = await SeedThreeItemsAsync();
+
+        var response = await SendAsUserAsync(
+            HttpMethod.Post, $"/api/premade-lists/{list.Id}/items/{b.Id}/move", new { Direction = "up" });
+
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+    }
+
     // --- DELETE /api/test/premade-lists ---
 
     [Test]
