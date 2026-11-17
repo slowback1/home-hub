@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 	import { ListTodo } from 'lucide-svelte';
 	import Heading from '$lib/ui/typography/Heading/Heading.svelte';
 	import Spinner from '$lib/ui/feedback/Spinner.svelte';
@@ -14,9 +15,6 @@
 	import SavedItemsApi, { type SavedItem } from '$lib/api/SavedItemsApi';
 	import PremadeListsApi, { type PremadeList } from '$lib/api/PremadeListsApi';
 	import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
-	import type { PageData } from './$types';
-
-	export let data: PageData;
 
 	const ICON_LG = 24;
 
@@ -42,7 +40,7 @@
 		...premadeLists.map((premade) => ({ value: premade.id, label: premade.name }))
 	];
 
-	$: fullscreenId = data?.fullscreen ?? null;
+	$: fullscreenId = $page.url.searchParams.get('fullscreen');
 	$: visibleLists = fullscreenId ? lists.filter((l) => l.id === fullscreenId) : lists;
 
 	onMount(async () => {

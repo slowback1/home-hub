@@ -8,6 +8,12 @@ import type { SavedItem } from '$lib/api/SavedItemsApi';
 vi.mock('$lib/api/ShoppingListApi', () => ({ default: vi.fn() }));
 vi.mock('$lib/api/SavedItemsApi', () => ({ default: vi.fn() }));
 vi.mock('$lib/api/PremadeListsApi', () => ({ default: vi.fn() }));
+const pageState = vi.hoisted(() => ({ url: new URL('http://localhost/shopping-lists') }));
+
+vi.mock('$app/stores', async () => {
+	const { readable } = await import('svelte/store');
+	return { page: readable(pageState) };
+});
 
 import ShoppingListApi from '$lib/api/ShoppingListApi';
 import SavedItemsApi from '$lib/api/SavedItemsApi';
@@ -142,12 +148,17 @@ function enablePremadeListsFlag() {
 	];
 }
 
+function setPageUrl(url: string) {
+	pageState.url = new URL(url);
+}
+
 describe('Shopping lists page', () => {
 	beforeEach(() => {
 		vi.mocked(ShoppingListApi).mockClear();
 		vi.mocked(SavedItemsApi).mockClear();
 		enableShoppingListsFlag();
 		mockSavedItemsApi([]);
+		setPageUrl('http://localhost/shopping-lists');
 	});
 
 	it('shows disabled state when SHOPPING_LISTS_ENABLED flag is off', () => {
@@ -390,9 +401,8 @@ describe('Shopping lists page', () => {
 
 	it('shows a not-found message with exit control when the full screen list is missing', async () => {
 		mockApi([makeList({ id: 'l2', name: 'Camping' })]);
-		const { getByTestId, queryByTestId } = render(ShoppingListsPage, {
-			props: { data: { fullscreen: 'l1' } }
-		});
+		setPageUrl('http://localhost/shopping-lists?fullscreen=l1');
+		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
 		await waitFor(() =>
 			expect(getByTestId('shopping-list-fullscreen-missing')).toBeInTheDocument()
 		);
@@ -403,7 +413,8 @@ describe('Shopping lists page', () => {
 
 	it('keeps item toggling and adding available in full screen mode', async () => {
 		mockApi([makeList({ items: [makeItem({ id: 'i9', text: 'Milk' })] })]);
-		const { getByTestId } = render(ShoppingListsPage, { props: { data: { fullscreen: 'l1' } } });
+		setPageUrl('http://localhost/shopping-lists?fullscreen=l1');
+		const { getByTestId } = render(ShoppingListsPage);
 		await waitFor(() => expect(getByTestId('shopping-item-Milk')).toBeInTheDocument());
 
 		await fireEvent.click(getByTestId('shopping-item-Milk'));
@@ -422,9 +433,8 @@ describe('Shopping lists page', () => {
 
 	it('renders only the targeted list in full screen mode', async () => {
 		mockApi([makeList(), makeList({ id: 'l2', name: 'Camping' })]);
-		const { getByTestId, queryByTestId } = render(ShoppingListsPage, {
-			props: { data: { fullscreen: 'l1' } }
-		});
+		setPageUrl('http://localhost/shopping-lists?fullscreen=l1');
+		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
 		await waitFor(() => expect(getByTestId('shopping-list-row-Groceries')).toBeInTheDocument());
 
 		expect(queryByTestId('shopping-list-row-Camping')).not.toBeInTheDocument();
