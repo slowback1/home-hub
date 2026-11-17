@@ -102,9 +102,22 @@
 	{:else if error}
 		<p class="saved-items-error" role="alert">Failed to load saved items.</p>
 	{:else}
+		<section class="saved-item-card saved-item-form" data-testid="saved-item-form">
+			<h3 class="saved-item-form__title">New saved item</h3>
+			<TextBox
+				label="Name"
+				id="saved-item-form-name"
+				bind:value={newItemName}
+				placeholder="Item name"
+			/>
+			<div class="form-actions">
+				<Button testId="saved-item-form-add" variant="primary" onClick={createItem}>Add</Button>
+			</div>
+		</section>
+
 		{#if items.length === 0}
 			<p class="saved-items-empty" data-testid="saved-items-empty-state">
-				No saved items yet — create your first one below.
+				No saved items yet — create your first one above.
 			</p>
 		{:else}
 			<ul class="saved-item-list" data-testid="saved-items-list">
@@ -151,19 +164,6 @@
 				{/each}
 			</ul>
 		{/if}
-
-		<section class="saved-item-card" data-testid="saved-item-form">
-			<h3 class="saved-item-form__title">New saved item</h3>
-			<TextBox
-				label="Name"
-				id="saved-item-form-name"
-				bind:value={newItemName}
-				placeholder="Item name"
-			/>
-			<div class="form-actions">
-				<Button testId="saved-item-form-add" variant="primary" onClick={createItem}>Add</Button>
-			</div>
-		</section>
 	{/if}
 </div>
 
@@ -218,6 +218,10 @@
 		font-size: var(--font-size-lg);
 		font-weight: var(--font-weight-semibold);
 		color: var(--color-text-primary);
+	}
+
+	.saved-item-form {
+		margin-bottom: var(--space-6);
 	}
 
 	.saved-item-form__title {

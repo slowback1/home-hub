@@ -86,6 +86,28 @@ describe('Saved items page', () => {
 		expect(getByTestId('saved-item-row-Sourdough loaf')).toBeInTheDocument();
 	});
 
+	it('renders the new-item form above the empty state', async () => {
+		mockApi([]);
+		const { getByTestId } = render(SavedItemsPage);
+		await waitFor(() => expect(getByTestId('saved-items-empty-state')).toBeInTheDocument());
+
+		const form = getByTestId('saved-item-form');
+		const emptyState = getByTestId('saved-items-empty-state');
+		expect(
+			form.compareDocumentPosition(emptyState) & Node.DOCUMENT_POSITION_FOLLOWING
+		).toBeTruthy();
+	});
+
+	it('renders the new-item form above the saved items list', async () => {
+		mockApi([makeItem({ id: 's1', name: '5lb sack of potatoes' })]);
+		const { getByTestId } = render(SavedItemsPage);
+		await waitFor(() => expect(getByTestId('saved-items-list')).toBeInTheDocument());
+
+		const form = getByTestId('saved-item-form');
+		const list = getByTestId('saved-items-list');
+		expect(form.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+	});
+
 	it('creates a saved item', async () => {
 		mockApi([]);
 		const { getByTestId } = render(SavedItemsPage);
