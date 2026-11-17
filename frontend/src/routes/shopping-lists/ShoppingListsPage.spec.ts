@@ -388,6 +388,66 @@ describe('Shopping lists page', () => {
 		expect(queryByTestId('shopping-lists-premade-lists-link')).not.toBeInTheDocument();
 	});
 
+	it('shows a not-found message with exit control when the full screen list is missing', async () => {
+		mockApi([makeList({ id: 'l2', name: 'Camping' })]);
+		const { getByTestId, queryByTestId } = render(ShoppingListsPage, {
+			props: { data: { fullscreen: 'l1' } }
+		});
+		await waitFor(() =>
+			expect(getByTestId('shopping-list-fullscreen-missing')).toBeInTheDocument()
+		);
+
+		expect(queryByTestId('shopping-list-row-Camping')).not.toBeInTheDocument();
+		expect(getByTestId('shopping-list-fullscreen-exit')).toBeInTheDocument();
+	});
+
+	it('keeps item toggling and adding available in full screen mode', async () => {
+		mockApi([makeList({ items: [makeItem({ id: 'i9', text: 'Milk' })] })]);
+		const { getByTestId } = render(ShoppingListsPage, { props: { data: { fullscreen: 'l1' } } });
+		await waitFor(() => expect(getByTestId('shopping-item-Milk')).toBeInTheDocument());
+
+		await fireEvent.click(getByTestId('shopping-item-Milk'));
+		await waitFor(() => expect(getApiMock().toggleItem).toHaveBeenCalledWith('l1', 'i9'));
+		await waitFor(() =>
+			expect(getByTestId('shopping-item-Milk')).toHaveClass('shopping-item--checked')
+		);
+
+		await fireEvent.input(getByTestId('shopping-item-input-Groceries'), {
+			target: { value: 'Eggs' }
+		});
+		await fireEvent.click(getByTestId('shopping-item-add-Groceries'));
+		await waitFor(() => expect(getApiMock().addItem).toHaveBeenCalledWith('l1', 'Eggs'));
+		await waitFor(() => expect(getByTestId('shopping-item-Eggs')).toBeInTheDocument());
+	});
+
+	it('renders only the targeted list in full screen mode', async () => {
+		mockApi([makeList(), makeList({ id: 'l2', name: 'Camping' })]);
+		const { getByTestId, queryByTestId } = render(ShoppingListsPage, {
+			props: { data: { fullscreen: 'l1' } }
+		});
+		await waitFor(() => expect(getByTestId('shopping-list-row-Groceries')).toBeInTheDocument());
+
+		expect(queryByTestId('shopping-list-row-Camping')).not.toBeInTheDocument();
+		expect(queryByTestId('shopping-list-form')).not.toBeInTheDocument();
+		expect(queryByTestId('shopping-lists-saved-items-link')).not.toBeInTheDocument();
+		expect(getByTestId('shopping-list-fullscreen-exit')).toHaveAttribute('href', '/shopping-lists');
+	});
+
+	it('renders a full screen link for each list', async () => {
+		mockApi([makeList(), makeList({ id: 'l2', name: 'Camping' })]);
+		const { getByTestId } = render(ShoppingListsPage);
+		await waitFor(() => expect(getByTestId('shopping-list-row-Groceries')).toBeInTheDocument());
+
+		expect(getByTestId('shopping-list-fullscreen-Groceries')).toHaveAttribute(
+			'href',
+			'/shopping-lists?fullscreen=l1'
+		);
+		expect(getByTestId('shopping-list-fullscreen-Camping')).toHaveAttribute(
+			'href',
+			'/shopping-lists?fullscreen=l2'
+		);
+	});
+
 	it('does not fetch saved items or show suggestions when SAVED_ITEMS_ENABLED is off', async () => {
 		disableSavedItemsFlag();
 		mockApi([makeList({ items: [] })]);

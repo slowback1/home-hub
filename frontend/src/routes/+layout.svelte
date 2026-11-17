@@ -38,13 +38,22 @@
 </svelte:head>
 
 {#if ready && currentUserId}
-	<div class="app-shell">
-		<Sidebar currentPath={$page.url.pathname} />
-		<ToastWrapper />
-		<main id="content" class="main-content">
-			<slot />
-		</main>
-	</div>
+	{#if $page.url.searchParams.has('fullscreen')}
+		<div class="app-shell app-shell--fullscreen" data-testid="app-shell-fullscreen">
+			<ToastWrapper />
+			<main id="content" class="main-content main-content--fullscreen">
+				<slot />
+			</main>
+		</div>
+	{:else}
+		<div class="app-shell">
+			<Sidebar currentPath={$page.url.pathname} />
+			<ToastWrapper />
+			<main id="content" class="main-content">
+				<slot />
+			</main>
+		</div>
+	{/if}
 {:else if ready}
 	<UserSwitcher users={userService.getUsers()} />
 {:else}
@@ -68,6 +77,10 @@
 		display: flex;
 		flex-direction: column;
 		overflow: auto;
+	}
+
+	.main-content--fullscreen {
+		padding: 0;
 	}
 
 	.loading-shell {

@@ -14,6 +14,9 @@
 	import SavedItemsApi, { type SavedItem } from '$lib/api/SavedItemsApi';
 	import PremadeListsApi, { type PremadeList } from '$lib/api/PremadeListsApi';
 	import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
+	import type { PageData } from './$types';
+
+	export let data: PageData;
 
 	const ICON_LG = 24;
 
@@ -38,6 +41,9 @@
 		{ value: '', label: 'None' },
 		...premadeLists.map((premade) => ({ value: premade.id, label: premade.name }))
 	];
+
+	$: fullscreenId = data?.fullscreen ?? null;
+	$: visibleLists = fullscreenId ? lists.filter((l) => l.id === fullscreenId) : lists;
 
 	onMount(async () => {
 		enabled = FeatureFlagService.featureFlags.some(
@@ -156,12 +162,14 @@
 </svelte:head>
 
 <div class="shopping-lists-page" data-testid="shopping-lists-page">
-	<header class="shopping-lists-header">
-		<span class="shopping-lists-header__icon" aria-hidden="true">
-			<ListTodo size={ICON_LG} />
-		</span>
-		<Heading level={1}>Shopping Lists</Heading>
-	</header>
+	{#if !fullscreenId}
+		<header class="shopping-lists-header">
+			<span class="shopping-lists-header__icon" aria-hidden="true">
+				<ListTodo size={ICON_LG} />
+			</span>
+			<Heading level={1}>Shopping Lists</Heading>
+		</header>
+	{/if}
 
 	{#if !enabled}
 		<div data-testid="shopping-lists-disabled">
@@ -172,7 +180,13 @@
 	{:else if error}
 		<p class="shopping-lists-error" role="alert">Failed to load shopping lists.</p>
 	{:else}
-		{#if savedItemsEnabled || premadeEnabled}
+		{#if fullscreenId}
+			<div class="shopping-list-fullscreen-bar">
+				<Button testId="shopping-list-fullscreen-exit" variant="secondary" href="/shopping-lists">
+					Exit full screen
+				</Button>
+			</div>
+		{:else if savedItemsEnabled || premadeEnabled}
 			<nav class="shopping-lists-subnav">
 				{#if savedItemsEnabled}
 					<a
@@ -194,23 +208,40 @@
 				{/if}
 			</nav>
 		{/if}
-		{#if lists.length === 0}
-			<p class="shopping-lists-empty" data-testid="shopping-lists-empty-state">
-				No shopping lists yet — create your first one below.
-			</p>
+		{#if visibleLists.length === 0}
+			{#if fullscreenId}
+				<p class="shopping-list-hint" data-testid="shopping-list-fullscreen-missing">
+					List not found.
+				</p>
+			{:else}
+				<p class="shopping-lists-empty" data-testid="shopping-lists-empty-state">
+					No shopping lists yet — create your first one below.
+				</p>
+			{/if}
 		{:else}
 			<ul class="shopping-list-list" data-testid="shopping-lists-list">
-				{#each lists as list (list.id)}
+				{#each visibleLists as list (list.id)}
 					<li class="shopping-list-card" data-testid="shopping-list-row-{list.name}">
 						<div class="shopping-list-card__header">
 							<h2 class="shopping-list-name">{list.name}</h2>
-							<Button
-								testId="shopping-list-complete-{list.name}"
-								variant="primary"
-								onClick={() => completeList(list)}
-							>
-								Complete
-							</Button>
+							<div class="shopping-list-card__actions">
+								{#if !fullscreenId}
+									<Button
+										testId="shopping-list-fullscreen-{list.name}"
+										variant="text"
+										href="/shopping-lists?fullscreen={list.id}"
+									>
+										Full screen
+									</Button>
+								{/if}
+								<Button
+									testId="shopping-list-complete-{list.name}"
+									variant="primary"
+									onClick={() => completeList(list)}
+								>
+									Complete
+								</Button>
+							</div>
 						</div>
 
 						{#if list.items.length === 0}
@@ -274,29 +305,32 @@
 			</ul>
 		{/if}
 
-		<section class="shopping-list-card" data-testid="shopping-list-form">
-			<h3 class="shopping-list-form__title">New list</h3>
-			<TextBox
-				label="Name"
-				id="shopping-list-form-name"
-				bind:value={newListName}
-				placeholder="List name"
-			/>
-			{#if premadeEnabled}
-				<div class="shopping-list-premade-pick">
-					<Select
-						label="Premade list"
-						id="shopping-list-premade-picker"
-						data-testid="shopping-list-premade-picker"
-						bind:value={premadeDraft}
-						options={premadeOptions}
-					/>
+		{#if !fullscreenId}
+			<section class="shopping-list-card" data-testid="shopping-list-form">
+				<h3 class="shopping-list-form__title">New list</h3>
+				<TextBox
+					label="Name"
+					id="shopping-list-form-name"
+					bind:value={newListName}
+					placeholder="List name"
+				/>
+				{#if premadeEnabled}
+					<div class="shopping-list-premade-pick">
+						<Select
+							label="Premade list"
+							id="shopping-list-premade-picker"
+							data-testid="shopping-list-premade-picker"
+							bind:value={premadeDraft}
+							options={premadeOptions}
+						/>
+					</div>
+				{/if}
+				<div class="form-actions">
+					<Button testId="shopping-list-form-add" variant="primary" onClick={createList}>Add</Button
+					>
 				</div>
-			{/if}
-			<div class="form-actions">
-				<Button testId="shopping-list-form-add" variant="primary" onClick={createList}>Add</Button>
-			</div>
-		</section>
+			</section>
+		{/if}
 	{/if}
 </div>
 
@@ -363,6 +397,18 @@
 		justify-content: space-between;
 		gap: var(--space-3);
 		margin-bottom: var(--space-3);
+	}
+
+	.shopping-list-fullscreen-bar {
+		display: flex;
+		justify-content: flex-end;
+		margin-bottom: var(--space-4);
+	}
+
+	.shopping-list-card__actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
 	}
 
 	.shopping-list-name {
