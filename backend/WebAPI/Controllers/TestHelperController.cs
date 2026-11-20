@@ -13,6 +13,7 @@ public class TestHelperController(
     IActivityPickRepository pickRepository,
     ICrudFactory crudFactory,
     MockAudiobookService audiobookMock,
+    INbaScheduleRepository nbaScheduleRepository,
     IWebHostEnvironment env) : ControllerBase
 {
     private bool IsAllowed =>
@@ -178,6 +179,15 @@ public class TestHelperController(
         foreach (var session in all)
             await crud.DeleteAsync(session.Id);
 
+        return NoContent();
+    }
+
+    [HttpDelete("nba-games")]
+    public async Task<ActionResult> ClearNbaGames()
+    {
+        if (!IsAllowed) return NotFound();
+
+        await nbaScheduleRepository.ClearAllAsync();
         return NoContent();
     }
 
