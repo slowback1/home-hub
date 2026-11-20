@@ -10,6 +10,7 @@ using Logic.Ollama;
 using Logic.SystemConfig;
 using Logic.Recurrence;
 using Logic.Audiobook;
+using Logic.NbaSchedule;
 using Logic.Weather;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -38,6 +39,7 @@ builder.Services.AddControllers()
             new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.SnakeCaseLower)));
 CrudFactoryConfigurator.ConfigureCrudFactory(builder.Services, builder.Configuration);
 builder.Services.AddScoped<ActivityPickerJob>();
+builder.Services.AddScoped<NbaScheduleFetchJob>();
 builder.Services.AddSingleton<IRecurrenceCalculator, IntervalDaysRecurrenceCalculator>();
 CorsConfigurator.ConfigureCors(builder.Services, builder.Configuration);
 HangfireConfigurator.ConfigureHangfire(builder.Services, builder.Configuration);
@@ -52,6 +54,7 @@ if (crudImpl == "entityframework")
     builder.Services.AddScoped<ISystemConfigProvider>(sp =>
         new EntityFramework.EfSystemConfigProvider(sp.GetRequiredService<EntityFramework.AppDbContext>()));
     builder.Services.AddScoped<IActivityPickRepository, EntityFramework.EfActivityPickRepository>();
+    builder.Services.AddScoped<INbaScheduleRepository, EntityFramework.EfNbaScheduleRepository>();
     builder.Services.AddScoped<IFeatureFlagProvider, EntityFramework.EntityFrameworkFeatureFlagProvider>();
     builder.Services.AddScoped<IFeatureFlagRepository, EntityFramework.EntityFrameworkFeatureFlagRepository>();
     builder.Services.AddScoped<UpdateFeatureFlagUseCase>();
@@ -59,6 +62,7 @@ if (crudImpl == "entityframework")
 else
 {
     builder.Services.AddSingleton<IActivityPickRepository, InMemoryActivityPickRepository>();
+    builder.Services.AddSingleton<INbaScheduleRepository, InMemoryNbaScheduleRepository>();
     var inMemoryFlagStore = new DictionaryFeatureFlagProvider(new Dictionary<string, bool>
     {
         ["DEMO_FEATURE_FLAG"] = false,
@@ -114,7 +118,16 @@ if (builder.Environment.IsEnvironment("E2E"))
         new() { Id = "ollama::url",            Namespace = "ollama",    Key = "url",       Value = "",         Type = "string", IsSecret = false },
         new() { Id = "activity::selector",     Namespace = "activity",  Key = "selector",  Value = "random",   Type = "string", IsSecret = false },
         new() { Id = "activity::ai_model",     Namespace = "activity",  Key = "ai_model",  Value = "llama3.2", Type = "string", IsSecret = false },
-        new() { Id = "comfyui::base_url",       Namespace = "comfyui",   Key = "base_url",  Value = "http://localhost:8199", Type = "string", IsSecret = false }
+        new() { Id = "comfyui::base_url",       Namespace = "comfyui",   Key = "base_url",  Value = "http://localhost:8199", Type = "string", IsSecret = false },
+        new()
+        {
+            Id = "nba::provider", Namespace = "nba", Key = "provider", Value = "mock", Type = "select", IsSecret = false,
+            Options =
+            [
+                new SystemConfigOption { SystemConfigId = "nba::provider", Value = "mock", Label = "Mock" },
+                new SystemConfigOption { SystemConfigId = "nba::provider", Value = "official", Label = "Official NBA API" }
+            ]
+        }
     };
     builder.Services.AddSingleton<ISystemConfigProvider>(new DictionarySystemConfigProvider(e2EEntries));
 }
@@ -149,6 +162,21 @@ builder.Services.AddScoped<IWeatherProvider>(sp =>
     return key == "openweathermap"
         ? sp.GetRequiredService<OpenWeatherMapProvider>()
         : sp.GetRequiredService<MockWeatherProvider>();
+});
+
+// NBA schedule provider — resolved per-request based on nba::provider config value
+builder.Services.AddScoped<MockNbaScheduleProvider>();
+builder.Services.AddHttpClient<NbaScheduleProvider>();
+builder.Services.AddScoped<NbaScheduleProvider>();
+builder.Services.AddScoped<INbaScheduleProvider>(sp =>
+{
+    var cfg = sp.GetRequiredService<ISystemConfigProvider>();
+    string key;
+    try { key = cfg.GetAsync("nba", "provider").GetAwaiter().GetResult().Value; }
+    catch { key = "mock"; }
+    return key == "official"
+        ? sp.GetRequiredService<NbaScheduleProvider>()
+        : sp.GetRequiredService<MockNbaScheduleProvider>();
 });
 
 // ComfyUI client
@@ -200,6 +228,7 @@ app.UseCors(CorsConfigurator.PolicyName);
 app.UseMiddleware<WebAPI.Middleware.UserMiddleware>();
 app.UseHangfireDashboard("/admin/hangfire", HangfireConfigurator.DashboardOptions);
 RecurringJob.AddOrUpdate<ActivityPickerJob>("activity-picker", j => j.ExecuteAsync(), "0 * * * *");
+RecurringJob.AddOrUpdate<NbaScheduleFetchJob>("nba-schedule", j => j.ExecuteAsync(), "0 3 * * *");
 app.MapControllers();
 app.UseHttpsRedirection();
 
