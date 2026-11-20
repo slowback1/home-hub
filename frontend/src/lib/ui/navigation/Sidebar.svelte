@@ -13,6 +13,7 @@
 		Footprints,
 		Disc3,
 		ShoppingBasket,
+		Trophy,
 		ChevronLeft,
 		ChevronRight,
 		LogOut
@@ -93,6 +94,13 @@
 			label: 'Shopping Lists',
 			icon: ShoppingBasket,
 			flag: FeatureFlags.SHOPPING_LISTS_ENABLED
+		},
+		{
+			testId: 'nav-item-nba',
+			href: '/nba',
+			label: 'NBA Games',
+			icon: Trophy,
+			flag: FeatureFlags.NBA_SCHEDULE_ENABLED
 		},
 		{
 			testId: 'nav-item-comfyui',

@@ -119,6 +119,25 @@ describe('Sidebar', () => {
 		expect(queryByTestId('nav-item-shopping-lists')).not.toBeInTheDocument();
 	});
 
+	it('renders NBA Games nav item when NBA_SCHEDULE_ENABLED is enabled', () => {
+		FeatureFlagService.featureFlags = [
+			...ALL_NAV_FLAGS_ENABLED,
+			{ name: FeatureFlags.NBA_SCHEDULE_ENABLED, isEnabled: true }
+		];
+		const { getByTestId } = render(Sidebar);
+		const item = getByTestId('nav-item-nba');
+		expect(item.querySelector('a')).toHaveAttribute('href', '/nba');
+	});
+
+	it('hides NBA Games nav item when NBA_SCHEDULE_ENABLED is disabled', () => {
+		FeatureFlagService.featureFlags = [
+			...ALL_NAV_FLAGS_ENABLED,
+			{ name: FeatureFlags.NBA_SCHEDULE_ENABLED, isEnabled: false }
+		];
+		const { queryByTestId } = render(Sidebar);
+		expect(queryByTestId('nav-item-nba')).not.toBeInTheDocument();
+	});
+
 	it('renders the Admin nav item linking to /admin/system-config', () => {
 		const { getByTestId } = render(Sidebar);
 		const item = getByTestId('nav-item-admin');

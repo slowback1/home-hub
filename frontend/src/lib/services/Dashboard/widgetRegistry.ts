@@ -7,7 +7,8 @@ import {
 	Bookmark,
 	Footprints,
 	Disc3,
-	ShoppingBasket
+	ShoppingBasket,
+	Trophy
 } from 'lucide-svelte';
 import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { FeatureFlags } from '$lib/services/FeatureFlag/FeatureFlags';
@@ -19,6 +20,7 @@ import BookmarksWidget from './widgets/BookmarksWidget.svelte';
 import WalkHistoryWidget from './widgets/WalkHistoryWidget.svelte';
 import WheelsWidget from './widgets/WheelsWidget.svelte';
 import ShoppingListsWidget from './widgets/ShoppingListsWidget.svelte';
+import NbaGamesWidget from './widgets/NbaGamesWidget.svelte';
 
 export type WidgetEntry = {
 	id: string;
@@ -102,6 +104,15 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		href: '/shopping-lists',
 		featureFlag: FeatureFlags.SHOPPING_LISTS_ENABLED,
 		component: ShoppingListsWidget as unknown as Component
+	},
+	{
+		id: 'nba-games',
+		name: 'NBA Games',
+		description: "Today's NBA games and their start times.",
+		icon: Trophy as unknown as Component,
+		href: '/nba',
+		featureFlag: FeatureFlags.NBA_SCHEDULE_ENABLED,
+		component: NbaGamesWidget as unknown as Component
 	}
 ];
 

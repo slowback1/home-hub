@@ -3,7 +3,7 @@ import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { createTestFeatureFlag } from '$lib/testHelpers/testFeatureFlagProvider';
 
 describe('WIDGET_REGISTRY', () => {
-	it('contains entries for all 8 active widget types', () => {
+	it('contains entries for all 9 active widget types', () => {
 		const ids = WIDGET_REGISTRY.map((w) => w.id);
 		expect(ids).toContain('tasks');
 		expect(ids).toContain('activity');
@@ -13,6 +13,7 @@ describe('WIDGET_REGISTRY', () => {
 		expect(ids).toContain('walk-history');
 		expect(ids).toContain('wheels');
 		expect(ids).toContain('shopping-lists');
+		expect(ids).toContain('nba-games');
 	});
 
 	it('does not contain comfyui or retro (no query API exists for these)', () => {
@@ -108,5 +109,17 @@ describe('getVisibleWidgets', () => {
 		FeatureFlagService.featureFlags = [createTestFeatureFlag('SHOPPING_LISTS_ENABLED', false)];
 		const visible = getVisibleWidgets();
 		expect(visible.map((v) => v.id)).not.toContain('shopping-lists');
+	});
+
+	it('includes nba-games when NBA_SCHEDULE_ENABLED is on', () => {
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('NBA_SCHEDULE_ENABLED', true)];
+		const visible = getVisibleWidgets();
+		expect(visible.map((v) => v.id)).toContain('nba-games');
+	});
+
+	it('excludes nba-games when NBA_SCHEDULE_ENABLED is off', () => {
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('NBA_SCHEDULE_ENABLED', false)];
+		const visible = getVisibleWidgets();
+		expect(visible.map((v) => v.id)).not.toContain('nba-games');
 	});
 });
