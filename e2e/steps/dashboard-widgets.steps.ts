@@ -10,6 +10,7 @@ Before({ tags: '@dashboard-widgets' }, async ({ request }) => {
 	await request.delete(`${BACKEND_URL}/api/test/bookmarks`).catch(() => {});
 	await request.delete(`${BACKEND_URL}/api/test/audiobook-jobs`).catch(() => {});
 	await request.delete(`${BACKEND_URL}/api/test/activity-picks`).catch(() => {});
+	await request.delete(`${BACKEND_URL}/api/test/shopping-lists`).catch(() => {});
 });
 
 After({ tags: '@dashboard-widgets' }, async ({ request }) => {
@@ -18,8 +19,14 @@ After({ tags: '@dashboard-widgets' }, async ({ request }) => {
 	await request.delete(`${BACKEND_URL}/api/test/bookmarks`).catch(() => {});
 	await request.delete(`${BACKEND_URL}/api/test/audiobook-jobs`).catch(() => {});
 	await request.delete(`${BACKEND_URL}/api/test/activity-picks`).catch(() => {});
+	await request.delete(`${BACKEND_URL}/api/test/shopping-lists`).catch(() => {});
 	await request
 		.patch(`${BACKEND_URL}/api/feature-flags/WEATHER_ENABLED`, { data: { isEnabled: true } })
+		.catch(() => {});
+	await request
+		.patch(`${BACKEND_URL}/api/feature-flags/SHOPPING_LISTS_ENABLED`, {
+			data: { isEnabled: false }
+		})
 		.catch(() => {});
 });
 
@@ -57,6 +64,10 @@ Given('the audiobook widget is placed in slot 0', async ({ request, testUser }) 
 
 Given('the bookmarks widget is placed in slot 0', async ({ request, testUser }) => {
 	await placeWidget(request, testUser.id, 'bookmarks');
+});
+
+Given('the shopping-lists widget is placed in slot 0', async ({ request, testUser }) => {
+	await placeWidget(request, testUser.id, 'shopping-lists');
 });
 
 // --- Data seeding ---
@@ -248,3 +259,30 @@ Then('I should see bookmark links in the bookmarks widget', async ({ dashboardPa
 	const count = await dashboardPage.bookmarkLinkCount();
 	expect(count).toBeGreaterThan(0);
 });
+
+// --- Shopping Lists widget ---
+
+Then(
+	'I should see both shopping list names as rows in the shopping-lists widget',
+	async ({ dashboardPage }) => {
+		await dashboardPage.page.waitForSelector('[data-testid="shopping-lists-widget-link"]', {
+			timeout: 5000
+		});
+		expect(await dashboardPage.shoppingListLinkCount()).toBe(2);
+		expect(await dashboardPage.isShoppingListLinkVisible('Groceries')).toBe(true);
+		expect(await dashboardPage.isShoppingListLinkVisible('Hardware')).toBe(true);
+	}
+);
+
+Then(
+	'each shopping-lists widget row links to its full-screen route',
+	async ({ dashboardPage, request, testUser }) => {
+		const response = await request.get(`${BACKEND_URL}/api/shopping-lists`, {
+			headers: { 'X-User-Id': testUser.id }
+		});
+		const lists = (await response.json()) as { id: string }[];
+		const expectedHrefs = lists.map((l) => `/shopping-lists?fullscreen=${l.id}`).sort();
+		const actualHrefs = (await dashboardPage.shoppingListLinkHrefs()).sort();
+		expect(actualHrefs).toEqual(expectedHrefs);
+	}
+);

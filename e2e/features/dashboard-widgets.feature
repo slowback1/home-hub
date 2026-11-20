@@ -75,3 +75,13 @@ Feature: Dashboard Widgets
     And the weather widget is placed in slot 0
     And I am on the dashboard
     Then I should see the error state in the weather widget
+
+  @shopping-lists-widget-shows-active-lists
+  Scenario: Shopping Lists widget shows active lists with full-screen deep links
+    Given the SHOPPING_LISTS_ENABLED feature flag is enabled
+    And a shopping list named "Groceries" exists with items "Milk"
+    And a shopping list named "Hardware" exists with items "Nails"
+    And the shopping-lists widget is placed in slot 0
+    And I am on the dashboard
+    Then I should see both shopping list names as rows in the shopping-lists widget
+    And each shopping-lists widget row links to its full-screen route

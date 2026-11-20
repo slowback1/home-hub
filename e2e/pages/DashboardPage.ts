@@ -168,6 +168,22 @@ export class DashboardPage {
 		return this.page.locator('[data-testid="bookmarks-widget-link"]').count();
 	}
 
+	async shoppingListLinkCount(): Promise<number> {
+		return this.page.locator('[data-testid="shopping-lists-widget-link"]').count();
+	}
+
+	async isShoppingListLinkVisible(name: string): Promise<boolean> {
+		return this.page
+			.locator(`[data-testid="shopping-lists-widget-link"]:has-text("${name}")`)
+			.isVisible();
+	}
+
+	async shoppingListLinkHrefs(): Promise<string[]> {
+		return this.page
+			.locator('[data-testid="shopping-lists-widget-link"]')
+			.evaluateAll((els) => els.map((el) => el.getAttribute('href') ?? ''));
+	}
+
 	async setupWeatherApiError(): Promise<void> {
 		await this.page.route('**/api/weather/current', (route) =>
 			route.fulfill({ status: 500, body: 'Internal Server Error' })
