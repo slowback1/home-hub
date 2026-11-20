@@ -81,24 +81,11 @@ function getApiMock() {
 }
 
 function enableShoppingListsFlag() {
-	FeatureFlagService.featureFlags = [
-		{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: true },
-		{ name: 'SAVED_ITEMS_ENABLED', isEnabled: true }
-	];
+	FeatureFlagService.featureFlags = [{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: true }];
 }
 
 function disableShoppingListsFlag() {
-	FeatureFlagService.featureFlags = [
-		{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: false },
-		{ name: 'SAVED_ITEMS_ENABLED', isEnabled: true }
-	];
-}
-
-function disableSavedItemsFlag() {
-	FeatureFlagService.featureFlags = [
-		{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: true },
-		{ name: 'SAVED_ITEMS_ENABLED', isEnabled: false }
-	];
+	FeatureFlagService.featureFlags = [{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: false }];
 }
 
 function makeSavedItem(overrides: Partial<SavedItem> = {}): SavedItem {
@@ -117,12 +104,6 @@ function mockSavedItemsApi(items: SavedItem[]) {
 	);
 }
 
-function getSavedItemsApiMock() {
-	return vi.mocked(SavedItemsApi).mock.results[0].value as {
-		list: ReturnType<typeof vi.fn>;
-	};
-}
-
 function makePremadeList(overrides: Partial<PremadeList> = {}): PremadeList {
 	return {
 		id: 'p1',
@@ -138,14 +119,6 @@ function mockPremadeListsApi(premadeLists: PremadeList[]) {
 	vi.mocked(PremadeListsApi).mockImplementation(
 		() => ({ list: vi.fn().mockResolvedValue(premadeLists) }) as never
 	);
-}
-
-function enablePremadeListsFlag() {
-	FeatureFlagService.featureFlags = [
-		{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: true },
-		{ name: 'SAVED_ITEMS_ENABLED', isEnabled: true },
-		{ name: 'PREMADE_LISTS_ENABLED', isEnabled: true }
-	];
 }
 
 function setPageUrl(url: string) {
@@ -200,8 +173,7 @@ describe('Shopping lists page', () => {
 		await waitFor(() => expect(getByTestId('shopping-list-row-Groceries')).toBeInTheDocument());
 	});
 
-	it('renders a premade-list picker when PREMADE_LISTS_ENABLED is on', async () => {
-		enablePremadeListsFlag();
+	it('renders a premade-list picker when shopping lists are enabled', async () => {
 		mockPremadeListsApi([makePremadeList()]);
 		mockApi([]);
 		const { getByTestId } = render(ShoppingListsPage);
@@ -215,7 +187,6 @@ describe('Shopping lists page', () => {
 	});
 
 	it('styles the premade-list picker with the app standard select styling', async () => {
-		enablePremadeListsFlag();
 		mockPremadeListsApi([makePremadeList()]);
 		mockApi([]);
 		const { getByTestId } = render(ShoppingListsPage);
@@ -225,7 +196,6 @@ describe('Shopping lists page', () => {
 	});
 
 	it('creates a list expanded from a chosen premade list', async () => {
-		enablePremadeListsFlag();
 		mockPremadeListsApi([makePremadeList()]);
 		mockApi(
 			[],
@@ -253,22 +223,6 @@ describe('Shopping lists page', () => {
 		await waitFor(() => expect(getByTestId('shopping-list-row-Trip')).toBeInTheDocument());
 		expect(getByTestId('shopping-item-Milk')).toBeInTheDocument();
 		expect(getByTestId('shopping-item-Eggs')).toBeInTheDocument();
-	});
-
-	it('hides the premade-list picker when PREMADE_LISTS_ENABLED is off', async () => {
-		mockPremadeListsApi([]);
-		mockApi([]);
-		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
-		await waitFor(() => expect(getByTestId('shopping-lists-empty-state')).toBeInTheDocument());
-
-		expect(queryByTestId('shopping-list-premade-picker')).not.toBeInTheDocument();
-
-		await fireEvent.input(getByTestId('shopping-list-form-name'), {
-			target: { value: 'Groceries' }
-		});
-		await fireEvent.click(getByTestId('shopping-list-form-add'));
-
-		await waitFor(() => expect(getApiMock().create).toHaveBeenCalledWith('Groceries'));
 	});
 
 	it('adds a free-text item to a list, rendered unchecked', async () => {
@@ -362,7 +316,7 @@ describe('Shopping lists page', () => {
 		expect(getByTestId('shopping-item-Milk')).not.toHaveClass('shopping-item--checked');
 	});
 
-	it('renders a Saved Items link on the page when SAVED_ITEMS_ENABLED is on', async () => {
+	it('renders a Saved Items link on the page when shopping lists are enabled', async () => {
 		mockApi([]);
 		const { getByTestId } = render(ShoppingListsPage);
 		await waitFor(() => expect(getByTestId('shopping-lists-empty-state')).toBeInTheDocument());
@@ -371,17 +325,7 @@ describe('Shopping lists page', () => {
 		expect(link).toHaveAttribute('href', '/saved-items');
 	});
 
-	it('hides the Saved Items link when SAVED_ITEMS_ENABLED is off', async () => {
-		disableSavedItemsFlag();
-		mockApi([]);
-		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
-		await waitFor(() => expect(getByTestId('shopping-lists-empty-state')).toBeInTheDocument());
-
-		expect(queryByTestId('shopping-lists-saved-items-link')).not.toBeInTheDocument();
-	});
-
-	it('renders a Premade Lists link on the page when PREMADE_LISTS_ENABLED is on', async () => {
-		enablePremadeListsFlag();
+	it('renders a Premade Lists link on the page when shopping lists are enabled', async () => {
 		mockPremadeListsApi([]);
 		mockApi([]);
 		const { getByTestId } = render(ShoppingListsPage);
@@ -389,14 +333,6 @@ describe('Shopping lists page', () => {
 
 		const link = getByTestId('shopping-lists-premade-lists-link');
 		expect(link).toHaveAttribute('href', '/premade-lists');
-	});
-
-	it('hides the Premade Lists link when PREMADE_LISTS_ENABLED is off', async () => {
-		mockApi([]);
-		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
-		await waitFor(() => expect(getByTestId('shopping-lists-empty-state')).toBeInTheDocument());
-
-		expect(queryByTestId('shopping-lists-premade-lists-link')).not.toBeInTheDocument();
 	});
 
 	it('shows a not-found message with exit control when the full screen list is missing', async () => {
@@ -456,22 +392,5 @@ describe('Shopping lists page', () => {
 			'href',
 			'/shopping-lists?fullscreen=l2'
 		);
-	});
-
-	it('does not fetch saved items or show suggestions when SAVED_ITEMS_ENABLED is off', async () => {
-		disableSavedItemsFlag();
-		mockApi([makeList({ items: [] })]);
-		mockSavedItemsApi([makeSavedItem({ name: 'Milk' })]);
-		const { getByTestId, queryByTestId } = render(ShoppingListsPage);
-		await waitFor(() => expect(getByTestId('shopping-list-row-Groceries')).toBeInTheDocument());
-
-		const input = getByTestId('shopping-item-input-Groceries');
-		await fireEvent.input(input, { target: { value: 'mi' } });
-
-		expect(getSavedItemsApiMock().list).not.toHaveBeenCalled();
-		expect(queryByTestId('saved-item-suggestion-Milk')).not.toBeInTheDocument();
-
-		await fireEvent.click(getByTestId('shopping-item-add-Groceries'));
-		await waitFor(() => expect(getApiMock().addItem).toHaveBeenCalledWith('l1', 'mi'));
 	});
 });

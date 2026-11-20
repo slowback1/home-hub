@@ -82,10 +82,7 @@ function getApiMock() {
 }
 
 function enableFlags() {
-	FeatureFlagService.featureFlags = [
-		{ name: 'PREMADE_LISTS_ENABLED', isEnabled: true },
-		{ name: 'SAVED_ITEMS_ENABLED', isEnabled: true }
-	];
+	FeatureFlagService.featureFlags = [{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: true }];
 }
 
 describe('Premade lists page', () => {
@@ -95,8 +92,8 @@ describe('Premade lists page', () => {
 		enableFlags();
 	});
 
-	it('shows disabled state when PREMADE_LISTS_ENABLED flag is off', () => {
-		FeatureFlagService.featureFlags = [{ name: 'PREMADE_LISTS_ENABLED', isEnabled: false }];
+	it('shows disabled state when SHOPPING_LISTS_ENABLED flag is off', () => {
+		FeatureFlagService.featureFlags = [{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: false }];
 		mockApis([]);
 		const { getByTestId } = render(PremadeListsPage);
 

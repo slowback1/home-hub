@@ -119,24 +119,6 @@ describe('Sidebar', () => {
 		expect(queryByTestId('nav-item-shopping-lists')).not.toBeInTheDocument();
 	});
 
-	it('does not render a Saved Items nav item even when SAVED_ITEMS_ENABLED is enabled', () => {
-		FeatureFlagService.featureFlags = [
-			...ALL_NAV_FLAGS_ENABLED,
-			{ name: FeatureFlags.SAVED_ITEMS_ENABLED, isEnabled: true }
-		];
-		const { queryByTestId } = render(Sidebar);
-		expect(queryByTestId('nav-item-saved-items')).not.toBeInTheDocument();
-	});
-
-	it('does not render a Premade Lists nav item even when PREMADE_LISTS_ENABLED is enabled', () => {
-		FeatureFlagService.featureFlags = [
-			...ALL_NAV_FLAGS_ENABLED,
-			{ name: FeatureFlags.PREMADE_LISTS_ENABLED, isEnabled: true }
-		];
-		const { queryByTestId } = render(Sidebar);
-		expect(queryByTestId('nav-item-premade-lists')).not.toBeInTheDocument();
-	});
-
 	it('renders the Admin nav item linking to /admin/system-config', () => {
 		const { getByTestId } = render(Sidebar);
 		const item = getByTestId('nav-item-admin');

@@ -45,11 +45,11 @@ function getApiMock() {
 }
 
 function enableSavedItemsFlag() {
-	FeatureFlagService.featureFlags = [{ name: 'SAVED_ITEMS_ENABLED', isEnabled: true }];
+	FeatureFlagService.featureFlags = [{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: true }];
 }
 
 function disableSavedItemsFlag() {
-	FeatureFlagService.featureFlags = [{ name: 'SAVED_ITEMS_ENABLED', isEnabled: false }];
+	FeatureFlagService.featureFlags = [{ name: 'SHOPPING_LISTS_ENABLED', isEnabled: false }];
 }
 
 describe('Saved items page', () => {
@@ -58,7 +58,7 @@ describe('Saved items page', () => {
 		enableSavedItemsFlag();
 	});
 
-	it('shows disabled state when SAVED_ITEMS_ENABLED flag is off', () => {
+	it('shows disabled state when SHOPPING_LISTS_ENABLED flag is off', () => {
 		disableSavedItemsFlag();
 		mockApi([]);
 		const { getByTestId } = render(SavedItemsPage);

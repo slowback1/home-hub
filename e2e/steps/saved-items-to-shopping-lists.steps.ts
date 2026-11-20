@@ -2,7 +2,6 @@ import { When, Then, Before, After } from '../fixtures';
 
 const BACKEND_URL = 'http://localhost:5273';
 const SHOPPING_FLAG = 'SHOPPING_LISTS_ENABLED';
-const SAVED_FLAG = 'SAVED_ITEMS_ENABLED';
 
 async function resetState(request: {
 	delete: (url: string) => Promise<{ ok: () => boolean }>;
@@ -12,9 +11,6 @@ async function resetState(request: {
 	await request.delete(`${BACKEND_URL}/api/test/saved-items`).catch(() => {});
 	await request
 		.patch(`${BACKEND_URL}/api/feature-flags/${SHOPPING_FLAG}`, { data: { isEnabled: false } })
-		.catch(() => {});
-	await request
-		.patch(`${BACKEND_URL}/api/feature-flags/${SAVED_FLAG}`, { data: { isEnabled: false } })
 		.catch(() => {});
 }
 

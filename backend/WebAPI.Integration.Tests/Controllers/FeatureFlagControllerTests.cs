@@ -81,7 +81,7 @@ public class FeatureFlagControllerTests
     }
 
     [Test]
-    public async Task GetAll_IncludesSavedItemsFlag_DisabledByDefault()
+    public async Task GetAll_UsesSingleShoppingListsFlag_AndRemovesSubFeatureFlags()
     {
         var factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder => builder.UseEnvironment("Test"));
@@ -91,24 +91,10 @@ public class FeatureFlagControllerTests
         var flags = await response.Content.ReadFromJsonAsync<List<FeatureFlag>>();
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-        var savedItems = flags!.SingleOrDefault(f => f.Name == "SAVED_ITEMS_ENABLED");
-        Assert.That(savedItems, Is.Not.Null);
-        Assert.That(savedItems!.IsEnabled, Is.False);
-    }
-
-    [Test]
-    public async Task GetAll_IncludesPremadeListsFlag_DisabledByDefault()
-    {
-        var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Test"));
-        var client = factory.CreateClient();
-
-        var response = await client.GetAsync("/api/feature-flags");
-        var flags = await response.Content.ReadFromJsonAsync<List<FeatureFlag>>();
-
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-        var premadeLists = flags!.SingleOrDefault(f => f.Name == "PREMADE_LISTS_ENABLED");
-        Assert.That(premadeLists, Is.Not.Null);
-        Assert.That(premadeLists!.IsEnabled, Is.False);
+        var shoppingLists = flags!.SingleOrDefault(f => f.Name == "SHOPPING_LISTS_ENABLED");
+        Assert.That(shoppingLists, Is.Not.Null);
+        Assert.That(shoppingLists!.IsEnabled, Is.False);
+        Assert.That(flags!.Any(f => f.Name == "SAVED_ITEMS_ENABLED"), Is.False);
+        Assert.That(flags!.Any(f => f.Name == "PREMADE_LISTS_ENABLED"), Is.False);
     }
 }

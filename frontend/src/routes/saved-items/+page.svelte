@@ -24,7 +24,7 @@
 
 	onMount(async () => {
 		enabled = FeatureFlagService.featureFlags.some(
-			(f) => f.name === 'SAVED_ITEMS_ENABLED' && f.isEnabled
+			(f) => f.name === 'SHOPPING_LISTS_ENABLED' && f.isEnabled
 		);
 
 		if (!enabled) {

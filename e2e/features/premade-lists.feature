@@ -3,7 +3,7 @@ Feature: Premade Lists
 
   @premade-lists-create-with-saved-items
   Scenario: Create a premade list and add saved items to it
-    Given the PREMADE_LISTS_ENABLED feature flag is enabled
+    Given the SHOPPING_LISTS_ENABLED feature flag is enabled
     And a saved item named "Milk" exists
     And a saved item named "Eggs" exists
     When I visit the Premade Lists page
@@ -16,7 +16,6 @@ Feature: Premade Lists
   @premade-lists-apply-on-shopping-list
   Scenario: Apply a premade list when creating a shopping list
     Given the SHOPPING_LISTS_ENABLED feature flag is enabled
-    And the PREMADE_LISTS_ENABLED feature flag is enabled
     And a premade list named "Weekly groceries" with saved items "Milk, Eggs" exists
     When I visit the Shopping Lists page
     And I create a shopping list named "Shop run" from the premade list "Weekly groceries"
@@ -29,6 +28,6 @@ Feature: Premade Lists
 
   @premade-lists-flag-off
   Scenario: Premade Lists is hidden when feature flag is disabled
-    Given the PREMADE_LISTS_ENABLED feature flag is disabled
+    Given the SHOPPING_LISTS_ENABLED feature flag is disabled
     When I am on the dashboard
     Then the Premade Lists nav item is not visible in the sidebar

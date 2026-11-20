@@ -26,8 +26,6 @@
 	let loading = true;
 	let error = false;
 	let enabled = true;
-	let savedItemsEnabled = false;
-	let premadeEnabled = false;
 	let savedItems: SavedItem[] = [];
 	let premadeLists: PremadeList[] = [];
 	let premadeDraft = '';
@@ -47,12 +45,6 @@
 		enabled = FeatureFlagService.featureFlags.some(
 			(f) => f.name === 'SHOPPING_LISTS_ENABLED' && f.isEnabled
 		);
-		savedItemsEnabled = FeatureFlagService.featureFlags.some(
-			(f) => f.name === 'SAVED_ITEMS_ENABLED' && f.isEnabled
-		);
-		premadeEnabled = FeatureFlagService.featureFlags.some(
-			(f) => f.name === 'PREMADE_LISTS_ENABLED' && f.isEnabled
-		);
 
 		if (!enabled) {
 			loading = false;
@@ -67,8 +59,7 @@
 			loading = false;
 		}
 
-		if (savedItemsEnabled) await loadSavedItems();
-		if (premadeEnabled) await loadPremadeLists();
+		await Promise.all([loadSavedItems(), loadPremadeLists()]);
 	});
 
 	async function loadSavedItems() {
@@ -88,7 +79,7 @@
 	}
 
 	function createViaApi(name: string) {
-		if (premadeEnabled && premadeDraft) return api.create(name, premadeDraft);
+		if (premadeDraft) return api.create(name, premadeDraft);
 		return api.create(name);
 	}
 
@@ -125,7 +116,7 @@
 
 	function suggestionsFor(listId: string): SavedItem[] {
 		const draft = (itemDrafts[listId] ?? '').trim().toLowerCase();
-		if (!savedItemsEnabled || !draft) return [];
+		if (!draft) return [];
 		return savedItems.filter((s) => s.name.toLowerCase().includes(draft));
 	}
 
@@ -184,26 +175,22 @@
 					Exit full screen
 				</Button>
 			</div>
-		{:else if savedItemsEnabled || premadeEnabled}
+		{:else}
 			<nav class="shopping-lists-subnav">
-				{#if savedItemsEnabled}
-					<a
-						class="shopping-lists-subnav__link"
-						href="/saved-items"
-						data-testid="shopping-lists-saved-items-link"
-					>
-						Saved Items
-					</a>
-				{/if}
-				{#if premadeEnabled}
-					<a
-						class="shopping-lists-subnav__link"
-						href="/premade-lists"
-						data-testid="shopping-lists-premade-lists-link"
-					>
-						Premade Lists
-					</a>
-				{/if}
+				<a
+					class="shopping-lists-subnav__link"
+					href="/saved-items"
+					data-testid="shopping-lists-saved-items-link"
+				>
+					Saved Items
+				</a>
+				<a
+					class="shopping-lists-subnav__link"
+					href="/premade-lists"
+					data-testid="shopping-lists-premade-lists-link"
+				>
+					Premade Lists
+				</a>
 			</nav>
 		{/if}
 		{#if visibleLists.length === 0}
@@ -312,17 +299,15 @@
 					bind:value={newListName}
 					placeholder="List name"
 				/>
-				{#if premadeEnabled}
-					<div class="shopping-list-premade-pick">
-						<Select
-							label="Premade list"
-							id="shopping-list-premade-picker"
-							data-testid="shopping-list-premade-picker"
-							bind:value={premadeDraft}
-							options={premadeOptions}
-						/>
-					</div>
-				{/if}
+				<div class="shopping-list-premade-pick">
+					<Select
+						label="Premade list"
+						id="shopping-list-premade-picker"
+						data-testid="shopping-list-premade-picker"
+						bind:value={premadeDraft}
+						options={premadeOptions}
+					/>
+				</div>
 				<div class="form-actions">
 					<Button testId="shopping-list-form-add" variant="primary" onClick={createList}>Add</Button
 					>

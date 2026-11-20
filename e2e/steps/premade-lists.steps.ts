@@ -2,8 +2,7 @@ import { expect } from '@playwright/test';
 import { Given, When, Then, Before, After } from '../fixtures';
 
 const BACKEND_URL = 'http://localhost:5273';
-const FLAG = 'PREMADE_LISTS_ENABLED';
-const SHOPPING_LISTS_FLAG = 'SHOPPING_LISTS_ENABLED';
+const FLAG = 'SHOPPING_LISTS_ENABLED';
 
 function toItemList(csv: string): string[] {
 	return csv
@@ -18,9 +17,6 @@ Before({ tags: '@premade-lists' }, async ({ request }) => {
 	await request
 		.patch(`${BACKEND_URL}/api/feature-flags/${FLAG}`, { data: { isEnabled: false } })
 		.catch(() => {});
-	await request
-		.patch(`${BACKEND_URL}/api/feature-flags/${SHOPPING_LISTS_FLAG}`, { data: { isEnabled: false } })
-		.catch(() => {});
 });
 
 After({ tags: '@premade-lists' }, async ({ request }) => {
@@ -29,23 +25,6 @@ After({ tags: '@premade-lists' }, async ({ request }) => {
 	await request
 		.patch(`${BACKEND_URL}/api/feature-flags/${FLAG}`, { data: { isEnabled: false } })
 		.catch(() => {});
-	await request
-		.patch(`${BACKEND_URL}/api/feature-flags/${SHOPPING_LISTS_FLAG}`, { data: { isEnabled: false } })
-		.catch(() => {});
-});
-
-Given('the PREMADE_LISTS_ENABLED feature flag is enabled', async ({ request }) => {
-	const response = await request.patch(`${BACKEND_URL}/api/feature-flags/${FLAG}`, {
-		data: { isEnabled: true }
-	});
-	if (!response.ok()) throw new Error(`Failed to enable ${FLAG}: ${response.status()}`);
-});
-
-Given('the PREMADE_LISTS_ENABLED feature flag is disabled', async ({ request }) => {
-	const response = await request.patch(`${BACKEND_URL}/api/feature-flags/${FLAG}`, {
-		data: { isEnabled: false }
-	});
-	if (!response.ok()) throw new Error(`Failed to disable ${FLAG}: ${response.status()}`);
 });
 
 Given(
