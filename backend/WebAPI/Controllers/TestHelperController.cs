@@ -182,6 +182,23 @@ public class TestHelperController(
         return NoContent();
     }
 
+    [HttpPost("nba-games")]
+    public async Task<ActionResult> SeedNbaGame([FromBody] SeedNbaGameRequest request)
+    {
+        if (!IsAllowed) return NotFound();
+
+        await nbaScheduleRepository.UpsertAsync([
+            new NbaScheduledGame
+            {
+                SourceGameId = request.SourceGameId,
+                StartAt = request.StartAt,
+                HomeTeam = request.HomeTeam,
+                AwayTeam = request.AwayTeam
+            }
+        ]);
+        return Ok();
+    }
+
     [HttpDelete("nba-games")]
     public async Task<ActionResult> ClearNbaGames()
     {
@@ -267,4 +284,5 @@ public class TestHelperController(
     public record SeedTaskRequest(string Name, string? UserId, DateTime? CompletedAt);
     public record SeedUserRequest(string Name);
     public record SeedAudiobookJobRequest(string EpubFilename, AudiobookJobStatus Status);
+    public record SeedNbaGameRequest(DateTime StartAt, string HomeTeam, string AwayTeam, string? SourceGameId);
 }
