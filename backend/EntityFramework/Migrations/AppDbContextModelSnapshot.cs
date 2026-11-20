@@ -227,6 +227,30 @@ namespace EntityFramework.Migrations
                     b.ToTable("FeatureFlags");
                 });
 
+            modelBuilder.Entity("Common.Models.NbaGame", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AwayTeam")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HomeTeam")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SourceGameId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("StartAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NbaGames");
+                });
+
             modelBuilder.Entity("Common.Models.PremadeList", b =>
                 {
                     b.Property<string>("Id")

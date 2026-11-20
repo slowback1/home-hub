@@ -29,6 +29,7 @@ public class AppDbContext : DbContext
     public DbSet<SavedItem> SavedItems => Set<SavedItem>();
     public DbSet<PremadeList> PremadeLists => Set<PremadeList>();
     public DbSet<PremadeListItem> PremadeListItems => Set<PremadeListItem>();
+    public DbSet<NbaGame> NbaGames => Set<NbaGame>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
