@@ -1,5 +1,14 @@
 import type { Component } from 'svelte';
-import { CheckSquare, Shuffle, Cloud, BookAudio, Bookmark, Footprints, Disc3 } from 'lucide-svelte';
+import {
+	CheckSquare,
+	Shuffle,
+	Cloud,
+	BookAudio,
+	Bookmark,
+	Footprints,
+	Disc3,
+	ShoppingBasket
+} from 'lucide-svelte';
 import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { FeatureFlags } from '$lib/services/FeatureFlag/FeatureFlags';
 import TasksWidget from './widgets/TasksWidget.svelte';
@@ -9,6 +18,7 @@ import AudiobookWidget from './widgets/AudiobookWidget.svelte';
 import BookmarksWidget from './widgets/BookmarksWidget.svelte';
 import WalkHistoryWidget from './widgets/WalkHistoryWidget.svelte';
 import WheelsWidget from './widgets/WheelsWidget.svelte';
+import ShoppingListsWidget from './widgets/ShoppingListsWidget.svelte';
 
 export type WidgetEntry = {
 	id: string;
@@ -83,6 +93,15 @@ export const WIDGET_REGISTRY: WidgetEntry[] = [
 		href: '/wheels',
 		featureFlag: FeatureFlags.WHEEL_PICKER_ENABLED,
 		component: WheelsWidget as unknown as Component
+	},
+	{
+		id: 'shopping-lists',
+		name: 'Shopping Lists',
+		description: 'Jump back into your active shopping lists.',
+		icon: ShoppingBasket as unknown as Component,
+		href: '/shopping-lists',
+		featureFlag: FeatureFlags.SHOPPING_LISTS_ENABLED,
+		component: ShoppingListsWidget as unknown as Component
 	}
 ];
 

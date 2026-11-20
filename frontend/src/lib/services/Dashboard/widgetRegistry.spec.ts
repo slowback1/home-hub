@@ -3,7 +3,7 @@ import FeatureFlagService from '$lib/services/FeatureFlag/FeatureFlagService';
 import { createTestFeatureFlag } from '$lib/testHelpers/testFeatureFlagProvider';
 
 describe('WIDGET_REGISTRY', () => {
-	it('contains entries for all 7 active widget types', () => {
+	it('contains entries for all 8 active widget types', () => {
 		const ids = WIDGET_REGISTRY.map((w) => w.id);
 		expect(ids).toContain('tasks');
 		expect(ids).toContain('activity');
@@ -12,6 +12,7 @@ describe('WIDGET_REGISTRY', () => {
 		expect(ids).toContain('bookmarks');
 		expect(ids).toContain('walk-history');
 		expect(ids).toContain('wheels');
+		expect(ids).toContain('shopping-lists');
 	});
 
 	it('does not contain comfyui or retro (no query API exists for these)', () => {
@@ -95,5 +96,17 @@ describe('getVisibleWidgets', () => {
 		FeatureFlagService.featureFlags = [createTestFeatureFlag('WHEEL_PICKER_ENABLED', false)];
 		const visible = getVisibleWidgets();
 		expect(visible.map((v) => v.id)).not.toContain('wheels');
+	});
+
+	it('includes shopping-lists when SHOPPING_LISTS_ENABLED is on', () => {
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('SHOPPING_LISTS_ENABLED', true)];
+		const visible = getVisibleWidgets();
+		expect(visible.map((v) => v.id)).toContain('shopping-lists');
+	});
+
+	it('excludes shopping-lists when SHOPPING_LISTS_ENABLED is off', () => {
+		FeatureFlagService.featureFlags = [createTestFeatureFlag('SHOPPING_LISTS_ENABLED', false)];
+		const visible = getVisibleWidgets();
+		expect(visible.map((v) => v.id)).not.toContain('shopping-lists');
 	});
 });
